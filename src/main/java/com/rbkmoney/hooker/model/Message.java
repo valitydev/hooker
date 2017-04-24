@@ -1,39 +1,43 @@
-package com.rbkmoney.hooker.dao;
+package com.rbkmoney.hooker.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rbkmoney.damsel.base.Content;
 
 /**
  * Created by inalarsanukaev on 07.04.17.
  */
-@JsonPropertyOrder({ "event_type", "invoice_id", "payment_id", "shop_id", "amount", "currency", "created_at", "metadata", "status" })
-@JsonIgnoreProperties({ "eventId", "partyId", "description" })
-public class InvoiceInfo {
+
+public class Message {
+    private long id;
     private long eventId;
-    @JsonProperty("event_type")
-    private String eventType;
-    @JsonProperty("invoice_id")
+    private String type;
     private String invoiceId;
-    @JsonProperty("payment_id")
     private String paymentId;
     private String partyId;
-    @JsonProperty("shop_id")
     private int shopId;
     private long amount;
     private String currency;
-    @JsonProperty("created_at")
     private String createdAt;
     private Content metadata;
+    private String status;
+    private String product;
     private String description;
+    private EventType eventType;
 
-    public String getEventType() {
-        return eventType;
+    public long getId() {
+        return id;
     }
 
-    public void setEventType(String eventType) {
-        this.eventType = eventType;
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getPaymentId() {
@@ -58,15 +62,7 @@ public class InvoiceInfo {
         this.status = status;
     }
 
-    private String status;
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
     public String getInvoiceId() {
         return invoiceId;
@@ -119,8 +115,32 @@ public class InvoiceInfo {
     public Content getMetadata() {
         return metadata;
     }
-
+    @JsonIgnore
     public void setMetadata(Content metadata) {
         this.metadata = metadata;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public String getProduct() {
+        return product;
+    }
+
+    public void setProduct(String product) {
+        this.product = product;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
