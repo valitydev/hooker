@@ -28,6 +28,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import static com.rbkmoney.hooker.utils.BuildUtils.message;
 import static org.junit.Assert.*;
 
 /**
@@ -118,29 +119,6 @@ public class DataflowTest extends AbstractIntegrationTest {
 
         hook = hookDao.getHookById(hook.getId());
         assertFalse(hook.isEnabled());
-    }
-
-    private static Message message(String invoceId, String partyId, EventType type, String status) {
-        Message message = new Message();
-        message.setEventId(5555);
-        message.setEventTime("12.12.2007");
-        message.setInvoiceId(invoceId);
-        message.setPartyId(partyId);
-        message.setShopId(123);
-        message.setAmount(12235);
-        message.setCurrency("RUB");
-        message.setCreatedAt("12.12.2008");
-        com.rbkmoney.damsel.base.Content metadata = new com.rbkmoney.damsel.base.Content();
-        metadata.setType("string");
-        metadata.setData("somedata".getBytes());
-        message.setMetadata(metadata);
-        message.setProduct("product");
-        message.setDescription("description");
-        message.setEventType(type);
-        message.setType("invoice");
-        message.setStatus(status);
-        message.setPaymentId("paymentId");
-        return message;
     }
 
     private static Hook hook(String partyId, String url, EventType... types) {
