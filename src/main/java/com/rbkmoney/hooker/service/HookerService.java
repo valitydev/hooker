@@ -4,7 +4,6 @@ import com.rbkmoney.damsel.webhooker.Webhook;
 import com.rbkmoney.damsel.webhooker.WebhookManagerSrv;
 import com.rbkmoney.damsel.webhooker.WebhookNotFound;
 import com.rbkmoney.damsel.webhooker.WebhookParams;
-import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.HookConverter;
@@ -24,8 +23,7 @@ public class HookerService implements WebhookManagerSrv.Iface {
 
     @Override
     public List<Webhook> getList(String s) throws TException {
-        List<Hook> hooks = hookDao.getPartyHooks(s);
-        return HookConverter.convert(hooks);
+        return HookConverter.convert(hookDao.getPartyHooks(s));
     }
 
     @Override
@@ -39,21 +37,13 @@ public class HookerService implements WebhookManagerSrv.Iface {
 
     @Override
     public Webhook create(WebhookParams webhookParams) throws TException {
-        Hook hook = hookDao.create(HookConverter.convert(webhookParams));
-        if (hook == null) {
-            throw new TException("Webhookparams.EventFilter is empty.");
-        }
-        return HookConverter.convert(hook);
+        return HookConverter.convert(hookDao.create(HookConverter.convert(webhookParams)));
     }
 
     @Override
     public void delete(long id) throws WebhookNotFound, TException {
-        try {
-            if (!hookDao.delete(id)) {
-                throw new WebhookNotFound();
-            }
-        } catch (DaoException e) {
-            throw new TException();
+        if (!hookDao.delete(id)) {
+            throw new WebhookNotFound();
         }
     }
 }

@@ -6,7 +6,6 @@ import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements MessageDao {
@@ -185,15 +185,11 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
         cacheManager.getCache(CacheConfiguration.MESSAGES_BY_INVOICE).put(message.getInvoiceId(), message);
     }
 
-    private List<Message> getFromCache(Collection<Long> ids){
+    private List<Message> getFromCache(Collection<Long> ids) {
         Cache cache = cacheManager.getCache(CacheConfiguration.MESSAGES_BY_IDS);
-        List<Message> messages = new ArrayList<>();
-        for(long id: ids){
-            Message message = cache.get(id, Message.class);
-            if(message != null){
-                messages.add(message);
-            }
-        }
-        return messages;
+        return ids.stream()
+                .map(id -> cache.get(id, Message.class))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }
