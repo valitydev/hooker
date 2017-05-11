@@ -63,28 +63,32 @@ public class MessageScheduler {
         }
 
         final Map<Long, List<Task>> scheduledTasks = getScheduledTasks(currentlyProcessedHooks);
-        int numberOfTasks = numberOfTasks(scheduledTasks.values());
+        final Map<Long, Hook> healthyHooks = loadHooks(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
+
+        //ready task means - not delayed by failed hook
+        int numberOfTasks = numberOfReadyTasks(scheduledTasks, healthyHooks.keySet());
         if(numberOfTasks > 0){
-            log.info("Number of not done tasks(message->hook): {}", numberOfTasks);
+            log.info("Number of not done ready tasks(message->hook): {}", numberOfTasks);
         }
 
-        final Map<Long, Hook> healthyHooks = loadHooks(scheduledTasks.keySet()).stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
         processedHooks.addAll(healthyHooks.keySet());
 
-        final Map<Long, Message> messages = loadMessages(getMessageIds(scheduledTasks, healthyHooks.keySet()))
-                .stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
+        final Set<Long> messageIdsToSend = getMessageIdsFilteredByHooks(scheduledTasks, healthyHooks.keySet());
+        final Map<Long, Message> messagesMap = loadMessages(messageIdsToSend);
 
-
-        for (long hookId : scheduledTasks.keySet()) {
-            if (healthyHooks.containsKey(hookId)) {
-                List<Message> messagesForHook = scheduledTasks.get(hookId)
-                        .stream()
-                        .map(t -> messages.get(t.getMessageId()))
-                        .collect(Collectors.toList());
-
-                MessageSender messageSender = new MessageSender(healthyHooks.get(hookId), messagesForHook, taskDao, this, signer, postSender);
-                executorService.submit(messageSender);
+        for (long hookId : healthyHooks.keySet()) {
+            List<Task> tasks = scheduledTasks.get(hookId);
+            List<Message> messagesForHook = new ArrayList<>();
+            for (Task task : tasks) {
+                Message e = messagesMap.get(task.getMessageId());
+                if (e != null) {
+                    messagesForHook.add(e);
+                } else {
+                    log.error("Message with id {} couldn't be null", task.getMessageId());
+                }
             }
+            MessageSender messageSender = new MessageSender(healthyHooks.get(hookId), messagesForHook, taskDao, this, signer, postSender);
+            executorService.submit(messageSender);
         }
     }
 
@@ -118,7 +122,7 @@ public class MessageScheduler {
         return retryPoliciesService.filter(hooksWaitingMessages);
     }
 
-    private Set<Long> getMessageIds(Map<Long, List<Task>> scheduledTasks, Collection<Long> liveHookIds) {
+    private Set<Long> getMessageIdsFilteredByHooks(Map<Long, List<Task>> scheduledTasks, Collection<Long> liveHookIds) {
         final Set<Long> messageIds = new HashSet<>();
         for (long hookId : liveHookIds) {
             for (Task t : scheduledTasks.get(hookId)) {
@@ -128,15 +132,20 @@ public class MessageScheduler {
         return messageIds;
     }
 
-    private int numberOfTasks(Collection<List<Task>> tasks){
+    private int numberOfReadyTasks(Map<Long, List<Task>> tasks, Collection<Long> liveHookIds){
         int count = 0;
-        for(List<Task> taskList: tasks){
-            count += taskList.size();
+        for(long hookId: liveHookIds){
+            count += tasks.get(hookId).size();
         }
         return count;
     }
 
-    private List<Message> loadMessages(Collection<Long> messageIds) {
-        return messageDao.getBy(messageIds);
+    private Map<Long, Message> loadMessages(Collection<Long> messageIds) {
+        List<Message> messages =  messageDao.getBy(messageIds);
+        Map<Long, Message> map = new HashMap<>();
+        for(Message message: messages){
+            map.put(message.getId(), message);
+        }
+        return map;
     }
 }
