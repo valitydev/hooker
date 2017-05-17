@@ -13,7 +13,7 @@ import java.util.Base64;
 public class AsymSigner implements Signer {
     public static final String KEY_ALGORITHM = "RSA";
     public static final String HASH_ALGORITHM = "SHA256withRSA";
-    public static final int KEYSIZE = 1024;
+    public static final int KEYSIZE = 2048;
 
     private KeyFactory keyFactory;
     private Signature sig;
@@ -44,7 +44,7 @@ public class AsymSigner implements Signer {
                 sig.update(data.getBytes());
                 signatureBytes = sig.sign();
             }
-            return Base64.getEncoder().encodeToString(signatureBytes);
+            return Base64.getUrlEncoder().encodeToString(signatureBytes);
         } catch (InvalidKeySpecException | InvalidKeyException | SignatureException e) {
             throw new UnknownCryptoException(e);
         }
