@@ -15,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 
+import static com.rbkmoney.hooker.utils.BuildUtils.cart;
 import static com.rbkmoney.hooker.utils.BuildUtils.message;
 import static org.junit.Assert.assertEquals;
 
@@ -35,7 +36,7 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
     public void setUp() throws Exception {
         if(!messagesCreated){
             messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status"));
-            messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status"));
+            messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status", cart()));
             messagesCreated = true;
         }
     }
@@ -61,6 +62,7 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
     public void get() throws Exception {
         Message message = messageDao.getAny("1234", AbstractInvoiceEventHandler.INVOICE);
         assertEquals(message.getInvoice().getAmount(), 12235);
+        assertEquals(message.getInvoice().getCart().size(), 2);
 
         assertEquals(1, messageDao.getBy(Arrays.asList(message.getId())).size());
     }
