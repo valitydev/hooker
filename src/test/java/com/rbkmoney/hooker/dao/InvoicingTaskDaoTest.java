@@ -1,7 +1,8 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
-import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
+import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
+import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import org.junit.After;
@@ -21,9 +22,9 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class TaskDaoImplTest  extends AbstractIntegrationTest {
+public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Autowired
-    TaskDao taskDao;
+    InvoicingTaskDao taskDao;
 
     @Autowired
     HookDao hookDao;
@@ -37,7 +38,7 @@ public class TaskDaoImplTest  extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
-        messageDao.create(BuildUtils.message(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status", cart()));
+        messageDao.create(BuildUtils.message(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true));
         messageId = messageDao.getAny("2345", AbstractInvoiceEventHandler.INVOICE).getId();
     }
 

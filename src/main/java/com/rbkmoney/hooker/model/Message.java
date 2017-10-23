@@ -1,6 +1,6 @@
 package com.rbkmoney.hooker.model;
 
-import com.rbkmoney.hooker.handler.poller.impl.AbstractInvoiceEventHandler;
+import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 
 
 /**

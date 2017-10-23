@@ -195,7 +195,7 @@ public class HookDaoImpl implements HookDao {
             log.error("Fail to create hook: " + hook, e);
             throw new DaoException(e);
         }
-        log.debug("Webhook with id = {} created.", hook.getId());
+        log.info("Webhook with id = {} created.", hook.getId());
         return hook;
     }
 
@@ -215,7 +215,7 @@ public class HookDaoImpl implements HookDao {
         for (WebhookAdditionalFilter webhookAdditionalFilter : webhookAdditionalFilters) {
             MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource("hook_id", hookId)
                     .addValue("event_type", webhookAdditionalFilter.getEventType().toString())
-                    .addValue("invoice_shop_id", webhookAdditionalFilter.getInvoiceShopId())
+                    .addValue("invoice_shop_id", webhookAdditionalFilter.getShopId())
                     .addValue("invoice_status", webhookAdditionalFilter.getInvoiceStatus())
                     .addValue("invoice_payment_status", webhookAdditionalFilter.getInvoicePaymentStatus());
             batchValues.add(mapSqlParameterSource.getValues());

@@ -1,27 +1,23 @@
 package com.rbkmoney.hooker.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.rbkmoney.swag_webhook_events.*;
 
 /**
  * Created by inalarsanukaev on 15.05.17.
  */
-@JsonPropertyOrder({"id", "createdAt", "status", "error", "amount", "currency", "paymentToolToken", "paymentSession", "contactInfo", "ip", "fingerprint"})
 public class Payment {
     private String id;
     private String createdAt;
     private String status;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private PaymentStatusError error;
     private long amount;
     private String currency;
     private String paymentToolToken;
     private String paymentSession;
     private PaymentContactInfo contactInfo;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String ip;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String fingerprint;
+    private Payer payer;
 
     public Payment(Payment other) {
         this.id = other.id;
@@ -34,11 +30,37 @@ public class Payment {
         this.currency = other.currency;
         this.paymentToolToken = other.paymentToolToken;
         this.paymentSession = other.paymentSession;
-        if (other.contactInfo != null) {
-            this.contactInfo = new PaymentContactInfo(other.contactInfo);
-        }
+        this.contactInfo = new PaymentContactInfo(other.contactInfo);
         this.ip = other.ip;
         this.fingerprint = other.fingerprint;
+        //TODO copy constructor
+        if (other.payer instanceof CustomerPayer) {
+            this.payer = new CustomerPayer()
+                    .customerID(((CustomerPayer) other.payer).getCustomerID());
+        } else if (other.payer instanceof PaymentResourcePayer) {
+            PaymentResourcePayer otherPayer = (PaymentResourcePayer) other.payer;
+            PaymentResourcePayer copyPayer = new PaymentResourcePayer()
+                    .paymentSession(otherPayer.getPaymentSession())
+                    .paymentToolToken(otherPayer.getPaymentToolToken())
+                    .clientInfo(new ClientInfo()
+                            .ip(otherPayer.getClientInfo().getIp())
+                            .fingerprint(otherPayer.getClientInfo().getFingerprint()))
+                    .contactInfo(new ContactInfo()
+                            .email(otherPayer.getContactInfo().getEmail())
+                            .phoneNumber(otherPayer.getContactInfo().getPhoneNumber()));
+            this.payer = copyPayer;
+            if (otherPayer.getPaymentToolDetails() instanceof PaymentToolDetailsBankCard) {
+                PaymentToolDetailsBankCard paymentToolDetails = (PaymentToolDetailsBankCard) otherPayer.getPaymentToolDetails();
+                copyPayer.setPaymentToolDetails(new PaymentToolDetailsBankCard()
+                        .cardNumberMask(paymentToolDetails.getCardNumberMask())
+                        .paymentSystem(paymentToolDetails.getPaymentSystem()));
+            } else if (otherPayer.getPaymentToolDetails() instanceof PaymentToolDetailsPaymentTerminal) {
+                copyPayer.setPaymentToolDetails(new PaymentToolDetailsPaymentTerminal()
+                        .provider(((PaymentToolDetailsPaymentTerminal) otherPayer.getPaymentToolDetails()).getProvider()));
+            }
+            copyPayer.getPaymentToolDetails().detailsType(otherPayer.getPaymentToolDetails().getDetailsType());
+        }
+        this.payer.payerType(other.payer.getPayerType());
     }
 
     public Payment() {
@@ -130,5 +152,13 @@ public class Payment {
 
     public void setFingerprint(String fingerprint) {
         this.fingerprint = fingerprint;
+    }
+
+    public Payer getPayer() {
+        return payer;
+    }
+
+    public void setPayer(Payer payer) {
+        this.payer = payer;
     }
 }

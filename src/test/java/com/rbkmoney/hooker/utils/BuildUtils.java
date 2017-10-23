@@ -1,6 +1,10 @@
 package com.rbkmoney.hooker.utils;
 
 import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.Invoice;
+import com.rbkmoney.hooker.model.Payment;
+import com.rbkmoney.hooker.model.PaymentContactInfo;
+import com.rbkmoney.swag_webhook_events.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,10 +14,10 @@ import java.util.List;
  */
 public class BuildUtils {
     public static Message message(String type, String invoiceId, String partyId, EventType eventType, String status) {
-        return message(type, invoiceId, partyId, eventType, status, null);
+        return message(type, invoiceId, partyId, eventType, status, null, true);
     }
 
-    public static Message message(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart) {
+    public static Message message(String type, String invoiceId, String partyId, EventType eventType, String status, List<InvoiceCartPosition> cart, boolean isPayer) {
         Message message = new Message();
         message.setEventId(5555);
         message.setEventTime("time");
@@ -51,9 +55,27 @@ public class BuildUtils {
             payment.setCurrency("RUB");
             payment.setPaymentToolToken("payment tool token");
             payment.setPaymentSession("payment session");
-            payment.setContactInfo(new PaymentContactInfo("aaaa@mail.ru", "89037279269"));
+            payment.setContactInfo(new PaymentContactInfo("aaaa@mail.ru", "89037279209"));
             payment.setIp("127.0.0.1");
             payment.setFingerprint("fingerbox");
+            if (isPayer) {
+                payment.setPayer(new PaymentResourcePayer()
+                        .paymentToolToken("payment tool token")
+                        .paymentSession("payment session")
+                        .contactInfo(new ContactInfo()
+                                .email("aaaa@mail.ru")
+                                .phoneNumber("89037279269"))
+                        .clientInfo(new ClientInfo()
+                                .ip("127.0.0.1")
+                                .fingerprint("fingerbox"))
+                        .paymentToolDetails(new PaymentToolDetailsBankCard()
+                                .cardNumberMask("1234")
+                                .paymentSystem("visa")
+                                .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD))
+                        .payerType(Payer.PayerTypeEnum.PAYMENTRESOURCEPAYER));
+            } else { //if customer
+                payment.setPayer(new CustomerPayer().customerID("12345").payerType(Payer.PayerTypeEnum.CUSTOMERPAYER));
+            }
         }
         return message;
     }
@@ -63,5 +85,36 @@ public class BuildUtils {
         cart.add(new InvoiceCartPosition("Зверушка",123L, 5, 5 * 123L, new TaxMode("18%")));
         cart.add(new InvoiceCartPosition("Квакушка", 456L,6, 6 * 456L, null));
         return cart;
+    }
+
+    public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType, String type, String custId, String shopId, Customer.StatusEnum custStatus){
+        CustomerMessage customerMessage = new CustomerMessage();
+        customerMessage.setEventId(eventId);
+        customerMessage.setPartyId(partyId);
+        customerMessage.setOccuredAt("time");
+        customerMessage.setEventType(eventType);
+        customerMessage.setType(type);
+        customerMessage.setCustomer(new Customer()
+                .id(custId)
+                .shopID(shopId)
+                .status(custStatus)
+                .contactInfo(new ContactInfo().phoneNumber("1234").email("aaa@mail.ru"))
+                .metadata(CustomerUtils.getJsonObject("{\"field1\":\"value1\",\"field2\":[123,123,123]}")));
+
+        if (customerMessage.isBinding()) {
+            customerMessage.setCustomerBinding(new CustomerBinding()
+                    .id("12456")
+                    .status(CustomerBinding.StatusEnum.PENDING)
+            .paymentResource(new PaymentResource()
+            .paymentToolToken("shjfbergiwengriweno")
+            .paymentSession("wrgnjwierngweirngi")
+            .clientInfo(new ClientInfo().ip("127.0.0.1").fingerprint("finger"))
+            .paymentToolDetails(new PaymentToolDetailsBankCard()
+                    .cardNumberMask("1234")
+                    .paymentSystem("visa")
+                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD)
+            )));
+        }
+        return customerMessage;
     }
 }

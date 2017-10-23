@@ -3,8 +3,12 @@ package com.rbkmoney.hooker.dao.impl;
 import com.rbkmoney.hooker.configuration.CacheConfiguration;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
-import com.rbkmoney.hooker.dao.TaskDao;
 import com.rbkmoney.hooker.model.*;
+import com.rbkmoney.hooker.model.Invoice;
+import com.rbkmoney.hooker.model.Payment;
+import com.rbkmoney.hooker.model.PaymentContactInfo;
+import com.rbkmoney.hooker.utils.PaymentToolUtils;
+import com.rbkmoney.swag_webhook_events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +25,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.util.*;
 
+import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
+
 public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements MessageDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    TaskDao taskDao;
+    InvoicingTaskDao taskDao;
 
     @Autowired
     CacheManager cacheManager;
@@ -61,6 +67,35 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
     public static final String PAYMENT_PHONE = "payment_phone";
     public static final String PAYMENT_IP = "payment_ip";
     public static final String PAYMENT_FINGERPRINT = "payment_fingerprint";
+    public static final String PAYMENT_CUSTOMER_ID = "payment_customer_id";
+    public static final String PAYMENT_PAYER_TYPE = "payment_payer_type";
+    public static final String PAYMENT_TOOL_DETAILS_TYPE = "payment_tool_details_type";
+    public static final String PAYMENT_CARD_NUMBER_MASK = "payment_card_number_mask";
+    public static final String PAYMENT_SYSTEM = "payment_system";
+    public static final String PAYMENT_TERMINAL_PROVIDER = "payment_terminal_provider";
+
+    //TODO refactoring
+    private static void setNullPaymentParamValues(MapSqlParameterSource params) {
+        params.addValue(PAYMENT_ID, null)
+                .addValue(PAYMENT_CREATED_AT, null)
+                .addValue(PAYMENT_STATUS, null)
+                .addValue(PAYMENT_ERROR_CODE, null)
+                .addValue(PAYMENT_ERROR_MESSAGE, null)
+                .addValue(PAYMENT_AMOUNT, null)
+                .addValue(PAYMENT_CURRENCY, null)
+                .addValue(PAYMENT_TOOL_TOKEN, null)
+                .addValue(PAYMENT_SESSION, null)
+                .addValue(PAYMENT_EMAIL, null)
+                .addValue(PAYMENT_PHONE, null)
+                .addValue(PAYMENT_IP, null)
+                .addValue(PAYMENT_FINGERPRINT, null)
+                .addValue(PAYMENT_CUSTOMER_ID, null)
+                .addValue(PAYMENT_PAYER_TYPE, null)
+                .addValue(PAYMENT_TOOL_DETAILS_TYPE, null)
+                .addValue(PAYMENT_CARD_NUMBER_MASK, null)
+                .addValue(PAYMENT_SYSTEM, null)
+                .addValue(PAYMENT_TERMINAL_PROVIDER, null);
+    }
 
     private static RowMapper<InvoiceCartPosition> cartPositionRowMapper = (rs, i) -> {
         InvoiceCartPosition invoiceCartPosition = new InvoiceCartPosition();
@@ -115,6 +150,29 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
             payment.setContactInfo(new PaymentContactInfo(rs.getString(PAYMENT_EMAIL), rs.getString(PAYMENT_PHONE)));
             payment.setIp(rs.getString(PAYMENT_IP));
             payment.setFingerprint(rs.getString(PAYMENT_FINGERPRINT));
+            Payer.PayerTypeEnum payerType = Payer.PayerTypeEnum.fromValue(rs.getString(PAYMENT_PAYER_TYPE));
+            switch (payerType) {
+                case CUSTOMERPAYER:
+                    payment.setPayer(new CustomerPayer().customerID(rs.getString(PAYMENT_CUSTOMER_ID)));
+                    break;
+                case PAYMENTRESOURCEPAYER:
+                    PaymentResourcePayer payer = new PaymentResourcePayer()
+                            .paymentToolToken(rs.getString(PAYMENT_TOOL_TOKEN))
+                            .paymentSession(rs.getString(PAYMENT_SESSION))
+                            .contactInfo(new ContactInfo()
+                                    .email(rs.getString(PAYMENT_EMAIL))
+                                    .phoneNumber(rs.getString(PAYMENT_PHONE)))
+                            .clientInfo(new ClientInfo()
+                                    .fingerprint(rs.getString(PAYMENT_FINGERPRINT))
+                                    .ip(rs.getString(PAYMENT_IP)));
+
+                    payer.setPaymentToolDetails(getPaymentToolDetails(rs.getString(PAYMENT_TOOL_DETAILS_TYPE), rs.getString(PAYMENT_CARD_NUMBER_MASK), rs.getString(PAYMENT_SYSTEM), rs.getString(PAYMENT_TERMINAL_PROVIDER)));
+                    payment.setPayer(payer);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unknown payerType "+payerType+"; must be one of these: "+Arrays.toString(Payer.PayerTypeEnum.values()));
+            }
+            payment.getPayer().setPayerType(payerType);
         }
         return message;
     };
@@ -186,13 +244,16 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 "invoice_id, shop_id, invoice_created_at, invoice_status, invoice_reason, invoice_due_date, invoice_amount, " +
                 "invoice_currency, invoice_content_type, invoice_content_data, invoice_product, invoice_description, " +
                 "payment_id, payment_created_at, payment_status, payment_error_code, payment_error_message, payment_amount, " +
-                "payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint) " +
+                "payment_currency, payment_tool_token, payment_session, payment_email, payment_phone, payment_ip, payment_fingerprint, " +
+                "payment_customer_id, payment_payer_type, payment_tool_details_type, payment_card_number_mask, payment_system, payment_terminal_provider) " +
                 "VALUES " +
                 "(:event_id, :event_time, :type, :party_id, CAST(:event_type as hook.eventtype), " +
                 ":invoice_id, :shop_id, :invoice_created_at, :invoice_status, :invoice_reason, :invoice_due_date, :invoice_amount, " +
                 ":invoice_currency, :invoice_content_type, :invoice_content_data, :invoice_product, :invoice_description, " +
                 ":payment_id, :payment_created_at, :payment_status, :payment_error_code, :payment_error_message, :payment_amount, " +
-                ":payment_currency, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint) " +
+                ":payment_currency, :payment_tool_token, :payment_session, :payment_email, :payment_phone, :payment_ip, :payment_fingerprint, " +
+                ":payment_customer_id, CAST(:payment_payer_type as hook.payment_payer_type), CAST(:payment_tool_details_type as hook.payment_tool_details_type), " +
+                ":payment_card_number_mask, :payment_system, :payment_terminal_provider) " +
                 "RETURNING id";
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue(EVENT_ID, message.getEventId())
@@ -200,7 +261,6 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 .addValue(TYPE, message.getType())
                 .addValue(PARTY_ID, message.getPartyId())
                 .addValue(EVENT_TYPE, message.getEventType().toString())
-                .addValue(SHOP_ID, message.getInvoice().getShopID())
                 .addValue(INVOICE_ID, message.getInvoice().getId())
                 .addValue(SHOP_ID, message.getInvoice().getShopID())
                 .addValue(INVOICE_CREATED_AT, message.getInvoice().getCreatedAt())
@@ -212,20 +272,47 @@ public class MessageDaoImpl extends NamedParameterJdbcDaoSupport implements Mess
                 .addValue(INVOICE_CONTENT_TYPE, message.getInvoice().getMetadata().getType())
                 .addValue(INVOICE_CONTENT_DATA, message.getInvoice().getMetadata().getData())
                 .addValue(INVOICE_PRODUCT, message.getInvoice().getProduct())
-                .addValue(INVOICE_DESCRIPTION, message.getInvoice().getDescription())
-                .addValue(PAYMENT_ID, message.isPayment() ? message.getPayment().getId() : null)
-                .addValue(PAYMENT_CREATED_AT, message.isPayment() ? message.getPayment().getCreatedAt() : null)
-                .addValue(PAYMENT_STATUS, message.isPayment() ? message.getPayment().getStatus() : null)
-                .addValue(PAYMENT_ERROR_CODE, message.isPayment() && message.getPayment().getError() != null ? message.getPayment().getError().getCode() : null)
-                .addValue(PAYMENT_ERROR_MESSAGE, message.isPayment() && message.getPayment().getError() != null ? message.getPayment().getError().getMessage() : null)
-                .addValue(PAYMENT_AMOUNT, message.isPayment() ? message.getPayment().getAmount() : null)
-                .addValue(PAYMENT_CURRENCY, message.isPayment() ? message.getPayment().getCurrency() : null)
-                .addValue(PAYMENT_TOOL_TOKEN, message.isPayment() ? message.getPayment().getPaymentToolToken() : null)
-                .addValue(PAYMENT_SESSION, message.isPayment() ? message.getPayment().getPaymentSession() : null)
-                .addValue(PAYMENT_EMAIL, message.isPayment() ? message.getPayment().getContactInfo().getEmail() : null)
-                .addValue(PAYMENT_PHONE, message.isPayment() ? message.getPayment().getContactInfo().getPhoneNumber() : null)
-                .addValue(PAYMENT_IP, message.isPayment() ? message.getPayment().getIp() : null)
-                .addValue(PAYMENT_FINGERPRINT, message.isPayment() ? message.getPayment().getFingerprint() : null);
+                .addValue(INVOICE_DESCRIPTION, message.getInvoice().getDescription());
+        //TODO
+        setNullPaymentParamValues(params);
+        if (message.isPayment()) {
+            Payment payment = message.getPayment();
+            params.addValue(PAYMENT_ID, payment.getId())
+                    .addValue(PAYMENT_CREATED_AT,  payment.getCreatedAt())
+                    .addValue(PAYMENT_STATUS, payment.getStatus())
+                    .addValue(PAYMENT_ERROR_CODE, payment.getError() != null ? payment.getError().getCode() : null)
+                    .addValue(PAYMENT_ERROR_MESSAGE, payment.getError() != null ? payment.getError().getMessage() : null)
+                    .addValue(PAYMENT_AMOUNT, payment.getAmount())
+                    .addValue(PAYMENT_CURRENCY, payment.getCurrency())
+                    .addValue(PAYMENT_TOOL_TOKEN, payment.getPaymentToolToken())
+                    .addValue(PAYMENT_SESSION, payment.getPaymentSession())
+                    .addValue(PAYMENT_EMAIL, payment.getContactInfo().getEmail())
+                    .addValue(PAYMENT_PHONE, payment.getContactInfo().getPhoneNumber())
+                    .addValue(PAYMENT_IP, payment.getIp())
+                    .addValue(PAYMENT_FINGERPRINT, payment.getFingerprint());
+
+            Payer.PayerTypeEnum payerType = payment.getPayer().getPayerType();
+            params.addValue(PAYMENT_PAYER_TYPE, payerType.getValue());
+            switch (payerType) {
+                case CUSTOMERPAYER:
+                    params.addValue(PAYMENT_CUSTOMER_ID, ((CustomerPayer)payment.getPayer()).getCustomerID());
+                    break;
+                case PAYMENTRESOURCEPAYER:
+                    PaymentResourcePayer payer = (PaymentResourcePayer) payment.getPayer();
+                    params.addValue(PAYMENT_TOOL_TOKEN, payer.getPaymentToolToken())
+                            .addValue(PAYMENT_SESSION, payer.getPaymentSession())
+                            .addValue(PAYMENT_EMAIL, payer.getContactInfo().getEmail())
+                            .addValue(PAYMENT_PHONE,payer.getContactInfo().getPhoneNumber())
+                            .addValue(PAYMENT_IP, payer.getClientInfo().getIp())
+                            .addValue(PAYMENT_FINGERPRINT, payer.getClientInfo().getFingerprint());
+
+                    PaymentToolUtils.setPaymentToolDetailsParam(params, payer.getPaymentToolDetails(),
+                            PAYMENT_TOOL_DETAILS_TYPE, PAYMENT_CARD_NUMBER_MASK, PAYMENT_SYSTEM, PAYMENT_TERMINAL_PROVIDER);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unknown payerType "+payerType+"; must be one of these: "+Arrays.toString(Payer.PayerTypeEnum.values()));
+            }
+        }
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             getNamedParameterJdbcTemplate().update(sql, params, keyHolder);
