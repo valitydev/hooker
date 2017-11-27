@@ -14,25 +14,25 @@ import org.junit.Test;
 public class MessageJsonTest {
     @Test
     public void test() throws JsonProcessingException {
-        Message message = BuildUtils.message(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled");
-        System.out.println(MessageJson.buildMessageJson(message));
-        Message copy = message.copy();
+        InvoicingMessage message = BuildUtils.buildMessage(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled");
+        System.out.println(InvoicingMessageJson.buildMessageJson(message));
+        InvoicingMessage copy = message.copy();
         message.getInvoice().setAmount(99988);
         Assert.assertNotEquals(message.getInvoice().getAmount(), copy.getInvoice().getAmount());
     }
 
     @Test
     public void testCart() throws JsonProcessingException {
-        Message message = BuildUtils.message(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), true);
-        String messageJson = MessageJson.buildMessageJson(message);
+        InvoicingMessage message = BuildUtils.buildMessage(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), true);
+        String messageJson = InvoicingMessageJson.buildMessageJson(message);
         System.out.println(messageJson);
         Assert.assertTrue(messageJson.contains("taxMode"));
     }
 
     @Test
     public void testInvoiceCustomer() throws JsonProcessingException {
-        Message message = BuildUtils.message(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), false);
-        String messageJson = MessageJson.buildMessageJson(message);
+        InvoicingMessage message = BuildUtils.buildMessage(AbstractInvoiceEventHandler.PAYMENT, "444", "987", EventType.INVOICE_PAYMENT_STARTED, "cancelled", BuildUtils.cart(), false);
+        String messageJson = InvoicingMessageJson.buildMessageJson(message);
         System.out.println(messageJson);
         Assert.assertTrue(messageJson.contains("CustomerPayer"));
     }

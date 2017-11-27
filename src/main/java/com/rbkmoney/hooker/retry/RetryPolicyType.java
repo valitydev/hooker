@@ -21,7 +21,8 @@ public enum RetryPolicyType {
         @Override
         public RetryPolicyRecord build(ResultSet rs) throws SQLException{
             SimpleRetryPolicyRecord record = new SimpleRetryPolicyRecord();
-            record.setHookId(rs.getLong("hook_id"));
+            record.setQueueId(rs.getLong("id"));
+            record.setMessageType(rs.getString("message_type"));
             record.setFailCount(rs.getInt("fail_count"));
             record.setLastFailTime(rs.getLong("last_fail_time"));
             return record;

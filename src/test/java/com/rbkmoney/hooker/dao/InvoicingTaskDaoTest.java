@@ -1,9 +1,11 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
+import com.rbkmoney.hooker.dao.impl.InvoicingQueueDao;
 import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
+import com.rbkmoney.hooker.model.Task;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -12,6 +14,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
 import static org.junit.Assert.assertEquals;
@@ -27,10 +33,13 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     InvoicingTaskDao taskDao;
 
     @Autowired
+    InvoicingQueueDao queueDao;
+
+    @Autowired
     HookDao hookDao;
 
     @Autowired
-    MessageDao messageDao;
+    InvoicingMessageDao messageDao;
 
     Long messageId;
     Long hookId;
@@ -38,7 +47,7 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         hookId = hookDao.create(HookDaoImplTest.buildHook("partyId", "fake.url")).getId();
-        messageDao.create(BuildUtils.message(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true));
+        messageDao.create(BuildUtils.buildMessage(AbstractInvoiceEventHandler.INVOICE,"2345", "partyId", EventType.INVOICE_CREATED, "status", cart(), true));
         messageId = messageDao.getAny("2345", AbstractInvoiceEventHandler.INVOICE).getId();
     }
 
@@ -49,16 +58,15 @@ public class InvoicingTaskDaoTest extends AbstractIntegrationTest {
 
     @Test
     public void createDeleteGet() {
-        assertEquals(1, taskDao.getAll().size());
-        taskDao.remove(hookId, messageId);
-        assertEquals(0, taskDao.getAll().size());
+        Map<Long, List<Task>> scheduled = taskDao.getScheduled(new ArrayList<>());
+        assertEquals(1, scheduled.size());
+        taskDao.remove(scheduled.keySet().iterator().next(), messageId);
+        assertEquals(0, taskDao.getScheduled(new ArrayList<>()).size());
 
     }
 
     @Test
     public void removeAll() {
-        assertEquals(1, taskDao.getAll().size());
         taskDao.removeAll(hookId);
-        assertEquals(0, taskDao.getAll().size());
     }
 }

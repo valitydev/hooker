@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.HookDao;
-import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.handler.poller.impl.customer.AbstractCustomerEventHandler;
 import com.rbkmoney.hooker.model.CustomerMessage;
@@ -12,6 +11,7 @@ import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.utils.BuildUtils;
 import com.rbkmoney.swag_webhook_events.Customer;
+import com.rbkmoney.swag_webhook_events.Event;
 import com.rbkmoney.swag_webhook_events.PaymentToolDetailsBankCard;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by jeckep on 20.04.17.
  */
-@TestPropertySource(properties = {"message.scheduler.delay=100"})
+@TestPropertySource(properties = {"message.scheduler.delay=500"})
 public class CustomerDataflowTest extends AbstractIntegrationTest {
     private static Logger log = LoggerFactory.getLogger(CustomerDataflowTest.class);
 
@@ -51,19 +51,14 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
     @Autowired
     CustomerDao customerDao;
 
-    @Autowired
-    SimpleRetryPolicyDao simpleRetryPolicyDao;
-
-    BlockingQueue<MockMessage> hook1Queue = new LinkedBlockingDeque<>(10);
-    BlockingQueue<MockMessage> hook2Queue = new LinkedBlockingDeque<>(10);
-    BlockingQueue<MockMessage> hook3Queue = new LinkedBlockingDeque<>(10);
-    BlockingQueue<MockMessage> hookBrokenQueue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<MockMessage> cust1Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<MockMessage> cust2Queue = new LinkedBlockingDeque<>(10);
+    BlockingQueue<MockMessage> cust3Queue = new LinkedBlockingDeque<>(10);
 
     final List<Hook> hooks = new ArrayList<>();
     final String HOOK_1 = "/hook1";
     final String HOOK_2 = "/hook2";
     final String HOOK_3 = "/hook3";
-    final String BROKEN_HOOK = "/brokenhook";
 
     String baseServerUrl;
 
@@ -71,7 +66,7 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         //start mock web server
-        //create hooks
+        //createWithPolicy hooks
         if (baseServerUrl == null) {
             baseServerUrl = webserver(dispatcher());
             log.info("Mock server url: " + baseServerUrl);
@@ -86,39 +81,55 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
     @Test
     public void testMessageSend() throws InterruptedException {
         List<CustomerMessage> sourceMessages = new ArrayList<>();
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(1L, "partyId1",  EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "1234", "2342", Customer.StatusEnum.READY)));
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(2L, "partyId1",  EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "1234", "2342", Customer.StatusEnum.READY)));
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(3L, "partyId2",  EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "666", "2342", Customer.StatusEnum.READY)));
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(4L, "partyId2",  EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "6666", "2342", Customer.StatusEnum.READY)));
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(5L, "partyId2",  EventType.CUSTOMER_BINDING_STARTED, AbstractCustomerEventHandler.BINDING, "6666", "2342", Customer.StatusEnum.READY)));
-        sourceMessages.add(customerDao.create(BuildUtils.buildCustomerMessage(6L, "partyId2",  EventType.CUSTOMER_BINDING_SUCCEEDED, AbstractCustomerEventHandler.BINDING, "4444", "2342", Customer.StatusEnum.READY)));
+        CustomerMessage message = BuildUtils.buildCustomerMessage(1L, "partyId1", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "1", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
+        message = BuildUtils.buildCustomerMessage(2L, "partyId1", EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "1", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
+        message = BuildUtils.buildCustomerMessage(3L, "partyId2", EventType.CUSTOMER_CREATED, AbstractCustomerEventHandler.CUSTOMER, "2", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
+        message = BuildUtils.buildCustomerMessage(4L, "partyId2", EventType.CUSTOMER_READY, AbstractCustomerEventHandler.CUSTOMER, "2", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
+        message = BuildUtils.buildCustomerMessage(5L, "partyId2", EventType.CUSTOMER_BINDING_STARTED, AbstractCustomerEventHandler.BINDING, "2", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
+        message = BuildUtils.buildCustomerMessage(6L, "partyId2", EventType.CUSTOMER_BINDING_SUCCEEDED, AbstractCustomerEventHandler.BINDING, "3", "2342", Customer.StatusEnum.READY);
+        customerDao.create(message);
+        sourceMessages.add(message);
 
-        List<MockMessage> hook1 = new ArrayList<>();
-        List<MockMessage> hook2 = new ArrayList<>();
-        List<MockMessage> hook3 = new ArrayList<>();
+        List<MockMessage> cust1 = new ArrayList<>();
+        List<MockMessage> cust2 = new ArrayList<>();
+        List<MockMessage> cust3 = new ArrayList<>();
 
-        for (int i = 0; i < 1; i++) {
-            hook1.add(hook1Queue.poll(1, TimeUnit.SECONDS));
+        for (int i = 0; i < 3; i++) {
+            cust1.add(cust1Queue.poll(1, TimeUnit.SECONDS));
         }
-        Assert.assertNotNull(hook1.get(0));
-        assertEquals(sourceMessages.get(0).getEventId(), hook1.get(0).getEventID());
-
-        for (int i = 0; i < 2; i++) {
-            hook2.add(hook2Queue.poll(1, TimeUnit.SECONDS));
-        }
-        Assert.assertEquals(hook2.size(), 2);
-        assertEquals(sourceMessages.get(0).getEventId(), hook2.get(0).getEventID());
-        assertEquals(sourceMessages.get(1).getEventId(), hook2.get(1).getEventID());
-
-        for (int i = 0; i < 4; i++) {
-            hook3.add(hook3Queue.poll(1, TimeUnit.SECONDS));
+        for (int i = 0; i < 3; i++) {
+            Assert.assertNotNull(cust1.get(i));
         }
 
-        assertEquals(hook3.size(), 4);
 
-        assertTrue(hook1Queue.isEmpty());
-        assertTrue(hook2Queue.isEmpty());
-        assertTrue(hook3Queue.isEmpty());
+        for (int i = 0; i < 3; i++) {
+            cust2.add(cust2Queue.poll(1, TimeUnit.SECONDS));
+        }
+        for (int i = 0; i < 3; i++) {
+            Assert.assertNotNull(cust2.get(i));
+        }
+        assertEquals(sourceMessages.get(2).getEventId(), cust2.get(0).getEventID());
+        assertEquals(sourceMessages.get(3).getEventId(), cust2.get(1).getEventID());
+        assertEquals(sourceMessages.get(4).getEventId(), cust2.get(2).getEventID());
+
+
+        cust3.add(cust3Queue.poll(1, TimeUnit.SECONDS));
+        Assert.assertNotNull(cust3.get(0));
+        assertEquals(sourceMessages.get(5).getEventId(), cust3.get(0).getEventID());
+
+        assertTrue(cust1Queue.isEmpty());
+        assertTrue(cust2Queue.isEmpty());
+        assertTrue(cust3Queue.isEmpty());
 
         Thread.currentThread().sleep(1000);
 
@@ -127,6 +138,7 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
     private static Hook hook(String partyId, String url, EventType... types) {
         Hook hook = new Hook();
         hook.setPartyId(partyId);
+        hook.setTopic(Event.TopicEnum.CUSTOMERSTOPIC.getValue());
         hook.setUrl(url);
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
@@ -143,28 +155,25 @@ public class CustomerDataflowTest extends AbstractIntegrationTest {
 
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
-                if (request.getPath().startsWith(HOOK_1)) {
-                    hook1Queue.put(extract(request));
-                    Thread.sleep(100);
-                    return new MockResponse().setBody(HOOK_1).setResponseCode(200);
-                }
-                if (request.getPath().startsWith(HOOK_2)) {
-                    hook2Queue.put(extract(request));
-                    Thread.sleep(100);
-                    return new MockResponse().setBody(HOOK_2).setResponseCode(200);
-                }
-                if (request.getPath().startsWith(HOOK_3)) {
-                    hook3Queue.put(extract(request));
-                    Thread.sleep(100);
-                    return new MockResponse().setBody(HOOK_3).setResponseCode(200);
-                }
-                if (request.getPath().startsWith(BROKEN_HOOK)) {
-                    hookBrokenQueue.put(extract(request));
-                    Thread.sleep(100);
-                    return new MockResponse().setBody(BROKEN_HOOK).setResponseCode(500);
+                MockMessage mockMessage = extract(request);
+                String customerId = mockMessage.getCustomer().getId();
+                switch (customerId) {
+                    case "1":
+                        cust1Queue.put(mockMessage);
+                        break;
+                    case "2":
+                        cust2Queue.put(mockMessage);
+                        break;
+                    case "3":
+                        cust3Queue.put(mockMessage);
+                        break;
+                    default:
+                        Thread.sleep(100);
+                        return new MockResponse().setResponseCode(500);
                 }
 
-                return new MockResponse().setResponseCode(500);
+                Thread.sleep(100);
+                return new MockResponse().setBody(HOOK_1).setResponseCode(200);
             }
         };
         return dispatcher;

@@ -2,7 +2,7 @@ package com.rbkmoney.hooker.configuration;
 
 import com.rbkmoney.hooker.dao.CustomerDao;
 import com.rbkmoney.hooker.dao.HookDao;
-import com.rbkmoney.hooker.dao.MessageDao;
+import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.dao.SimpleRetryPolicyDao;
 import com.rbkmoney.hooker.dao.impl.*;
 import org.jooq.Schema;
@@ -25,8 +25,8 @@ public class DaoConfiguration {
 
     @Bean
     @DependsOn("dbInitializer")
-    public MessageDao messageDao(DataSource dataSource) {
-        return new MessageDaoImpl(dataSource);
+    public InvoicingMessageDao messageDao(DataSource dataSource) {
+        return new InvoicingMessageDaoImpl(dataSource);
     }
 
     @Bean
@@ -51,6 +51,18 @@ public class DaoConfiguration {
     @DependsOn("dbInitializer")
     public SimpleRetryPolicyDao simpleRetryPolicyDao(DataSource dataSource) {
         return new SimpleRetryPolicyDaoImpl(dataSource);
+    }
+
+    @Bean
+    @DependsOn("dbInitializer")
+    public InvoicingQueueDao invoicingQueueDao(DataSource dataSource) {
+        return new InvoicingQueueDao(dataSource);
+    }
+
+    @Bean
+    @DependsOn("dbInitializer")
+    public CustomerQueueDao customerQueueDao(DataSource dataSource) {
+        return new CustomerQueueDao(dataSource);
     }
 
     @Bean

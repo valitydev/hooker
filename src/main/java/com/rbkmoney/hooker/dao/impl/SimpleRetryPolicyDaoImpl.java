@@ -23,17 +23,18 @@ public class SimpleRetryPolicyDaoImpl extends NamedParameterJdbcDaoSupport imple
     }
 
     @Override
-    public void update(SimpleRetryPolicyRecord record) {
+    public void update(SimpleRetryPolicyRecord record) throws DaoException {
         final String sql = "update hook.simple_retry_policy " +
                 " set last_fail_time = :last_fail_time, fail_count = :fail_count" +
-                " where hook_id = :hook_id";
+                " where queue_id = :queue_id and message_type=CAST(:message_type as hook.message_topic)";
         try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", record.getHookId())
+            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("queue_id", record.getQueueId())
+                    .addValue("message_type", record.getMessageType())
                     .addValue("last_fail_time", record.getLastFailTime())
                     .addValue("fail_count", record.getFailCount()));
-            log.info("Record in table hook_id = "+record.getHookId()+" 'simple_retry_policy' updated.");
+            log.info("Record in table 'simple_retry_policy' with id {} updated.", record.getQueueId());
         } catch (NestedRuntimeException e) {
-            log.error("Fail to update simple_retry_policy for hook: " + record.getHookId(), e);
+            log.warn("Fail to update simple_retry_policy for record {} ", record.getQueueId(), e);
             throw new DaoException(e);
         }
     }

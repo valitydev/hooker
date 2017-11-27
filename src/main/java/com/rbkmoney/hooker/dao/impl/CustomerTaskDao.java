@@ -27,22 +27,24 @@ public class CustomerTaskDao extends AbstractTaskDao {
     }
 
     @Override
-    public void create(long messageId) {
+    public void create(long messageId) throws DaoException {
         final String sql =
-                " insert into hook.scheduled_task(message_id, hook_id, message_type)" +
-                        " select m.id, w.id, '" + getMessageTopic() + "'" +
+                " insert into hook.scheduled_task(message_id, queue_id, message_type)" +
+                        " select m.id, q.id, w.topic" +
                         " from hook.customer_message m" +
-                        " join hook.webhook w on m.party_id = w.party_id and w.enabled" +
+                        " join hook.webhook w on m.party_id = w.party_id and w.enabled and w.topic=CAST(:message_type as hook.message_topic)" +
                         " join hook.webhook_to_events wte on wte.hook_id = w.id" +
-                        " where m.id = :id " +
+                        " join hook.customer_queue q on q.hook_id=w.id and q.enabled and q.customer_id=m.customer_id" +
+                        " where m.id = :message_id " +
                         " and m.event_type = wte.event_type " +
                         " and (m.customer_shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
-                        " ON CONFLICT (message_id, hook_id) DO NOTHING";
+                        " ON CONFLICT (message_id, queue_id, message_type) DO NOTHING";
         try {
-            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("id", messageId));
-            log.debug("Created tasks count : " + updateCount);
+            int updateCount = getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("message_id", messageId)
+                    .addValue("message_type", getMessageTopic()));
+            log.info("Created tasks count={} for messageId={}", updateCount, messageId);
         } catch (NestedRuntimeException e) {
-            log.error("Fail to create tasks for messages messages.", e);
+            log.error("Fail to create tasks for messages.", e);
             throw new DaoException(e);
         }
     }

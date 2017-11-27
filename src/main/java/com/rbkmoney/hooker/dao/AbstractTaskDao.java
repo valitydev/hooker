@@ -25,88 +25,73 @@ public abstract class AbstractTaskDao extends NamedParameterJdbcDaoSupport imple
     }
 
     public static RowMapper<Task> taskRowMapper = (rs, i) ->
-            new Task(rs.getLong("hook_id"), rs.getLong("message_id"));
+            new Task(rs.getLong("message_id"), rs.getLong("queue_id"));
 
     protected abstract String getMessageTopic();
 
     @Override
-    public void remove(long hookId, long messageId) {
-        final String sql = "DELETE FROM hook.scheduled_task where hook_id=:hook_id and message_id=:message_id and message_type=CAST(:message_type as hook.message_topic)";
+    public void remove(long queueId, long messageId) throws DaoException {
+        final String sql = "DELETE FROM hook.scheduled_task where queue_id=:queue_id and message_id=:message_id and message_type=CAST(:message_type as hook.message_topic)";
         try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", hookId)
+            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("queue_id", queueId)
                     .addValue("message_id", messageId)
                     .addValue("message_type", getMessageTopic()));
-            log.debug("Task with hook_id = " + hookId + " messageId = " + messageId + " removed from hook.scheduled_task");
+            log.debug("Task with queueId {} messageId  {} removed from hook.scheduled_task", queueId, messageId);
         } catch (NestedRuntimeException e) {
-            log.error("Fail to delete task by hook_id and message_id", e);
+            log.warn("Fail to delete task by queue_id {} and message_id {}", queueId, messageId, e);
             throw new DaoException(e);
         }
     }
 
     @Override
-    public void removeAll(long hookId) {
-        final String sql = "DELETE FROM hook.scheduled_task where hook_id=:hook_id and message_type=CAST(:message_type as hook.message_topic)";
+    public void removeAll(long queueId) throws DaoException {
+        final String sql = "DELETE FROM hook.scheduled_task where queue_id=:queue_id and message_type=CAST(:message_type as hook.message_topic)";
         try {
-            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("hook_id", hookId).addValue("message_type", getMessageTopic()));
+            getNamedParameterJdbcTemplate().update(sql, new MapSqlParameterSource("queue_id", queueId).addValue("message_type", getMessageTopic()));
         } catch (NestedRuntimeException e) {
-            log.error("Fail to delete tasks for hook:" + hookId, e);
+            log.warn("Fail to delete tasks for hook:" + queueId, e);
             throw new DaoException(e);
         }
     }
 
     @Override
-    public List<Task> getAll() {
-        final String sql = "SELECT * FROM hook.scheduled_task WHERE message_type=CAST(:message_type as hook.message_topic)";
-        try {
-            List<Task> tasks = getNamedParameterJdbcTemplate().query(sql, new MapSqlParameterSource("message_type", getMessageTopic()), taskRowMapper);
-            log.debug("Tasks count: " + tasks.size());
-            return tasks;
-        } catch (NestedRuntimeException e) {
-            log.error("Fail to get all tasks from scheduled_task", e);
-            throw new DaoException(e);
-        }
-    }
-
-    @Override
-    // should return ordered BY hook_id, message_id
-    public Map<Long, List<Task>> getScheduled(Collection<Long> excludeHooksIds) {
+    // TODO think about limit
+    public Map<Long, List<Task>> getScheduled(Collection<Long> excludeQueueIds) throws DaoException {
         final String sql =
-                " SELECT DISTINCT * " +
-                        " FROM hook.scheduled_task st WHERE message_type=CAST(:message_type as hook.message_topic)" +
-                        (excludeHooksIds.size() > 0 ? " AND st.hook_id not in (:hook_ids)" : "") +
-                        " ORDER BY hook_id ASC , message_id ASC";
+                " SELECT st.message_id, st.queue_id FROM hook.scheduled_task st WHERE message_type=CAST(:message_type as hook.message_topic)" +
+                        (excludeQueueIds.size() > 0 ? " AND st.queue_id not in (:queue_ids)" : "") +
+                        " ORDER BY queue_id ASC, message_id ASC LIMIT 10000";
         try {
             List<Task> tasks = getNamedParameterJdbcTemplate().query(
-                    sql,
-                    new MapSqlParameterSource("enabled", true)
-                            .addValue("hook_ids", excludeHooksIds)
+                    sql, new MapSqlParameterSource()
+                            .addValue("queue_ids", excludeQueueIds)
                             .addValue("message_type", getMessageTopic())
                     , taskRowMapper);
-            Map<Long, List<Task>> longListMap = splitByHooks(tasks);
+            Map<Long, List<Task>> longListMap = splitByQueue(tasks);
             return longListMap;
         } catch (NestedRuntimeException e) {
-            log.error("Fail to get active tasks from scheduled_task", e);
+            log.warn("Fail to get active tasks from scheduled_task", e);
             throw new DaoException(e);
         }
     }
 
     //should preserve order
-    private Map<Long, List<Task>> splitByHooks(List<Task> orderedByHookIdMessageIdTasks) {
+    private Map<Long, List<Task>> splitByQueue(List<Task> orderedByQueueIdMessageIdTasks) {
         final Map<Long, List<Task>> map = new HashMap<>();
-        if (orderedByHookIdMessageIdTasks.size() == 0) {
+        if (orderedByQueueIdMessageIdTasks.size() == 0) {
             return map;
         }
         int start = 0;
-        long previousHookId = orderedByHookIdMessageIdTasks.get(0).getHookId();
-        for (int i = 0; i < orderedByHookIdMessageIdTasks.size(); i++) {
-            long currentHookId = orderedByHookIdMessageIdTasks.get(i).getHookId();
-            if (previousHookId != currentHookId) {
-                map.put(previousHookId, orderedByHookIdMessageIdTasks.subList(start, i));
+        long previousQueueId = orderedByQueueIdMessageIdTasks.get(0).getQueueId();
+        for (int i = 0; i < orderedByQueueIdMessageIdTasks.size(); i++) {
+            long currentQueueId = orderedByQueueIdMessageIdTasks.get(i).getQueueId();
+            if (previousQueueId != currentQueueId) {
+                map.put(previousQueueId, orderedByQueueIdMessageIdTasks.subList(start, i));
                 start = i;
-                previousHookId = currentHookId;
+                previousQueueId = currentQueueId;
             }
         }
-        map.put(previousHookId, orderedByHookIdMessageIdTasks.subList(start, orderedByHookIdMessageIdTasks.size()));
+        map.put(previousQueueId, orderedByQueueIdMessageIdTasks.subList(start, orderedByQueueIdMessageIdTasks.size()));
 
         return map;
     }

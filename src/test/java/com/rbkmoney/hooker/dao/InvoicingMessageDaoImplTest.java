@@ -3,7 +3,7 @@ package com.rbkmoney.hooker.dao;
 import com.rbkmoney.hooker.AbstractIntegrationTest;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.swag_webhook_events.CustomerPayer;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,8 +16,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 
+import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
-import static com.rbkmoney.hooker.utils.BuildUtils.message;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -26,20 +26,20 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class MessageDaoImplTest extends AbstractIntegrationTest {
-    private static Logger log = LoggerFactory.getLogger(MessageDaoImplTest.class);
+public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
+    private static Logger log = LoggerFactory.getLogger(InvoicingMessageDaoImplTest.class);
 
     @Autowired
-    MessageDao messageDao;
+    InvoicingMessageDao messageDao;
 
     private static boolean messagesCreated = false;
 
     @Before
     public void setUp() throws Exception {
         if(!messagesCreated){
-            messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status"));
-            messageDao.create(message(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), true));
-            messageDao.create(message(AbstractInvoiceEventHandler.PAYMENT,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), false));
+            messageDao.create(buildMessage(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status"));
+            messageDao.create(buildMessage(AbstractInvoiceEventHandler.INVOICE,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), true));
+            messageDao.create(buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), false));
             messagesCreated = true;
         }
     }
@@ -63,13 +63,13 @@ public class MessageDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void get() throws Exception {
-        Message message = messageDao.getAny("1234", AbstractInvoiceEventHandler.INVOICE);
+        InvoicingMessage message = messageDao.getAny("1234", AbstractInvoiceEventHandler.INVOICE);
         assertEquals(message.getInvoice().getAmount(), 12235);
         assertEquals(message.getInvoice().getCart().size(), 2);
 
         assertEquals(1, messageDao.getBy(Arrays.asList(message.getId())).size());
 
-        Message payment = messageDao.getAny("1234", AbstractInvoiceEventHandler.PAYMENT);
+        InvoicingMessage payment = messageDao.getAny("1234", AbstractInvoiceEventHandler.PAYMENT);
         assertTrue(payment.getPayment().getPayer() instanceof CustomerPayer);
     }
 

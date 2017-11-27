@@ -3,9 +3,9 @@ package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.hooker.dao.DaoException;
-import com.rbkmoney.hooker.dao.MessageDao;
+import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.hooker.model.Message;
+import com.rbkmoney.hooker.model.InvoicingMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -13,15 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHandler{
     @Autowired
-    MessageDao messageDao;
+    InvoicingMessageDao messageDao;
 
     @Override
     protected void saveEvent(InvoiceChange ic, Event event) throws DaoException {
         final String invoiceId = event.getSource().getInvoiceId();
         //getAny any saved message for related invoice
-        Message message = getMessage(invoiceId);
+        InvoicingMessage message = getMessage(invoiceId);
         if (message == null) {
-            throw new DaoException("Message for invoice with id " + invoiceId + " not exist");
+            throw new DaoException("InvoicingMessage for invoice with id " + invoiceId + " not exist");
         }
         message.setEventType(getEventType());
         message.setType(getMessageType());
@@ -33,7 +33,7 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
         //TODO getAny message id and write to logs
     }
 
-    protected Message getMessage(String invoiceId) {
+    protected InvoicingMessage getMessage(String invoiceId) {
         return messageDao.getAny(invoiceId, getMessageType());
     }
 
@@ -41,5 +41,5 @@ public abstract class NeedReadInvoiceEventHandler extends AbstractInvoiceEventHa
 
     protected abstract EventType getEventType();
 
-    protected abstract void modifyMessage(InvoiceChange ic, Event event, Message message);
+    protected abstract void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message);
 }

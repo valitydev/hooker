@@ -1,7 +1,6 @@
 package com.rbkmoney.hooker.model;
 
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.retry.RetryPolicyRecord;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
 
 import java.util.Set;
@@ -13,24 +12,24 @@ import java.util.Set;
 public class Hook {
     private long id;
     private String partyId;
+    private String topic;
     private Set<WebhookAdditionalFilter> filters;
     private String url;
     private String pubKey;
     private String privKey;
     private boolean enabled;
     private RetryPolicyType retryPolicyType;
-    private RetryPolicyRecord retryPolicyRecord;
 
-    public Hook(long id, String partyId, Set<WebhookAdditionalFilter> filters, String url, String pubKey, String privKey, boolean enabled, RetryPolicyType retryPolicyType, RetryPolicyRecord retryPolicyRecord) {
+    public Hook(long id, String partyId, String topic, Set<WebhookAdditionalFilter> filters, String url, String pubKey, String privKey, boolean enabled, RetryPolicyType retryPolicyType) {
         this.id = id;
         this.partyId = partyId;
+        this.topic = topic;
         this.filters = filters;
         this.url = url;
         this.pubKey = pubKey;
         this.privKey = privKey;
         this.enabled = enabled;
         this.retryPolicyType = retryPolicyType;
-        this.retryPolicyRecord = retryPolicyRecord;
     }
 
     public Hook() {
@@ -50,6 +49,14 @@ public class Hook {
 
     public void setPartyId(String partyId) {
         this.partyId = partyId;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     public Set<WebhookAdditionalFilter> getFilters() {
@@ -100,18 +107,11 @@ public class Hook {
         this.retryPolicyType = retryPolicyType;
     }
 
-    public RetryPolicyRecord getRetryPolicyRecord() {
-        return retryPolicyRecord;
-    }
-
-    public void setRetryPolicyRecord(RetryPolicyRecord retryPolicyRecord) {
-        this.retryPolicyRecord = retryPolicyRecord;
-    }
-
     @Override
     public String toString() {
         return "Hook{" +
                 "id=" + id +
+                ", topic=" + topic +
                 ", partyId='" + partyId + '\'' +
                 ", url='" + url + '\'' +
                 '}';

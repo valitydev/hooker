@@ -9,12 +9,14 @@ import com.rbkmoney.hooker.retry.RetryPolicyType;
 public class SimpleRetryPolicyRecord extends RetryPolicyRecord {
     public static RetryPolicyType type = RetryPolicyType.SIMPLE;
 
-    long hookId;
+    long queueId;
+    String messageType;
     int failCount;
     long lastFailTime;
 
-    public SimpleRetryPolicyRecord(long hookId, int failCount, long lastFailTime) {
-        this.hookId = hookId;
+    public SimpleRetryPolicyRecord(long queueId, String messageType, int failCount, long lastFailTime) {
+        this.queueId = queueId;
+        this.messageType = messageType;
         this.failCount = failCount;
         this.lastFailTime = lastFailTime;
     }
@@ -26,12 +28,20 @@ public class SimpleRetryPolicyRecord extends RetryPolicyRecord {
         SimpleRetryPolicyRecord.type = type;
     }
 
-    public long getHookId() {
-        return hookId;
+    public long getQueueId() {
+        return queueId;
     }
 
-    public void setHookId(long hookId) {
-        this.hookId = hookId;
+    public void setQueueId(long queueId) {
+        this.queueId = queueId;
+    }
+
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
     }
 
     public int getFailCount() {

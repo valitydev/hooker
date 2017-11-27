@@ -1,19 +1,15 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.configuration.CacheConfiguration;
 import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.Hook;
-import com.rbkmoney.hooker.retry.RetryPolicyType;
 import com.rbkmoney.hooker.service.crypt.KeyPair;
 import com.rbkmoney.hooker.service.crypt.Signer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -33,7 +29,7 @@ public class HookDaoImpl implements HookDao {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    CacheManager cacheManager;
+    Signer signer;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -41,22 +37,8 @@ public class HookDaoImpl implements HookDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public static RowMapper<Hook> hookWithPolicyRowMapper = (rs, i) -> {
-        Hook hook = new Hook();
-        hook.setId(rs.getLong("id"));
-        hook.setPartyId(rs.getString("party_id"));
-        hook.setUrl(rs.getString("url"));
-        hook.setPubKey(rs.getString("pub_key"));
-        hook.setPrivKey(rs.getString("priv_key"));
-        hook.setEnabled(rs.getBoolean("enabled"));
-        RetryPolicyType retryPolicyType = RetryPolicyType.valueOf(rs.getString("retry_policy"));
-        hook.setRetryPolicyType(retryPolicyType);
-        hook.setRetryPolicyRecord(retryPolicyType.build(rs));
-        return hook;
-    };
-
     @Override
-    public List<Hook> getPartyHooks(String partyId) {
+    public List<Hook> getPartyHooks(String partyId) throws DaoException {
         log.debug("getPartyHooks request. PartyId = {}", partyId);
         final String sql =
                 " select w.*, k.pub_key, wte.* " +
@@ -78,7 +60,7 @@ public class HookDaoImpl implements HookDao {
             return result;
         } catch (NestedRuntimeException e) {
             String message = "Couldn't getPartyHooks for partyId " + partyId;
-            log.error(message, e);
+            log.warn(message, e);
             throw new DaoException(message);
         }
     }
@@ -93,11 +75,7 @@ public class HookDaoImpl implements HookDao {
         //grouping by hookId
         for (AllHookTablesRow row : allHookTablesRows) {
             final long hookId = row.getId();
-            List<AllHookTablesRow> list = hookIdToRows.get(hookId);
-            if (list == null) {
-                list = new ArrayList<>();
-                hookIdToRows.put(hookId, list);
-            }
+            List<AllHookTablesRow> list = hookIdToRows.computeIfAbsent(hookId, k -> new ArrayList<>());
             list.add(row);
         }
 
@@ -106,6 +84,7 @@ public class HookDaoImpl implements HookDao {
             Hook hook = new Hook();
             hook.setId(hookId);
             hook.setPartyId(rows.get(0).getPartyId());
+            hook.setTopic(rows.get(0).getTopic());
             hook.setUrl(rows.get(0).getUrl());
             hook.setPubKey(rows.get(0).getPubKey());
             hook.setEnabled(rows.get(0).isEnabled());
@@ -117,7 +96,7 @@ public class HookDaoImpl implements HookDao {
     }
 
     @Override
-    public Hook getHookById(long id) {
+    public Hook getHookById(long id) throws DaoException {
         final String sql = "select w.*, k.pub_key, wte.* " +
                 "from hook.webhook w " +
                 "join hook.party_key k " +
@@ -137,51 +116,25 @@ public class HookDaoImpl implements HookDao {
             }
             return result.get(0);
         } catch (NestedRuntimeException e) {
-            log.error("Fail to get hook: " + id, e);
+            log.warn("Fail to get hook {}", id, e);
             throw new DaoException(e);
         }
-    }
-
-    public List<Hook> getWithPolicies(Collection<Long> ids) {
-        List<Hook> hooks = getFromCache(ids);
-        if (hooks.size() == ids.size()) {
-            return hooks;
-        }
-        Set<Long> hookIds = new HashSet<>(ids);
-        hooks.forEach(h -> hookIds.remove(h.getId()));
-
-        final String sql =
-                " select w.*, k.*, srp.*" +
-                        " from hook.webhook w " +
-                        " join hook.party_key k on k.party_id = w.party_id " +
-                        " left join hook.simple_retry_policy srp on srp.hook_id = w.id" +
-                        " where w.id in (:ids)";
-        final MapSqlParameterSource params = new MapSqlParameterSource("ids", hookIds);
-
-        try {
-            List<Hook> hooksFromDb = jdbcTemplate.query(sql, params, hookWithPolicyRowMapper);
-            putToCache(hooksFromDb);
-            hooks.addAll(hooksFromDb);
-            return hooks;
-        } catch (NestedRuntimeException e) {
-            throw new DaoException(e);
-        }
-
     }
 
     @Override
     @Transactional
-    public Hook create(Hook hook) {
+    public Hook create(Hook hook) throws DaoException {
         String pubKey = createOrGetPubKey(hook.getPartyId());
         hook.setPubKey(pubKey);
         hook.setEnabled(true);
 
-        final String sql = "INSERT INTO hook.webhook(party_id, url) " +
-                "VALUES (:party_id, :url) RETURNING ID";
+        final String sql = "INSERT INTO hook.webhook(party_id, url, topic) " +
+                "VALUES (:party_id, :url, CAST(:topic as hook.message_topic)) RETURNING ID";
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("party_id", hook.getPartyId())
-                .addValue("url", hook.getUrl());
+                .addValue("url", hook.getUrl())
+                .addValue("topic", hook.getTopic());
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             int updateCount = jdbcTemplate.update(sql, params, keyHolder);
@@ -190,23 +143,12 @@ public class HookDaoImpl implements HookDao {
             }
             hook.setId(keyHolder.getKey().longValue());
             saveHookFilters(hook.getId(), hook.getFilters());
-            addRecordToRetryPolicy(hook.getId());
         } catch (NestedRuntimeException e) {
-            log.error("Fail to create hook: " + hook, e);
+            log.warn("Fail to createWithPolicy hook {}", hook, e);
             throw new DaoException(e);
         }
         log.info("Webhook with id = {} created.", hook.getId());
         return hook;
-    }
-
-    private void addRecordToRetryPolicy(long hookId) {
-        final String sql = "insert into hook.simple_retry_policy(hook_id) VALUES (:hook_id)";
-        try {
-            jdbcTemplate.update(sql, new MapSqlParameterSource("hook_id", hookId));
-        } catch (NestedRuntimeException e) {
-            log.error("Fail to create simple_retry_policy for hook: " + hookId, e);
-            throw new DaoException(e);
-        }
     }
 
     private void saveHookFilters(long hookId, Collection<WebhookAdditionalFilter> webhookAdditionalFilters) {
@@ -237,10 +179,14 @@ public class HookDaoImpl implements HookDao {
 
     @Override
     @Transactional
-    public void delete(long id) {
+    public void delete(long id) throws DaoException {
         final String sql =
-                " DELETE FROM hook.scheduled_task where hook_id=:id;" +
-                " DELETE FROM hook.simple_retry_policy where hook_id=:id;" +
+                " DELETE FROM hook.scheduled_task USING hook.invoicing_queue q WHERE q.hook_id=:id;" +
+                " DELETE FROM hook.scheduled_task USING hook.customer_queue q WHERE q.hook_id=:id;" +
+                " DELETE FROM hook.simple_retry_policy USING hook.invoicing_queue q WHERE q.hook_id=:id;" +
+                " DELETE FROM hook.simple_retry_policy USING hook.customer_queue q WHERE q.hook_id=:id;" +
+                " DELETE FROM hook.invoicing_queue where hook_id=:id;" +
+                " DELETE FROM hook.customer_queue where hook_id=:id;" +
                 " DELETE FROM hook.webhook_to_events where hook_id=:id;" +
                 " DELETE FROM hook.webhook where id=:id; ";
         try {
@@ -250,21 +196,7 @@ public class HookDaoImpl implements HookDao {
         }
     }
 
-    @Override
-    public void disable(long id) {
-        final String sql = " UPDATE hook.webhook SET enabled = FALSE where id=:id;";
-        try {
-            jdbcTemplate.update(sql, new MapSqlParameterSource("id", id));
-        } catch (NestedRuntimeException e) {
-            log.error("Fail to disable webhook: {}", id, e);
-            throw new DaoException(e);
-        }
-    }
-
-    @Autowired
-    Signer signer;
-
-    private String createOrGetPubKey(String partyId) {
+    private String createOrGetPubKey(String partyId) throws DaoException {
         final String sql = "INSERT INTO hook.party_key(party_id, priv_key, pub_key) " +
                 "VALUES (:party_id, :priv_key, :pub_key) " +
                 "ON CONFLICT(party_id) DO UPDATE SET party_id=:party_id RETURNING pub_key";
@@ -280,7 +212,7 @@ public class HookDaoImpl implements HookDao {
             jdbcTemplate.update(sql, params, keyHolder);
             pubKey = (String) keyHolder.getKeys().get("pub_key");
         } catch (NestedRuntimeException | NullPointerException | ClassCastException e) {
-            log.error("Fail to create security keys for party: " + partyId,  e);
+            log.warn("Fail to createOrGetPubKey security keys for party {} ", partyId,  e);
             throw new DaoException(e);
         }
         return pubKey;
@@ -290,7 +222,7 @@ public class HookDaoImpl implements HookDao {
     private static RowMapper<AllHookTablesRow> allHookTablesRowRowMapper =
             (rs, i) -> new AllHookTablesRow(rs.getLong("id"),
                     rs.getString("party_id"),
-                    //EventTypeCode.valueOfKey(rs.getString("event_code")),
+                    rs.getString("topic"),
                     rs.getString("url"),
                     rs.getString("pub_key"),
                     rs.getBoolean("enabled"),
@@ -300,25 +232,5 @@ public class HookDaoImpl implements HookDao {
                             rs.getString("invoice_payment_status")));
 
 
-    private List<Hook> getFromCache(Collection<Long> ids){
-        Cache cache = cacheManager.getCache(CacheConfiguration.HOOKS);
-        List<Hook> hooks = new ArrayList<>();
-
-        for(long id: ids){
-            Hook hook = cache.get(id, Hook.class);
-            if(hook != null){
-                hooks.add(hook);
-            }
-        }
-
-        return hooks;
-    }
-
-    private void putToCache(Collection<Hook> hooks){
-        Cache cache = cacheManager.getCache(CacheConfiguration.HOOKS);
-        for(Hook hook: hooks){
-            cache.put(hook.getId(), hook);
-        }
-    }
-
 }
+//select * from hook.webhook w where exists (select * from hook.webhook_to_events wh where wh.hook_id = w.id AND wh.event_type = 'CUSTOMER_CREATED');
