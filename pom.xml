@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hooker</artifactId>
-    <version>2.0.2-SNAPSHOT</version>
+    <version>2.0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>hooker</name>
@@ -22,7 +22,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <postgresql.jdbc.version>9.4.1212</postgresql.jdbc.version>
         <dockerfile.base.service.tag>69fac82d8c1145359e6262b411ac2c2796a11a39</dockerfile.base.service.tag>
-        <damsel.version>1.212-284cb1a</damsel.version>
+        <damsel.version>1.213-620cca5</damsel.version>
         <shared.resources.version>0.2.1</shared.resources.version>
 
         <db.host.name>db-pg-shared</db.host.name>
@@ -118,6 +118,11 @@
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.1</version>
+        </dependency>
         <!--RBK libs-->
         <dependency>
             <groupId>com.rbkmoney</groupId>
@@ -137,7 +142,7 @@
         <dependency>
             <groupId>com.rbkmoney</groupId>
             <artifactId>swag-webhook-events</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.rbkmoney.logback</groupId>
