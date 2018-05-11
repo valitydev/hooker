@@ -4,6 +4,7 @@ import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Invoice;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
+import com.rbkmoney.hooker.model.Refund;
 import com.rbkmoney.swag_webhook_events.*;
 
 import java.util.ArrayList;
@@ -75,7 +76,9 @@ public class BuildUtils {
                                 .ip("127.0.0.1")
                                 .fingerprint("fingerbox"))
                         .paymentToolDetails(new PaymentToolDetailsBankCard()
-                                .cardNumberMask("1234")
+                                .bin("520034")
+                                .lastDigits("1234")
+                                .cardNumberMask("520034******1234")
                                 .paymentSystem("visa")
                                 .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD))
                         .payerType(Payer.PayerTypeEnum.PAYMENTRESOURCEPAYER));
@@ -126,7 +129,9 @@ public class BuildUtils {
             .paymentSession("wrgnjwierngweirngi")
             .clientInfo(new ClientInfo().ip("127.0.0.1").fingerprint("finger"))
             .paymentToolDetails(new PaymentToolDetailsBankCard()
-                    .cardNumberMask("1234")
+                    .bin("440088")
+                    .lastDigits("1234")
+                    .cardNumberMask("440088******1234")
                     .paymentSystem("visa")
                     .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD)
             )));
