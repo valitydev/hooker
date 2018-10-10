@@ -16,13 +16,18 @@ public class PostSender {
     private final OkHttpClient httpClient;
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     public static final String SIGNATURE_HEADER = "Content-Signature";
+    public static final long RESPONSE_MAX_LENGTH = 4096L;
 
     public PostSender(@Value("${merchant.callback.timeout}") int timeout) {
-        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
-        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient.Builder httpBuilder = new OkHttpClient.Builder();
 
-        this.httpClient = new OkHttpClient.Builder()
-                .addInterceptor(httpLoggingInterceptor)
+        if (log.isDebugEnabled()) {
+            HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(message -> log.debug(message));
+            httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            httpBuilder.addInterceptor(httpLoggingInterceptor);
+        }
+
+        this.httpClient = httpBuilder
                 .connectTimeout(timeout, TimeUnit.SECONDS)
                 .writeTimeout(timeout, TimeUnit.SECONDS)
                 .readTimeout(timeout, TimeUnit.SECONDS)
@@ -39,7 +44,7 @@ public class PostSender {
                 .build();
 
         Response response = httpClient.newCall(request).execute();
-        log.info("Response from hook: messageId: {}, code: {}; body: {}", messageId, response.code(), response.body().string());
+        log.info("Response from hook: messageId: {}, code: {}; body: {}", messageId, response.code(), response.body() != null ? response.peekBody(RESPONSE_MAX_LENGTH).string() : "<empty>");
         return response.code();
     }
 }
