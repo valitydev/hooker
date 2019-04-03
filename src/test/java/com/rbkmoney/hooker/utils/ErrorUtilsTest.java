@@ -8,7 +8,8 @@ import com.rbkmoney.swag_webhook_events.PaymentError;
 import com.rbkmoney.swag_webhook_events.PaymentErrorSubError;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class ErrorUtilsTest {
 
@@ -42,6 +43,9 @@ public class ErrorUtilsTest {
 
     @Test
     public void toPaymentError() {
+        assertEquals("test", ErrorUtils.toPaymentError("code:sub_code:test", "message").getSubError().getSubError().getCode());
         assertEquals("sub_code", ErrorUtils.toPaymentError("code:sub_code", "message").getSubError().getCode());
+        assertNull(ErrorUtils.toPaymentError("code:sub_code", "message").getSubError().getSubError());
+        assertEquals("code", ErrorUtils.toPaymentError("code", "message").getCode());
     }
 }
