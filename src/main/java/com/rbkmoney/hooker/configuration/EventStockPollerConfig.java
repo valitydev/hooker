@@ -49,12 +49,12 @@ public class EventStockPollerConfig {
         List<EventPublisher> eventPublishers = new ArrayList<>();
         for (int i = 0; i < workersCount; ++i) {
             eventPublishers.add(new PollingEventPublisherBuilder()
-                .withURI(bmUri.getURI())
-                .withEventHandler(eventStockHandlers.get(i))
-                .withMaxPoolSize(maxPoolSize)
-                .withPollDelay(pollDelay)
-                .withMaxQuerySize(maxQuerySize)
-                .build());
+                    .withURI(bmUri.getURI())
+                    .withEventHandler(eventStockHandlers.get(i))
+                    .withMaxPoolSize(maxPoolSize)
+                    .withPollDelay(pollDelay)
+                    .withMaxQuerySize(maxQuerySize)
+                    .build());
         }
         return eventPublishers;
     }

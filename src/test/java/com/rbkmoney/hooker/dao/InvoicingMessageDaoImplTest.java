@@ -1,7 +1,6 @@
 package com.rbkmoney.hooker.dao;
 
 import com.rbkmoney.hooker.AbstractIntegrationTest;
-import com.rbkmoney.hooker.handler.poller.EventStockHandler;
 import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.hooker.model.InvoicingMessage;
@@ -21,8 +20,7 @@ import java.util.Arrays;
 
 import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
 import static com.rbkmoney.hooker.utils.BuildUtils.cart;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Created by inalarsanukaev on 09.04.17.
@@ -83,4 +81,13 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
     public void getMaxEventId() {
         assertEquals(messageDao.getMaxEventId(workersCount, HashUtils.getIntHash("1234") % workersCount).longValue(), 5555);
     }
+
+    @Test
+    public void testIsDuplicate(){
+        InvoicingMessage invoicingMessage = buildMessage(AbstractInvoiceEventHandler.PAYMENT,"1234", "56678", EventType.INVOICE_CREATED, "status", cart(), false);
+        assertTrue(messageDao.updateIfExists(invoicingMessage));
+        invoicingMessage.getPayment().setStatus("processed");
+        assertFalse(messageDao.updateIfExists(invoicingMessage));
+    }
+
 }

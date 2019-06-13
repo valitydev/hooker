@@ -4,7 +4,6 @@ import com.rbkmoney.damsel.domain.Invoice;
 import com.rbkmoney.damsel.domain.InvoiceCart;
 import com.rbkmoney.damsel.domain.InvoiceLine;
 import com.rbkmoney.damsel.msgpack.Value;
-import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
@@ -35,12 +34,14 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
 
     @Override
     @Transactional
-    public void saveEvent(InvoiceChange ic, Event event) throws DaoException {
+    public void saveEvent(InvoiceChange ic, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
         Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         //////
         InvoicingMessage message = new InvoicingMessage();
-        message.setEventId(event.getId());
-        message.setEventTime(event.getCreatedAt());
+        message.setEventId(eventId);
+        message.setEventTime(eventCreatedAt);
+        message.setSequenceId(sequenceId);
+        message.setChangeId(changeId);
         message.setType(INVOICE);
         message.setPartyId(invoiceOrigin.getOwnerId());
         message.setEventType(eventType);
@@ -77,7 +78,9 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
                 invoice.getCart().add(icp);
             }
         }
-        messageDao.create(message);
+        if (!messageDao.updateIfExists(message)) {
+            messageDao.create(message);
+        }
     }
 
     @Override

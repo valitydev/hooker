@@ -1,7 +1,6 @@
 package com.rbkmoney.hooker.handler.poller.impl.customer;
 
 import com.rbkmoney.damsel.payment_processing.CustomerChange;
-import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
@@ -39,11 +38,13 @@ public class CustomerCreatedHandler extends AbstractCustomerEventHandler {
     }
 
     @Override
-    protected void saveEvent(CustomerChange cc, Event event) throws DaoException {
+    protected void saveEvent(CustomerChange cc, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
         com.rbkmoney.damsel.payment_processing.CustomerCreated customerCreatedOrigin = cc.getCustomerCreated();
         CustomerMessage customerMessage = new CustomerMessage();
-        customerMessage.setEventId(event.getId());
-        customerMessage.setOccuredAt(event.getCreatedAt());
+        customerMessage.setEventId(eventId);
+        customerMessage.setOccuredAt(eventCreatedAt);
+        customerMessage.setSequenceId(sequenceId);
+        customerMessage.setChangeId(changeId);
         customerMessage.setType(CUSTOMER);
         customerMessage.setPartyId(customerCreatedOrigin.getOwnerId());
         customerMessage.setEventType(eventType);

@@ -4,7 +4,6 @@ import com.rbkmoney.damsel.domain.DisposablePaymentResource;
 import com.rbkmoney.damsel.domain.InvoicePayment;
 import com.rbkmoney.damsel.domain.PaymentTool;
 import com.rbkmoney.damsel.domain.RecurrentPayer;
-import com.rbkmoney.damsel.payment_processing.Event;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
@@ -13,10 +12,9 @@ import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
+import com.rbkmoney.machinegun.eventsink.MachineEvent;
 import com.rbkmoney.swag_webhook_events.*;
 import org.springframework.stereotype.Component;
-
-import static com.rbkmoney.hooker.utils.PaymentToolUtils.getPaymentToolDetails;
 
 @Component
 public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
@@ -44,7 +42,7 @@ public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
     }
 
     @Override
-    protected void modifyMessage(InvoiceChange ic, Event event, InvoicingMessage message) {
+    protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
         InvoicePayment paymentOrigin = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStarted().getPayment();
         Payment payment = new Payment();
         message.setPayment(payment);

@@ -59,12 +59,13 @@ public class EventStockHandler implements EventHandler<StockEvent> {
 
         long id = processingEvent.getId();
 
-        for (Object cc : changes) {
+        for (int i = 0; i < changes.size(); ++i) {
+            Object cc = changes.get(i);
             for (Handler pollingEventHandler : pollingEventHandlers) {
                 if (pollingEventHandler.accept(cc)) {
                     try {
                         log.info("We got an event {}", new TBaseProcessor().process(stockEvent, JsonHandler.newPrettyJsonInstance()));
-                        pollingEventHandler.handle(cc, stockEvent);
+                        pollingEventHandler.handle(cc, stockEvent.getId(), stockEvent.getTime(), sourceId, (long) processingEvent.getSequence(), i);
                     } catch (DaoException e) {
                         log.error("DaoException when poller handling with eventId {}", id, e);
                         if (count.decrementAndGet() > 0) {
