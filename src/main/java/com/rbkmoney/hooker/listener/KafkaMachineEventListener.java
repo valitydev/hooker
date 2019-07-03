@@ -8,13 +8,12 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class KafkaMachineEventListener {
 
     private final MachineEventHandler machineEventHandler;
 
-    @KafkaListener(topics = "${kafka.topics.invoicing}", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = "${kafka.topics.invoice.id}", containerFactory = "kafkaListenerContainerFactory")
     public void listen(SinkEvent message, Acknowledgment ack) {
         log.debug("Got machineEvent: {}", message);
         machineEventHandler.handle(message.getEvent(), ack);
