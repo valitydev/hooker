@@ -83,4 +83,9 @@ public class InvoicingMessageDaoImplTest extends AbstractIntegrationTest {
         assertNull(message.getId());
 
     }
+
+    @Test(expected = NotFoundException.class)
+    public void testNotFound(){
+        messageDao.getRefund("kek", "lol", "kk");
+    }
 }
