@@ -1,5 +1,6 @@
 package com.rbkmoney.hooker.scheduler;
 
+import com.rbkmoney.hooker.dao.DaoException;
 import com.rbkmoney.hooker.dao.MessageDao;
 import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.dao.TaskDao;
@@ -14,15 +15,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.PreDestroy;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-/**
- * Created by jeckep on 17.04.17.
- */
 @Slf4j
 public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
@@ -38,6 +39,8 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     private RetryPoliciesService retryPoliciesService;
     @Autowired
     private Signer signer;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     private final Set<Long> processedQueues = Collections.synchronizedSet(new HashSet<>());
     private ExecutorService executorService;
@@ -51,7 +54,16 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
     }
 
     @Scheduled(fixedRateString = "${message.scheduler.delay}")
-    public void loop() throws InterruptedException {
+    public void loop() {
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                processLoop();
+            }
+        });
+    }
+
+    private void processLoop() {
         final List<Long> currentlyProcessedQueues = new ArrayList<>(processedQueues);
 
         log.debug("currentlyProcessedQueues {}", processedQueues);
@@ -92,32 +104,45 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
                 }
             }
             MessageSender messageSender = getMessageSender(new MessageSender.QueueStatus(healthyQueues.get(queueId)),
-                    messagesForQueue, taskDao, signer, new PostSender(connectionPoolSize, httpTimeout));
+                    messagesForQueue, signer, new PostSender(connectionPoolSize, httpTimeout));
             messageSenderList.add(messageSender);
         }
 
-        List<Future<MessageSender.QueueStatus>> futureList = executorService.invokeAll(messageSenderList);
-        for (Future<MessageSender.QueueStatus> status : futureList) {
-            if (!status.isCancelled()) {
-                try {
-                    if (status.get().isSuccess()) {
-                        done(status.get().getQueue());
-                    } else {
-                        fail(status.get().getQueue());
+        try {
+            List<Future<MessageSender.QueueStatus>> futureList = executorService.invokeAll(messageSenderList);
+            for (Future<MessageSender.QueueStatus> status : futureList) {
+                if (!status.isCancelled()) {
+                    try {
+                        MessageSender.QueueStatus queueStatus = status.get();
+                        try {
+                            Queue queue = queueStatus.getQueue();
+                            processedQueues.remove(queue.getId());
+                            queueStatus.getMessagesDone().forEach(id -> taskDao.remove(queue.getId(), id));
+                            if (queueStatus.isSuccess()) {
+                                done(queue);
+                            } else {
+                                fail(queue);
+                            }
+                        } catch (DaoException e) {
+                            log.error("DaoException error when remove sent messages. It's not a big deal, but some messages can be re-sent: {}",
+                                    status.get().getMessagesDone());
+                        }
+                    } catch (ExecutionException e) {
+                        log.error("Unexpected error when get queue");
                     }
-                } catch (ExecutionException e) {
-                    log.error("Unexpected error when get queue");
                 }
             }
+        } catch (InterruptedException e) {
+            log.error("Thread was interrupted", e);
+            Thread.currentThread().interrupt();
         }
+        return;
     }
 
-    protected abstract MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<M> messagesForQueue, TaskDao taskDao, Signer signer, PostSender postSender);
+    protected abstract MessageSender getMessageSender(MessageSender.QueueStatus queueStatus, List<M> messagesForQueue, Signer signer, PostSender postSender);
 
     //worker should invoke this method when it is done with scheduled messages for hookId
     private void done(Queue queue) {
-        processedQueues.remove(queue.getId());
-
         //reset fail count for hook
         if (queue.getRetryPolicyRecord().isFailed()) {
             RetryPolicyRecord record = queue.getRetryPolicyRecord();
@@ -128,8 +153,6 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
 
     //worker should invoke this method when it is fail to send message to hookId
     private void fail(Queue queue) {
-        processedQueues.remove(queue.getId());
-
         log.warn("Queue {} failed.", queue.getId());
         if (retryPoliciesService.getRetryPolicyByType(queue.getHook().getRetryPolicyType())
                 .isFail(queue.getRetryPolicyRecord())) {
@@ -175,7 +198,7 @@ public abstract class MessageScheduler<M extends Message, Q extends Queue> {
             if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
                 log.warn("Failed to stop scheduller in time.");
             } else {
-                log.info("Poller stopped.");
+                log.info("Scheduller stopped.");
             }
         } catch (InterruptedException e) {
             log.warn("Waiting for scheduller shutdown is interrupted.");
