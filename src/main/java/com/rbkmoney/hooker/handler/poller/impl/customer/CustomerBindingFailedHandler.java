@@ -7,6 +7,7 @@ import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
+import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
 import com.rbkmoney.hooker.model.CustomerMessage;
 import com.rbkmoney.hooker.model.EventType;
 import com.rbkmoney.swag_webhook_events.model.CustomerBindingError;
@@ -17,13 +18,15 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class CustomerBindingFailedHandler extends NeedReadCustomerEventHandler {
-    private Filter filter;
 
     private EventType eventType = EventType.CUSTOMER_BINDING_FAILED;
 
-    public CustomerBindingFailedHandler() {
-        filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+
+    public CustomerBindingFailedHandler(CustomerDaoImpl customerDao) {
+        super(customerDao);
     }
+
     @Override
     public Filter getFilter() {
         return filter;

@@ -9,22 +9,26 @@ import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
+import com.rbkmoney.hooker.dao.InvoicingMessageDao;
+import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.model.Payment;
 import com.rbkmoney.hooker.model.PaymentContactInfo;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.utils.PaymentToolUtils;
 import com.rbkmoney.swag_webhook_events.model.*;
+import lombok.RequiredArgsConstructor;
+import com.rbkmoney.swag_webhook_events.model.*;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class InvoicePaymentStartedHandler extends NeedReadInvoiceEventHandler {
 
-    private Filter filter;
     private EventType eventType = EventType.INVOICE_PAYMENT_STARTED;
 
-    public InvoicePaymentStartedHandler() {
-        filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
-    }
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+
+    private final InvoicingMessageDao messageDao;
 
     @Override
     public Filter getFilter() {
