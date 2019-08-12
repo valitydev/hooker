@@ -15,9 +15,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 @Component
-public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
+public class InvoiceCreatedMapper extends AbstractInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_CREATED;
 
@@ -25,14 +26,14 @@ public class InvoiceCreatedHandler extends AbstractInvoiceEventHandler {
 
     @Override
     @Transactional
-    public InvoicingMessage buildEvent(InvoiceChange ic, Long eventId, String eventCreatedAt, String sourceId, Long sequenceId, Integer changeId) throws DaoException {
+    public InvoicingMessage buildEvent(InvoiceChange ic, EventInfo eventInfo, Map<InvoicingMessageKey, InvoicingMessage> storage) throws DaoException {
         Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         //////
         InvoicingMessage message = new InvoicingMessage();
-        message.setEventTime(eventCreatedAt);
-        message.setSequenceId(sequenceId);
-        message.setChangeId(changeId);
-        message.setType(INVOICE);
+        message.setEventTime(eventInfo.getEventCreatedAt());
+        message.setSequenceId(eventInfo.getSequenceId());
+        message.setChangeId(eventInfo.getChangeId());
+        message.setType(InvoicingMessageEnum.INVOICE.value());
         message.setPartyId(invoiceOrigin.getOwnerId());
         message.setEventType(eventType);
         com.rbkmoney.hooker.model.Invoice invoice = new com.rbkmoney.hooker.model.Invoice();

@@ -6,7 +6,6 @@ import com.rbkmoney.hooker.dao.impl.InvoicingTaskDao;
 import com.rbkmoney.hooker.dao.impl.MessageIdsGeneratorDaoImpl;
 import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.Message;
-import com.rbkmoney.hooker.utils.FilterUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,13 +31,12 @@ public class BatchService {
             messages.get(i).setId(ids.get(i));
             messages.get(i).setEventId(eventIds.get(i));
         }
-        List<InvoicingMessage> filteredMessages = invoicingMessageDao.saveBatch(messages);
-        log.info("Filtered batch, size={}", filteredMessages.size());
-        List<Long> filteredMessageIds = filteredMessages.stream().map(Message::getId).collect(Collectors.toList());
-        int[] queueBatchResult = invoicingQueueDao.saveBatchWithPolicies(filteredMessageIds);
-        log.info("Queue batch size={}", FilterUtils.filter(queueBatchResult).length);
-        int[] taskBatchResult = invoicingTaskDao.saveBatch(filteredMessageIds);
-        log.info("Task batch size={}", FilterUtils.filter(taskBatchResult).length);
+        invoicingMessageDao.saveBatch(messages);
+        List<Long> messageIds = messages.stream().map(Message::getId).collect(Collectors.toList());
+        int[] queueBatchResult = invoicingQueueDao.saveBatchWithPolicies(messageIds);
+        log.info("Queue batch size={}", queueBatchResult.length);
+        int[] taskBatchResult = invoicingTaskDao.saveBatch(messageIds);
+        log.info("Task batch size={}", taskBatchResult.length);
         log.info("End processing of batch");
     }
 }

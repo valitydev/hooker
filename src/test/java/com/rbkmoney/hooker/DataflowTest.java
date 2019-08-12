@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rbkmoney.hooker.dao.HookDao;
 import com.rbkmoney.hooker.dao.WebhookAdditionalFilter;
-import com.rbkmoney.hooker.handler.poller.impl.invoicing.AbstractInvoiceEventHandler;
 import com.rbkmoney.hooker.model.*;
 import com.rbkmoney.hooker.service.BatchService;
 import com.rbkmoney.swag_webhook_events.model.CustomerPayer;
@@ -29,8 +28,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import static com.rbkmoney.hooker.utils.BuildUtils.buildMessage;
-import static com.rbkmoney.hooker.utils.BuildUtils.cart;
+import static com.rbkmoney.hooker.utils.BuildUtils.*;
 import static org.junit.Assert.*;
 
 /**
@@ -67,37 +65,37 @@ public class DataflowTest extends AbstractIntegrationTest {
             baseServerUrl = webserver(dispatcher());
             log.info("Mock server url: " + baseServerUrl);
 
-            hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_1, EventType.INVOICE_CREATED)));
-            hooks.add(hookDao.create(hook("partyId1", "http://" + baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED)));
-            hooks.add(hookDao.create(hook("partyId2", "http://" + baseServerUrl + HOOK_3, EventType.INVOICE_PAYMENT_STATUS_CHANGED, EventType.INVOICE_PAYMENT_REFUND_STARTED)));
+            hooks.add(hookDao.create(buildHook("partyId1", "http://" + baseServerUrl + HOOK_1, EventType.INVOICE_CREATED)));
+            hooks.add(hookDao.create(buildHook("partyId1", "http://" + baseServerUrl + HOOK_2, EventType.INVOICE_CREATED, EventType.INVOICE_PAYMENT_STARTED)));
+            hooks.add(hookDao.create(buildHook("partyId2", "http://" + baseServerUrl + HOOK_3, EventType.INVOICE_PAYMENT_STATUS_CHANGED, EventType.INVOICE_PAYMENT_REFUND_STARTED)));
         }
     }
 
     @Test
     public void testMessageSend() throws InterruptedException {
         List<InvoicingMessage> sourceMessages = new ArrayList<>();
-        InvoicingMessage message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true, 0L, 0);
+        InvoicingMessage message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "1", "partyId1", EventType.INVOICE_CREATED, "status", cart(), true, 0L, 0);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status", cart(), true, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "1", "partyId1", EventType.INVOICE_PAYMENT_STARTED, "status", cart(), true, 0L, 1);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.INVOICE,"3", "partyId1", EventType.INVOICE_CREATED, "status");
+        message = buildMessage(InvoicingMessageEnum.INVOICE.value(),"3", "partyId1", EventType.INVOICE_CREATED, "status");
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "4", "qwe", EventType.INVOICE_CREATED, "status");
+        message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "4", "qwe", EventType.INVOICE_CREATED, "status");
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.INVOICE, "5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false, 0L, 0);
+        message = buildMessage(InvoicingMessageEnum.INVOICE.value(), "5", "partyId2", EventType.INVOICE_CREATED, "status", cart(), false, 0L, 0);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "5", "partyId2", EventType.INVOICE_PAYMENT_STATUS_CHANGED, "status", cart(), false, 0L, 1);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.REFUND, "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, "status", cart(), false, 0L, 2);
+        message = buildMessage(InvoicingMessageEnum.REFUND.value(), "5", "partyId2", EventType.INVOICE_PAYMENT_REFUND_STARTED, "status", cart(), false, 0L, 2);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
-        message = buildMessage(AbstractInvoiceEventHandler.PAYMENT, "5", "partyId2", EventType.INVOICE_PAYMENT_CASH_FLOW_CHANGED, "status", cart(), false, 0L, 1);
+        message = buildMessage(InvoicingMessageEnum.PAYMENT.value(), "5", "partyId2", EventType.INVOICE_PAYMENT_CASH_FLOW_CHANGED, "status", cart(), false, 0L, 1);
         batchService.process(Collections.singletonList(message));
         sourceMessages.add(message);
 
@@ -136,21 +134,6 @@ public class DataflowTest extends AbstractIntegrationTest {
         assertTrue(inv4Queue.isEmpty());
         assertTrue(inv5Queue.isEmpty());
 
-    }
-
-    private static Hook hook(String partyId, String url, EventType... types) {
-        Hook hook = new Hook();
-        hook.setPartyId(partyId);
-        hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
-        hook.setUrl(url);
-
-        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
-        for (EventType type : types) {
-            webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(type).build());
-        }
-        hook.setFilters(webhookAdditionalFilters);
-
-        return hook;
     }
 
     private Dispatcher dispatcher() {
