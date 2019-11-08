@@ -1,12 +1,12 @@
 package com.rbkmoney.hooker.dao.impl;
 
-import com.rbkmoney.hooker.dao.DaoException;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.dao.QueueDao;
 import com.rbkmoney.hooker.model.Hook;
 import com.rbkmoney.hooker.model.InvoicingQueue;
 import com.rbkmoney.hooker.retry.RetryPolicyType;
-import lombok.RequiredArgsConstructor;
 import com.rbkmoney.swag_webhook_events.model.Event;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;

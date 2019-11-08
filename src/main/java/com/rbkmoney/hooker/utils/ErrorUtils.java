@@ -3,7 +3,9 @@ package com.rbkmoney.hooker.utils;
 import com.rbkmoney.damsel.domain.Failure;
 import com.rbkmoney.damsel.domain.OperationFailure;
 import com.rbkmoney.damsel.domain.SubFailure;
+import com.rbkmoney.swag_webhook_events.model.CustomerBindingError;
 import com.rbkmoney.swag_webhook_events.model.PaymentError;
+import com.rbkmoney.swag_webhook_events.model.RefundError;
 import com.rbkmoney.swag_webhook_events.model.SubError;
 
 import java.util.Arrays;
@@ -30,6 +32,36 @@ public class ErrorUtils {
             return paymentError;
         }
         return null;
+    }
+
+    public static RefundError getRefundError(OperationFailure operationFailure) {
+        if (operationFailure.isSetFailure()) {
+            Failure failure = operationFailure.getFailure();
+            RefundError refundError = new RefundError();
+            refundError.setCode(failure.getCode());
+            refundError.setMessage(failure.getCode());
+            return refundError;
+        } else if (operationFailure.isSetOperationTimeout()) {
+            RefundError refundError = new RefundError();
+            refundError.setCode("408");
+            refundError.setMessage("Operation timeout");
+            return refundError;
+        }
+        return null;
+    }
+
+    public static CustomerBindingError getCustomerBindingError(OperationFailure failure){
+        String errCode = null;
+        String errMess = null;
+        if (failure.isSetFailure()) {
+            Failure external = failure.getFailure();
+            errCode = external.getCode();
+            errMess = external.getReason();
+        } else if (failure.isSetOperationTimeout()) {
+            errCode = "408";
+            errMess = "Operation timeout";
+        }
+        return new CustomerBindingError().code(errCode).message(errMess);
     }
 
     private static SubError getSubError(SubFailure sub) {

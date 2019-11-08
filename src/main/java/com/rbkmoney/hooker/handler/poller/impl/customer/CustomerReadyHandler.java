@@ -1,14 +1,12 @@
 package com.rbkmoney.hooker.handler.poller.impl.customer;
 
-import com.rbkmoney.damsel.payment_processing.CustomerChange;
 import com.rbkmoney.geck.filter.Filter;
 import com.rbkmoney.geck.filter.PathConditionFilter;
 import com.rbkmoney.geck.filter.condition.IsNullCondition;
 import com.rbkmoney.geck.filter.rule.PathConditionRule;
 import com.rbkmoney.hooker.dao.impl.CustomerDaoImpl;
-import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.model.CustomerMessageEnum;
 import com.rbkmoney.hooker.model.EventType;
-import com.rbkmoney.swag_webhook_events.model.Customer;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,7 +17,7 @@ public class CustomerReadyHandler extends NeedReadCustomerEventHandler {
 
     private EventType eventType = EventType.CUSTOMER_READY;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public CustomerReadyHandler(CustomerDaoImpl customerDao) {
         super(customerDao);
@@ -31,17 +29,12 @@ public class CustomerReadyHandler extends NeedReadCustomerEventHandler {
     }
 
     @Override
-    protected String getMessageType() {
-        return AbstractCustomerEventHandler.CUSTOMER;
+    protected CustomerMessageEnum getMessageType() {
+        return CustomerMessageEnum.CUSTOMER;
     }
 
     @Override
     protected EventType getEventType() {
         return eventType;
-    }
-
-    @Override
-    protected void modifyMessage(CustomerChange cc, CustomerMessage message) {
-        message.getCustomer().setStatus(Customer.StatusEnum.READY);
     }
 }

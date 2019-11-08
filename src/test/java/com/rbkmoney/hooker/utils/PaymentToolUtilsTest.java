@@ -1,82 +1,37 @@
 package com.rbkmoney.hooker.utils;
 
 import com.rbkmoney.damsel.domain.*;
+import com.rbkmoney.geck.serializer.kit.mock.MockMode;
+import com.rbkmoney.geck.serializer.kit.mock.MockTBaseProcessor;
+import com.rbkmoney.geck.serializer.kit.tbase.TBaseHandler;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetails;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsBankCard;
 import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsCryptoWallet;
-import com.rbkmoney.swag_webhook_events.model.PaymentToolDetailsMobileCommerce;
-import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+
 
 import java.io.IOException;
-import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class PaymentToolUtilsTest {
 
     @Test
-    public void testGetPaymentToolDetails() {
+    public void testGetPaymentToolDetailsCryptoWallet() {
         PaymentTool paymentTool = PaymentTool.crypto_currency(CryptoCurrency.bitcoin);
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
-        assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET, paymentToolDetails.getDetailsType());
+        assertTrue(paymentToolDetails instanceof PaymentToolDetailsCryptoWallet);
+        assertNull(paymentToolDetails.getDetailsType());
         assertEquals(com.rbkmoney.swag_webhook_events.model.CryptoCurrency.BITCOIN.getValue(), ((PaymentToolDetailsCryptoWallet)paymentToolDetails).getCryptoCurrency().getValue());
     }
 
     @Test
-    public void testGetPaymentToolDetails1() {
-        PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails("PaymentToolDetailsBankCard", "4242424242424242", "4242", "424242*******4242", "applepay", "visa", "qiwi", "digitalWalletProvider", "digitalWalletId", "bitcoin", "79152345115");
-        assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD, paymentToolDetails.getDetailsType());
-        assertEquals("visa", ((PaymentToolDetailsBankCard) paymentToolDetails).getPaymentSystem());
-
-        paymentToolDetails = PaymentToolUtils.getPaymentToolDetails("PaymentToolDetailsCryptoWallet", "4242424242424242", "4242", "424242*******4242", "applepay", "visa", "qiwi", "digitalWalletProvider", "digitalWalletId", "bitcoin", "79152345115");
-        assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET, paymentToolDetails.getDetailsType());
-        assertEquals("bitcoin", ((PaymentToolDetailsCryptoWallet) paymentToolDetails).getCryptoCurrency().getValue());
-    }
-
-    @Test
-    public void testSetPaymentToolDetailsParam() {
-        MapSqlParameterSource params = new MapSqlParameterSource();
-        PaymentToolDetails paymentToolDetails = new PaymentToolDetailsCryptoWallet().cryptoCurrency(com.rbkmoney.swag_webhook_events.model.CryptoCurrency.BITCOIN);
-        paymentToolDetails.setDetailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET);
-        PaymentToolUtils.setPaymentToolDetailsParam(params, paymentToolDetails,
-                "detailsTypeParamName", "binParamName", "lastDigitsParamName", "cardNumberMaskParamName", "tokenProviderParamName",
-                "paymentSystemParamName", "terminalProviderParamName", "digitalWalletProviderParamName", "digitalWalletIdParamName", "cryptoWalletCurrencyParamName", "mobileCommercePhoneNumberParamName");
-        assertEquals("PaymentToolDetailsCryptoWallet", params.getValue("detailsTypeParamName"));
-        assertEquals("bitcoin", params.getValue("cryptoWalletCurrencyParamName"));
-    }
-
-    @Test
-    public void testSetPaymentToolDetailsMobileCommerce() {
-        MapSqlParameterSource params = new MapSqlParameterSource();
-        PaymentToolDetails paymentToolDetails = new PaymentToolDetailsMobileCommerce().phoneNumber("7915");
-        paymentToolDetails.setDetailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSMOBILECOMMERCE);
-        PaymentToolUtils.setPaymentToolDetailsParam(params, paymentToolDetails,
-                "detailsTypeParamName", "binParamName", "lastDigitsParamName", "cardNumberMaskParamName", "tokenProviderParamName",
-                "paymentSystemParamName", "terminalProviderParamName", "digitalWalletProviderParamName", "digitalWalletIdParamName", "cryptoWalletCurrencyParamName", "mobileCommercePhoneNumberParamName");
-        assertEquals("PaymentToolDetailsMobileCommerce", params.getValue("detailsTypeParamName"));
-        assertEquals("7915", params.getValue("mobileCommercePhoneNumberParamName"));
-    }
-
-    @Test
-    public void testFeeAmount() throws IOException {
-        List<FinalCashFlowPosting> finalCashFlowPosting = buildFinalCashFlowPostingList();
-        Long feeAmount = PaymentToolUtils.getFeeAmount(finalCashFlowPosting);
-        Assert.assertEquals(feeAmount.longValue(), 20L);
-    }
-
-    private List<FinalCashFlowPosting> buildFinalCashFlowPostingList() throws IOException {
-        FinalCashFlowPosting firstFinalCashFlowPosting = new FinalCashFlowPosting();
-        Cash cash = new Cash();
-        cash.setAmount(10);
-        firstFinalCashFlowPosting.setVolume(cash);
-        firstFinalCashFlowPosting.setSource(new FinalCashFlowAccount().setAccountType(CashFlowAccount.merchant(MerchantCashFlowAccount.settlement)));
-        firstFinalCashFlowPosting.setDestination(new FinalCashFlowAccount().setAccountType(CashFlowAccount.system(SystemCashFlowAccount.settlement)));
-
-        FinalCashFlowPosting secondFinalCashFlowPosting = firstFinalCashFlowPosting.deepCopy();
-
-        return List.of(firstFinalCashFlowPosting, secondFinalCashFlowPosting);
+    public void testGetPaymentToolDetailsBankCard() throws IOException {
+        PaymentTool paymentTool = PaymentTool.bank_card(new MockTBaseProcessor(MockMode.RANDOM, 15, 2).process(new BankCard(), new TBaseHandler<>(BankCard.class)));
+        PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
+        assertTrue(paymentToolDetails instanceof PaymentToolDetailsBankCard);
+        assertNull(paymentToolDetails.getDetailsType());
+        assertEquals(paymentTool.getBankCard().getBin(), ((PaymentToolDetailsBankCard)paymentToolDetails).getBin());
     }
 
 }

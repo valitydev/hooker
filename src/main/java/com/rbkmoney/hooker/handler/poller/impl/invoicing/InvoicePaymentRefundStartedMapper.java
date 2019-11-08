@@ -1,6 +1,5 @@
 package com.rbkmoney.hooker.handler.poller.impl.invoicing;
 
-import com.rbkmoney.damsel.domain.FinalCashFlowPosting;
 import com.rbkmoney.damsel.domain.InvoicePaymentRefund;
 import com.rbkmoney.damsel.payment_processing.InvoiceChange;
 import com.rbkmoney.damsel.payment_processing.InvoicePaymentRefundCreated;
@@ -12,14 +11,12 @@ import com.rbkmoney.hooker.dao.InvoicingMessageDao;
 import com.rbkmoney.hooker.model.*;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMapper {
 
     private EventType eventType = EventType.INVOICE_PAYMENT_REFUND_STARTED;
 
-    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftFilterPathCoditionRule(), new IsNullCondition().not()));
+    private Filter filter = new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
     public InvoicePaymentRefundStartedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);
@@ -51,29 +48,10 @@ public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMappe
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        InvoicePaymentRefundCreated refundCreated = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getPayload().getInvoicePaymentRefundCreated();
-        Refund refund = new Refund();
-        message.setRefund(refund);
+        InvoicePaymentRefundCreated refundCreated = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange()
+                .getPayload().getInvoicePaymentRefundCreated();
         InvoicePaymentRefund refundOrigin = refundCreated.getRefund();
-        refund.setId(refundOrigin.getId());
-        refund.setCreatedAt(refundOrigin.getCreatedAt());
-        refund.setStatus(refundOrigin.getStatus().getSetField().getFieldName());
-        List<FinalCashFlowPosting> cashFlow = refundCreated.getCashFlow();
-        if (refundOrigin.isSetCash()) {
-            refund.setAmount(refundOrigin.getCash().getAmount());
-            refund.setCurrency(refundOrigin.getCash().getCurrency().getSymbolicCode());
-        } else {
-            refund.setAmount(getAmount(cashFlow));
-            refund.setCurrency(cashFlow.get(0).getVolume().getCurrency().getSymbolicCode());
-        }
-        refund.setReason(refundOrigin.getReason());
-    }
-
-    public static long getAmount(List<FinalCashFlowPosting> finalCashFlow) {
-        return finalCashFlow.stream()
-                .filter(c -> c.getSource().getAccountType().isSetMerchant() &&
-                        c.getDestination().getAccountType().isSetProvider())
-                .mapToLong(c -> c.getVolume().getAmount())
-                .sum();
+        message.setRefundId(refundOrigin.getId());
+        message.setRefundStatus(RefundStatusEnum.lookup(refundOrigin.getStatus().getSetField().getFieldName()));
     }
 }

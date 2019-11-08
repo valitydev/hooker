@@ -1,5 +1,12 @@
 package com.rbkmoney.hooker.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.util.Arrays;
+
+@Getter
+@AllArgsConstructor
 public enum InvoicingMessageEnum {
     INVOICE("invoice"),
     PAYMENT("payment"),
@@ -7,20 +14,8 @@ public enum InvoicingMessageEnum {
 
     private String value;
 
-    InvoicingMessageEnum(String value) {
-        this.value = value;
-    }
-
-    public String value() {
-        return value;
-    }
-
     public static InvoicingMessageEnum lookup(String v) {
-        for (InvoicingMessageEnum e : values()) {
-            if (e.value().equals(v)) {
-                return e;
-            }
-        }
-        throw new IllegalArgumentException(v);
+        return Arrays.stream(values()).filter(value -> v.equals(value.getValue())).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown invoicing message type: " + v));
     }
 }
