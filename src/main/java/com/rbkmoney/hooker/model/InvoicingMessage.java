@@ -13,12 +13,12 @@ import org.springframework.beans.BeanUtils;
 @Data
 @ToString
 public class InvoicingMessage extends Message {
+
     private InvoicingMessageEnum type;
     private String invoiceId;
     private InvoiceStatusEnum invoiceStatus;
     private String paymentId;
     private PaymentStatusEnum paymentStatus;
-    private Long paymentFee;
     private String refundId;
     private RefundStatusEnum refundStatus;
 
@@ -34,7 +34,7 @@ public class InvoicingMessage extends Message {
         return type == InvoicingMessageEnum.REFUND;
     }
 
-    public InvoicingMessage copy(){
+    public InvoicingMessage copy() {
         InvoicingMessage copied = new InvoicingMessage();
         BeanUtils.copyProperties(this, copied);
         return copied;

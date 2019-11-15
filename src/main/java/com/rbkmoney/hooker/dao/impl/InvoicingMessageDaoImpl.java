@@ -1,8 +1,8 @@
 package com.rbkmoney.hooker.dao.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
-import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.dao.InvoicingMessageDao;
+import com.rbkmoney.hooker.exception.DaoException;
 import com.rbkmoney.hooker.exception.NotFoundException;
 import com.rbkmoney.hooker.model.InvoicingMessage;
 import com.rbkmoney.hooker.model.InvoicingMessageKey;
@@ -48,10 +48,10 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
 
             final String sql = "INSERT INTO hook.message" +
                     "(id, new_event_id, event_time, sequence_id, change_id, type, party_id, event_type, " +
-                    "invoice_id, shop_id, invoice_status, payment_id, payment_status, payment_fee, refund_id, refund_status) " +
+                    "invoice_id, shop_id, invoice_status, payment_id, payment_status, refund_id, refund_status) " +
                     "VALUES " +
                     "(:id, :new_event_id, :event_time, :sequence_id, :change_id, :type, :party_id, CAST(:event_type as hook.eventtype), " +
-                    ":invoice_id, :shop_id, :invoice_status, :payment_id, :payment_status, :payment_fee, :refund_id, :refund_status) " +
+                    ":invoice_id, :shop_id, :invoice_status, :payment_id, :payment_status, :refund_id, :refund_status) " +
                     "ON CONFLICT (invoice_id, sequence_id, change_id) DO NOTHING ";
 
             MapSqlParameterSource[] sqlParameterSources = messages.stream()
@@ -69,7 +69,6 @@ public class InvoicingMessageDaoImpl implements InvoicingMessageDao {
                             .addValue(INVOICE_STATUS, message.getInvoiceStatus().getValue())
                             .addValue(PAYMENT_ID, message.getPaymentId())
                             .addValue(PAYMENT_STATUS, message.getPaymentStatus() != null ? message.getPaymentStatus().getValue() : null)
-                            .addValue(PAYMENT_FEE, message.getPaymentFee())
                             .addValue(REFUND_ID, message.getRefundId())
                             .addValue(REFUND_STATUS, message.getRefundStatus() != null ? message.getRefundStatus().getValue() : null))
                     .toArray(MapSqlParameterSource[]::new);
