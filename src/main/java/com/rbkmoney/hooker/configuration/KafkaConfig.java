@@ -27,6 +27,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.BatchErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 
 import java.io.File;
 import java.util.HashMap;
@@ -51,8 +52,10 @@ public class KafkaConfig {
 
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
-    @Value("${kafka.consumer.concurrency}")
-    private int concurrency;
+    @Value("${kafka.topics.invoice.concurrency}")
+    private int invoicingConcurrency;
+    @Value("${kafka.topics.customer.concurrency}")
+    private int customerConcurrency;
 
     private final KafkaSslProperties kafkaSslProperties;
 
@@ -101,7 +104,21 @@ public class KafkaConfig {
         factory.getContainerProperties().setAckOnError(false);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         factory.setBatchErrorHandler(kafkaErrorHandler());
-        factory.setConcurrency(concurrency);
+        factory.setConcurrency(invoicingConcurrency);
+        return factory;
+    }
+
+    @Bean
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> customerListenerContainerFactory(
+            ConsumerFactory<String, MachineEvent> consumerFactory
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+        factory.setBatchListener(false);
+        factory.getContainerProperties().setAckOnError(false);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+        factory.setErrorHandler(new SeekToCurrentErrorHandler());
+        factory.setConcurrency(customerConcurrency);
         return factory;
     }
 
@@ -115,7 +132,9 @@ public class KafkaConfig {
     }
 
     @Bean
-    public MachineEventParser<EventPayload> paymentEventPayloadMachineEventParser(BinaryDeserializer<EventPayload> paymentEventPayloadDeserializer) {
+    public MachineEventParser<EventPayload> paymentEventPayloadMachineEventParser(
+            BinaryDeserializer<EventPayload> paymentEventPayloadDeserializer
+    ) {
         return new PaymentEventPayloadMachineEventParser(paymentEventPayloadDeserializer);
     }
 
