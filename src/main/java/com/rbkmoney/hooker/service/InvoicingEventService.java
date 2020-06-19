@@ -7,6 +7,7 @@ import com.rbkmoney.hooker.converter.RefundConverter;
 import com.rbkmoney.hooker.exception.NotFoundException;
 import com.rbkmoney.hooker.exception.RemoteHostException;
 import com.rbkmoney.hooker.model.InvoicingMessage;
+import com.rbkmoney.hooker.utils.HellgateUtils;
 import com.rbkmoney.hooker.utils.TimeUtils;
 import com.rbkmoney.swag_webhook_events.model.Event;
 import com.rbkmoney.swag_webhook_events.model.Invoice;
@@ -18,22 +19,34 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class InvoicingEventService implements EventService<InvoicingMessage> {
+public class InvoicingEventService implements EventService<InvoicingMessage>, HellgateInvoicingService<InvoicingMessage> {
 
-    private final UserInfo userInfo = new UserInfo("hooker", UserType.service_user(new ServiceUser()));
     private final InvoicingSrv.Iface invoicingClient;
     private final InvoiceConverter invoiceConverter;
     private final PaymentConverter paymentConverter;
     private final RefundConverter refundConverter;
 
     @Override
-    public Event getByMessage(InvoicingMessage message) {
+    public Event getEventByMessage(InvoicingMessage message) {
+        return resolveEvent(message, getInvoiceByMessage(message))
+                .eventID(message.getEventId().intValue())
+                .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
+                .topic(Event.TopicEnum.INVOICESTOPIC);
+    }
+
+    @Override
+    public InvoicePayment getPaymentByMessage(InvoicingMessage message) {
+        return extractPayment(message, getInvoiceByMessage(message));
+    }
+
+    @Override
+    public com.rbkmoney.damsel.payment_processing.Invoice getInvoiceByMessage(InvoicingMessage message) {
         try {
-            var invoiceInfo = invoicingClient.get(userInfo, message.getInvoiceId(), getEventRange(message.getSequenceId().intValue()));
-            return resolveEvent(message, invoiceInfo)
-                    .eventID(message.getEventId().intValue())
-                    .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
-                    .topic(Event.TopicEnum.INVOICESTOPIC);
+            return invoicingClient.get(
+                    HellgateUtils.USER_INFO,
+                    message.getInvoiceId(),
+                    HellgateUtils.getEventRange(message.getSequenceId().intValue())
+            );
         } catch (InvoiceNotFound e) {
             throw new NotFoundException("Invoice not found, invoiceId=" + message.getInvoiceId());
         } catch (TException e) {

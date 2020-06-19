@@ -3,7 +3,6 @@ package com.rbkmoney.hooker.service;
 import com.rbkmoney.damsel.payment_processing.Customer;
 import com.rbkmoney.damsel.payment_processing.CustomerManagementSrv;
 import com.rbkmoney.damsel.payment_processing.CustomerNotFound;
-import com.rbkmoney.damsel.payment_processing.EventRange;
 import com.rbkmoney.hooker.configuration.meta.UserIdentityIdExtensionKit;
 import com.rbkmoney.hooker.configuration.meta.UserIdentityRealmExtensionKit;
 import com.rbkmoney.hooker.converter.CustomerBindingConverter;
@@ -11,12 +10,12 @@ import com.rbkmoney.hooker.converter.CustomerConverter;
 import com.rbkmoney.hooker.exception.NotFoundException;
 import com.rbkmoney.hooker.exception.RemoteHostException;
 import com.rbkmoney.hooker.model.CustomerMessage;
+import com.rbkmoney.hooker.utils.HellgateUtils;
 import com.rbkmoney.hooker.utils.TimeUtils;
 import com.rbkmoney.swag_webhook_events.model.*;
 import com.rbkmoney.woody.api.flow.WFlow;
 import com.rbkmoney.woody.api.trace.ContextUtils;
 import lombok.RequiredArgsConstructor;
-import org.apache.thrift.TException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,12 +28,12 @@ public class CustomerEventService implements EventService<CustomerMessage> {
     private final WFlow wFlow = new WFlow();
 
     @Override
-    public Event getByMessage(CustomerMessage message) {
+    public Event getEventByMessage(CustomerMessage message) {
         try {
             Customer customer = wFlow.createServiceFork(() -> {
                         addWoodyContext();
                         return customerClient.get(message.getCustomerId(),
-                                getEventRange(message.getSequenceId().intValue()));
+                                HellgateUtils.getEventRange(message.getSequenceId().intValue()));
                     }
             ).call();
 
