@@ -27,7 +27,9 @@ public class PaymentToolUtils {
                     .cardNumberMask(paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getLastDigits())
                     .tokenProvider(paymentTool.getBankCard().isSetTokenProvider() ?
                             PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(paymentTool.getBankCard().getTokenProvider().name()) : null)
-                    .paymentSystem(paymentTool.getBankCard().getPaymentSystem().name());
+                    .paymentSystem(paymentTool.getBankCard().getPaymentSystem().name())
+                    .issuerCountry(paymentTool.getBankCard().getIssuerCountry() != null ? paymentTool.getBankCard().getIssuerCountry().name() : null)
+                    .bankName(paymentTool.getBankCard().getBankName());
         } else if (paymentTool.isSetPaymentTerminal()) {
             return new PaymentToolDetailsPaymentTerminal()
                     .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum.fromValue(paymentTool.getPaymentTerminal().getTerminalType().name()));
