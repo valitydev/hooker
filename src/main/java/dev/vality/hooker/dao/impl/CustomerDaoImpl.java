@@ -92,7 +92,7 @@ public class CustomerDaoImpl implements CustomerDao {
                 " join hook.webhook w on m.party_id = w.party_id " +
                 " and w.enabled and w.topic=CAST(:message_type as hook.message_topic)" +
                 " join hook.webhook_to_events wte on wte.hook_id = w.id" +
-                " join hook.party_key pk on w.party_id=pk.party_id" +
+                " join hook.party_data pk on w.party_id=pk.party_id" +
                 " where m.id =:id " +
                 " and m.event_type = wte.event_type " +
                 " and (m.customer_shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) ";
