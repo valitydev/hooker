@@ -4,16 +4,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hooker</artifactId>
-    <version>2.0.60-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>hooker</name>
     <description>Webhooks service</description>
 
     <parent>
-        <groupId>com.rbkmoney</groupId>
+        <groupId>dev.vality</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>1.2.7</version>
+        <version>1.0.9</version>
     </parent>
 
     <properties>
@@ -32,7 +32,7 @@
         <db.password>postgres</db.password>
         <db.schema>hook</db.schema>
 
-        <testcontainers.version>1.15.0</testcontainers.version>
+        <testcontainers.version>1.16.3</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -81,74 +81,61 @@
 
         <!--RBK libs-->
         <dependency>
-            <groupId>com.rbkmoney</groupId>
+            <groupId>dev.vality</groupId>
             <artifactId>damsel</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney</groupId>
+            <groupId>dev.vality</groupId>
             <artifactId>mamsel</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney.logback</groupId>
-            <artifactId>nop-rolling</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.rbkmoney</groupId>
+            <groupId>dev.vality</groupId>
             <artifactId>shared-resources</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney.geck</groupId>
+            <groupId>dev.vality.geck</groupId>
             <artifactId>serializer</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney</groupId>
+            <groupId>dev.vality</groupId>
             <artifactId>kafka-common-lib</artifactId>
-            <version>0.1.8</version>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney</groupId>
-            <artifactId>custom-metrics-spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.rbkmoney</groupId>
-            <artifactId>custom-actuator-endpoints</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.rbkmoney.woody</groupId>
+            <groupId>dev.vality.woody</groupId>
             <artifactId>woody-thrift</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney.geck</groupId>
+            <groupId>dev.vality.geck</groupId>
             <artifactId>common</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney.geck</groupId>
+            <groupId>dev.vality.geck</groupId>
             <artifactId>filter</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney</groupId>
-            <artifactId>eventstock-client</artifactId>
-            <version>1.2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.rbkmoney</groupId>
+            <groupId>dev.vality</groupId>
             <artifactId>sink-common-lib</artifactId>
-            <version>0.0.4</version>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney</groupId>
+            <groupId>dev.vality</groupId>
             <artifactId>machinegun-proto</artifactId>
-            <version>1.12-ebae56f</version>
+            <version>1.24-f533965</version>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney</groupId>
+            <groupId>dev.vality</groupId>
             <artifactId>fault-detector-proto</artifactId>
-            <version>1.20-41d05a3</version>
+            <version>1.27-365aadc</version>
         </dependency>
         <dependency>
-            <groupId>com.rbkmoney</groupId>
+            <groupId>dev.vality</groupId>
             <artifactId>swag-webhook-events</artifactId>
-            <version>1.89-39660bc-client</version>
+            <version>1.1-37103e5-client</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.vality</groupId>
+            <artifactId>webhook-dispatcher-proto</artifactId>
+            <version>1.12-49f714e</version>
         </dependency>
 
         <!--Thirdparty libs-->
@@ -208,37 +195,16 @@
             <version>2.0.0.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.palantir.docker.compose</groupId>
-            <artifactId>docker-compose-rule</artifactId>
-            <version>0.28.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hamcrest</groupId>
-                    <artifactId>hamcrest-library</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>mockwebserver</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${testcontainers.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>kafka</artifactId>
-            <version>${testcontainers.version}</version>
+            <groupId>dev.vality</groupId>
+            <artifactId>testcontainers-annotations</artifactId>
+            <version>1.4.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -296,7 +262,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>1.5</version>
+                <version>1.7.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.shared</groupId>
@@ -306,7 +272,7 @@
                 </dependencies>
                 <configuration>
                     <resourceBundles>
-                        <resourceBundle>com.rbkmoney:shared-resources:${shared-resources.version}</resourceBundle>
+                        <resourceBundle>dev.vality:shared-resources:${shared-resources.version}</resourceBundle>
                     </resourceBundles>
                     <attachToMain>false</attachToMain>
                     <attachToTest>false</attachToTest>
