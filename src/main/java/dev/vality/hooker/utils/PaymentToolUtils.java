@@ -11,6 +11,8 @@ import dev.vality.swag_webhook_events.model.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Objects;
+import java.util.Optional;
 
 public class PaymentToolUtils {
 
@@ -23,8 +25,12 @@ public class PaymentToolUtils {
                     .lastDigits(paymentTool.getBankCard().getLastDigits())
                     .cardNumberMask(
                             paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getLastDigits())
-                    .tokenProvider(PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(
-                            TokenProviderUtil.getTokenProviderName(paymentTool.getBankCard())))
+                    .tokenProvider(
+                            Optional.ofNullable(TokenProviderUtil.getTokenProviderName(paymentTool.getBankCard()))
+                                    .map(value -> PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(
+                                            TokenProviderUtil.getTokenProviderName(paymentTool.getBankCard())
+                                    )).orElse(null)
+                    )
                     .paymentSystem(PaymentSystemUtil.getPaymentSystemName(paymentTool.getBankCard()))
                     .issuerCountry(paymentTool.getBankCard().getIssuerCountry() != null
                             ? paymentTool.getBankCard().getIssuerCountry().name() : null)
