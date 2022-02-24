@@ -1,8 +1,6 @@
 package dev.vality.hooker.converter;
 
-import dev.vality.damsel.domain.BankCard;
-import dev.vality.damsel.domain.InvoicePayment;
-import dev.vality.damsel.domain.PaymentTool;
+import dev.vality.damsel.domain.*;
 import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
 import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
@@ -16,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
+import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static java.util.List.of;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -31,10 +30,26 @@ public class PaymentConverterTest extends AbstractIntegrationTest {
         InvoicePayment source = mockTBaseProcessor
                 .process(new InvoicePayment(), new TBaseHandler<>(InvoicePayment.class));
         source.setCreatedAt("2016-03-22T06:12:27Z");
+        BankCard bankCard = new BankCard()
+                .setPaymentSystem(
+                        new PaymentSystemRef(
+                                random(LegacyBankCardPaymentSystem.class).name()
+                        )
+                )
+                .setPaymentToken(
+                        new BankCardTokenServiceRef(random(LegacyBankCardTokenProvider.class).name())
+                );
         if (source.getPayer().isSetPaymentResource()) {
             source.getPayer().getPaymentResource().getResource()
-                    .setPaymentTool(PaymentTool
-                            .bank_card(mockTBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))));
+                    .setPaymentTool(
+                            PaymentTool
+                                    .bank_card(
+                                            mockTBaseProcessor.process(
+                                                    bankCard,
+                                                    new TBaseHandler<>(BankCard.class)
+                                            )
+                                    )
+                    );
         }
         Payment target = converter
                 .convert(new dev.vality.damsel.payment_processing.InvoicePayment(source, of(), of(), of(), of()));

@@ -38,11 +38,14 @@ public class PaymentToolUtils {
                     .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum.fromValue(
                             TerminalPaymentUtil.getTerminalPaymentProviderName(paymentTool.getPaymentTerminal())));
         } else if (paymentTool.isSetDigitalWallet()) {
+            //TODO Bump swag-webhook-events api
             LegacyDigitalWalletProvider walletProvider = LegacyDigitalWalletProvider.valueOf(
                     DigitalWalletUtil.getDigitalWalletName(paymentTool.getDigitalWallet()));
             if (walletProvider == LegacyDigitalWalletProvider.qiwi) {
-                return new PaymentToolDetailsDigitalWallet(new DigitalWalletDetailsQIWI()
-                        .phoneNumberMask(paymentTool.getDigitalWallet().getId()));
+                PaymentToolDetailsDigitalWallet paymentToolDetailsDigitalWallet = new PaymentToolDetailsDigitalWallet(
+                        new DigitalWalletDetailsQIWI().phoneNumberMask(paymentTool.getDigitalWallet().getId())
+                );
+                return paymentToolDetailsDigitalWallet;
             } else {
                 throw new UnsupportedOperationException("Unknown digital wallet type");
             }
