@@ -39,7 +39,7 @@ public class CustomerEventServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testCustomerSucceded() {
+    public void testCustomerSucceeded() {
         CustomerMessage message = random(CustomerMessage.class);
         message.setType(CustomerMessageEnum.BINDING);
         message.setEventTime("2016-03-22T06:12:27Z");
