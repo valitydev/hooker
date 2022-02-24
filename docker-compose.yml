@@ -6,4 +6,3 @@ postgres:
     POSTGRES_DB: hook
   ports:
     - '5432:5432'
-
