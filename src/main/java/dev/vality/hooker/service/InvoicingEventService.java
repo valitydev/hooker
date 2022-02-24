@@ -74,13 +74,15 @@ public class InvoicingEventService
         switch (m.getEventType()) {
             case INVOICE_CREATED:
                 return new InvoiceCreated()
-                        .invoice(getSwagInvoice(invoiceInfo));
+                        .invoice(getSwagInvoice(invoiceInfo))
+                        .eventType(Event.EventTypeEnum.INVOICECREATED);
             case INVOICE_STATUS_CHANGED:
                 return resolveInvoiceStatusChanged(m, invoiceInfo);
             case INVOICE_PAYMENT_STARTED:
                 return new PaymentStarted()
                         .invoice(getSwagInvoice(invoiceInfo))
-                        .payment(getSwagPayment(m, invoiceInfo));
+                        .payment(getSwagPayment(m, invoiceInfo))
+                        .eventType(Event.EventTypeEnum.PAYMENTSTARTED);
             case INVOICE_PAYMENT_STATUS_CHANGED:
                 return resolvePaymentStatusChanged(m, invoiceInfo);
             case INVOICE_PAYMENT_REFUND_STARTED:
@@ -102,18 +104,21 @@ public class InvoicingEventService
     private Event resolveInvoiceStatusChanged(InvoicingMessage message,
                                               dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
         Invoice swagInvoice = getSwagInvoice(invoiceInfo);
-        switch (message.getInvoiceStatus()) {
-            case UNPAID:
-                return new InvoiceCreated().invoice(swagInvoice);
-            case PAID:
-                return new InvoicePaid().invoice(swagInvoice);
-            case CANCELLED:
-                return new InvoiceCancelled().invoice(swagInvoice);
-            case FULFILLED:
-                return new InvoiceFulfilled().invoice(swagInvoice);
-            default:
-                throw new UnsupportedOperationException("Unknown invoice status " + message.getInvoiceStatus());
-        }
+        return switch (message.getInvoiceStatus()) {
+            case UNPAID -> new InvoiceCreated()
+                    .invoice(swagInvoice)
+                    .eventType(Event.EventTypeEnum.INVOICECREATED);
+            case PAID -> new InvoicePaid()
+                    .invoice(swagInvoice)
+                    .eventType(Event.EventTypeEnum.INVOICEPAID);
+            case CANCELLED -> new InvoiceCancelled()
+                    .invoice(swagInvoice)
+                    .eventType(Event.EventTypeEnum.INVOICECANCELLED);
+            case FULFILLED -> new InvoiceFulfilled()
+                    .invoice(swagInvoice)
+                    .eventType(Event.EventTypeEnum.INVOICEFULFILLED);
+            default -> throw new UnsupportedOperationException("Unknown invoice status " + message.getInvoiceStatus());
+        };
     }
 
     private Payment getSwagPayment(InvoicingMessage m, dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
@@ -139,22 +144,33 @@ public class InvoicingEventService
                                               dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
         Invoice swagInvoice = getSwagInvoice(invoiceInfo);
         Payment swagPayment = getSwagPayment(message, invoiceInfo);
-        switch (message.getPaymentStatus()) {
-            case PENDING:
-                return new PaymentStarted().invoice(swagInvoice).payment(swagPayment);
-            case PROCESSED:
-                return new PaymentProcessed().invoice(swagInvoice).payment(swagPayment);
-            case CAPTURED:
-                return new PaymentCaptured().invoice(swagInvoice).payment(swagPayment);
-            case CANCELLED:
-                return new PaymentCancelled().invoice(swagInvoice).payment(swagPayment);
-            case REFUNDED:
-                return new PaymentRefunded().invoice(swagInvoice).payment(swagPayment);
-            case FAILED:
-                return new PaymentFailed().invoice(swagInvoice).payment(swagPayment);
-            default:
-                throw new UnsupportedOperationException("Unknown payment status " + message.getPaymentStatus());
-        }
+        return switch (message.getPaymentStatus()) {
+            case PENDING -> new PaymentStarted()
+                    .invoice(swagInvoice)
+                    .payment(swagPayment)
+                    .eventType(Event.EventTypeEnum.PAYMENTSTARTED);
+            case PROCESSED -> new PaymentProcessed()
+                    .invoice(swagInvoice)
+                    .payment(swagPayment)
+                    .eventType(Event.EventTypeEnum.PAYMENTPROCESSED);
+            case CAPTURED -> new PaymentCaptured()
+                    .invoice(swagInvoice)
+                    .payment(swagPayment)
+                    .eventType(Event.EventTypeEnum.PAYMENTCAPTURED);
+            case CANCELLED -> new PaymentCancelled()
+                    .invoice(swagInvoice)
+                    .payment(swagPayment)
+                    .eventType(Event.EventTypeEnum.PAYMENTCANCELLED);
+            case REFUNDED -> new PaymentRefunded()
+                    .invoice(swagInvoice)
+                    .payment(swagPayment)
+                    .eventType(Event.EventTypeEnum.PAYMENTREFUNDED);
+            case FAILED -> new PaymentFailed()
+                    .invoice(swagInvoice)
+                    .payment(swagPayment)
+                    .eventType(Event.EventTypeEnum.PAYMENTFAILED);
+            default -> throw new UnsupportedOperationException("Unknown payment status " + message.getPaymentStatus());
+        };
     }
 
     private Refund getSwagRefund(InvoicingMessage m, dev.vality.damsel.payment_processing.Invoice invoiceInfo) {

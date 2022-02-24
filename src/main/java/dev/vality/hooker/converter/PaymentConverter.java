@@ -10,14 +10,7 @@ import dev.vality.hooker.utils.CashFlowUtils;
 import dev.vality.hooker.utils.ErrorUtils;
 import dev.vality.hooker.utils.PaymentToolUtils;
 import dev.vality.hooker.utils.TimeUtils;
-import dev.vality.swag_webhook_events.model.ClientInfo;
-import dev.vality.swag_webhook_events.model.ContactInfo;
-import dev.vality.swag_webhook_events.model.CustomerPayer;
-import dev.vality.swag_webhook_events.model.Payment;
-import dev.vality.swag_webhook_events.model.PaymentContactInfo;
-import dev.vality.swag_webhook_events.model.PaymentRecurrentParent;
-import dev.vality.swag_webhook_events.model.PaymentResourcePayer;
-import dev.vality.swag_webhook_events.model.RecurrentPayer;
+import dev.vality.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -106,21 +99,23 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
                                         null)
                                 .fingerprint(resourceOrigin.isSetClientInfo()
                                         ? resourceOrigin.getClientInfo().getFingerprint() : null))
-                        .paymentToolDetails(PaymentToolUtils.getPaymentToolDetails(paymentTool)));
+                        .paymentToolDetails(PaymentToolUtils.getPaymentToolDetails(paymentTool))
+                        .payerType(Payer.PayerTypeEnum.PAYMENTRESOURCEPAYER));
     }
 
     private void setRecurrentPaymentTool(dev.vality.damsel.domain.InvoicePayment source, Payment target) {
         dev.vality.damsel.domain.RecurrentPayer recurrentParentOrigin = source.getPayer().getRecurrent();
         target.contactInfo(new PaymentContactInfo()
-                .email(recurrentParentOrigin.getContactInfo().getEmail())
-                .phoneNumber(recurrentParentOrigin.getContactInfo().getPhoneNumber()))
+                        .email(recurrentParentOrigin.getContactInfo().getEmail())
+                        .phoneNumber(recurrentParentOrigin.getContactInfo().getPhoneNumber()))
                 .payer(new RecurrentPayer()
                         .recurrentParentPayment(new PaymentRecurrentParent()
                                 .invoiceID(recurrentParentOrigin.getRecurrentParent().getInvoiceId())
                                 .paymentID(recurrentParentOrigin.getRecurrentParent().getPaymentId()))
                         .contactInfo(new ContactInfo()
                                 .email(recurrentParentOrigin.getContactInfo().getEmail())
-                                .phoneNumber(recurrentParentOrigin.getContactInfo().getPhoneNumber())))
+                                .phoneNumber(recurrentParentOrigin.getContactInfo().getPhoneNumber()))
+                        .payerType(Payer.PayerTypeEnum.RECURRENTPAYER))
                 .contactInfo(new PaymentContactInfo()
                         .email(recurrentParentOrigin.getContactInfo().getEmail())
                         .phoneNumber(recurrentParentOrigin.getContactInfo().getPhoneNumber()));
@@ -133,7 +128,8 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
                         .email(customerPayerOrigin.getContactInfo().getEmail())
                         .phoneNumber(customerPayerOrigin.getContactInfo().getPhoneNumber()))
                 .payer(new CustomerPayer()
-                        .customerID(source.getPayer().getCustomer().getCustomerId()));
+                        .customerID(source.getPayer().getCustomer().getCustomerId())
+                        .payerType(Payer.PayerTypeEnum.CUSTOMERPAYER));
     }
 
     private boolean isSetAdditionalInfo(InvoicePayment sourceWrapper) {

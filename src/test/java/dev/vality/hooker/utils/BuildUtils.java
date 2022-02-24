@@ -106,8 +106,15 @@ public class BuildUtils {
                 .setInvoice(buildInvoice(partyId, invoiceId, invoiceStatus, thriftBaseProcessor))
                 .setPayments(buildPayments(partyId, paymentId, refundId, paymentStatus, thriftBaseProcessor));
         if (invoice.getPayments().get(0).getPayment().getPayer().isSetPaymentResource()) {
+            BankCard bankCard = new BankCard()
+                    .setPaymentSystem(
+                            new PaymentSystemRef(random(LegacyBankCardPaymentSystem.class).name())
+                    )
+                    .setPaymentToken(
+                            new BankCardTokenServiceRef(random(LegacyBankCardTokenProvider.class).name())
+                    );
             PaymentTool paymentTool = PaymentTool.bank_card(
-                    thriftBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))
+                    thriftBaseProcessor.process(bankCard, new TBaseHandler<>(BankCard.class))
             );
             invoice.getPayments().get(0).getPayment().getPayer().getPaymentResource().getResource()
                     .setPaymentTool(paymentTool);

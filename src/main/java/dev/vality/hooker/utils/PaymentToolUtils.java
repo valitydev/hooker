@@ -6,16 +6,12 @@ import dev.vality.damsel.domain.BankCard;
 import dev.vality.damsel.domain.LegacyDigitalWalletProvider;
 import dev.vality.damsel.domain.MobilePhone;
 import dev.vality.damsel.domain.PaymentTool;
-import dev.vality.hooker.model.PaymentToolDetailsDigitalWallet;
 import dev.vality.mamsel.*;
 import dev.vality.swag_webhook_events.model.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-/**
- * Created by inalarsanukaev on 13.10.17.
- */
 public class PaymentToolUtils {
 
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -32,30 +28,34 @@ public class PaymentToolUtils {
                     .paymentSystem(PaymentSystemUtil.getPaymentSystemName(paymentTool.getBankCard()))
                     .issuerCountry(paymentTool.getBankCard().getIssuerCountry() != null
                             ? paymentTool.getBankCard().getIssuerCountry().name() : null)
-                    .bankName(paymentTool.getBankCard().getBankName());
+                    .bankName(paymentTool.getBankCard().getBankName())
+                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD);
         } else if (paymentTool.isSetPaymentTerminal()) {
             return new PaymentToolDetailsPaymentTerminal()
                     .provider(PaymentToolDetailsPaymentTerminal.ProviderEnum.fromValue(
-                            TerminalPaymentUtil.getTerminalPaymentProviderName(paymentTool.getPaymentTerminal())));
+                            TerminalPaymentUtil.getTerminalPaymentProviderName(paymentTool.getPaymentTerminal())))
+                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL);
         } else if (paymentTool.isSetDigitalWallet()) {
             //TODO Bump swag-webhook-events api
             LegacyDigitalWalletProvider walletProvider = LegacyDigitalWalletProvider.valueOf(
                     DigitalWalletUtil.getDigitalWalletName(paymentTool.getDigitalWallet()));
             if (walletProvider == LegacyDigitalWalletProvider.qiwi) {
-                PaymentToolDetailsDigitalWallet paymentToolDetailsDigitalWallet = new PaymentToolDetailsDigitalWallet(
-                        new DigitalWalletDetailsQIWI().phoneNumberMask(paymentTool.getDigitalWallet().getId())
-                );
-                return paymentToolDetailsDigitalWallet;
+                return new PaymentToolDetailsDigitalWallet()
+                        .digitalWalletDetailsType(
+                                PaymentToolDetailsDigitalWallet.DigitalWalletDetailsTypeEnum.DIGITALWALLETDETAILSQIWI)
+                        .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSDIGITALWALLET);
             } else {
                 throw new UnsupportedOperationException("Unknown digital wallet type");
             }
         } else if (CryptoCurrencyUtil.isSetCryptoCurrency(paymentTool)) {
             return new PaymentToolDetailsCryptoWallet()
-                    .cryptoCurrency(CryptoCurrency.fromValue(CryptoCurrencyUtil.getCryptoCurrencyName(paymentTool)));
+                    .cryptoCurrency(CryptoCurrency.fromValue(CryptoCurrencyUtil.getCryptoCurrencyName(paymentTool)))
+                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET);
         } else if (paymentTool.isSetMobileCommerce()) {
             return new PaymentToolDetailsMobileCommerce()
                     .phoneNumber(paymentTool.getMobileCommerce().getPhone().getCc() +
-                            paymentTool.getMobileCommerce().getPhone().getCtn());
+                            paymentTool.getMobileCommerce().getPhone().getCtn())
+                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSMOBILECOMMERCE);
         } else {
             throw new UnsupportedOperationException(
                     "Unknown payment tool type. Must be bank card, terminal or digital wallet");

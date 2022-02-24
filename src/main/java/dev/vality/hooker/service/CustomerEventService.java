@@ -60,32 +60,34 @@ public class CustomerEventService implements EventService<CustomerMessage> {
     }
 
     private Event resolveEvent(CustomerMessage message, Customer customer) {
-        switch (message.getEventType()) {
-            case CUSTOMER_CREATED:
-                return new CustomerCreated().customer(customerConverter.convert(customer));
-            case CUSTOMER_DELETED:
-                return new CustomerDeleted().customer(customerConverter.convert(customer));
-            case CUSTOMER_READY:
-                return new CustomerReady().customer(customerConverter.convert(customer));
-            case CUSTOMER_BINDING_STARTED:
-                return new CustomerBindingStarted()
-                        .customer(customerConverter.convert(customer))
-                        .binding(customerBindingConverter.convert(extractBinding(message, customer)));
-            case CUSTOMER_BINDING_SUCCEEDED:
-                return new CustomerBindingSucceeded()
-                        .customer(customerConverter.convert(customer))
-                        .binding(customerBindingConverter.convert(extractBinding(message, customer)));
-            case CUSTOMER_BINDING_FAILED:
-                return new CustomerBindingFailed()
-                        .customer(customerConverter.convert(customer))
-                        .binding(customerBindingConverter.convert(extractBinding(message, customer)));
-            default:
-                throw new UnsupportedOperationException("Unknown event type " + message.getEventType());
-        }
+        return switch (message.getEventType()) {
+            case CUSTOMER_CREATED -> new CustomerCreated()
+                    .customer(customerConverter.convert(customer))
+                    .eventType(Event.EventTypeEnum.CUSTOMERCREATED);
+            case CUSTOMER_DELETED -> new CustomerDeleted()
+                    .customer(customerConverter.convert(customer))
+                    .eventType(Event.EventTypeEnum.CUSTOMERDELETED);
+            case CUSTOMER_READY -> new CustomerReady()
+                    .customer(customerConverter.convert(customer))
+                    .eventType(Event.EventTypeEnum.CUSTOMERREADY);
+            case CUSTOMER_BINDING_STARTED -> new CustomerBindingStarted()
+                    .customer(customerConverter.convert(customer))
+                    .binding(customerBindingConverter.convert(extractBinding(message, customer)))
+                    .eventType(Event.EventTypeEnum.CUSTOMERBINDINGSTARTED);
+            case CUSTOMER_BINDING_SUCCEEDED -> new CustomerBindingSucceeded()
+                    .customer(customerConverter.convert(customer))
+                    .binding(customerBindingConverter.convert(extractBinding(message, customer)))
+                    .eventType(Event.EventTypeEnum.CUSTOMERBINDINGSUCCEEDED);
+            case CUSTOMER_BINDING_FAILED -> new CustomerBindingFailed()
+                    .customer(customerConverter.convert(customer))
+                    .binding(customerBindingConverter.convert(extractBinding(message, customer)))
+                    .eventType(Event.EventTypeEnum.CUSTOMERBINDINGFAILED);
+            default -> throw new UnsupportedOperationException("Unknown event type " + message.getEventType());
+        };
     }
 
     private dev.vality.damsel.payment_processing.CustomerBinding extractBinding(CustomerMessage message,
-                                                                                  Customer customer) {
+                                                                                Customer customer) {
         return customer.getBindings().stream()
                 .filter(b -> b.getId().equals(message.getBindingId()))
                 .findFirst()

@@ -43,7 +43,9 @@ public class InvoicingEventServiceTest extends AbstractIntegrationTest {
         Mockito.when(invoicingClient.get(any(), any(), any()))
                 .thenReturn(BuildUtils.buildInvoice("partyId", "invoiceId", "1", "1",
                         InvoiceStatus.paid(new InvoicePaid()),
-                        InvoicePaymentStatus.pending(new InvoicePaymentPending())));
+                        InvoicePaymentStatus.pending(
+                                new InvoicePaymentPending()
+                        )));
     }
 
     @Test
