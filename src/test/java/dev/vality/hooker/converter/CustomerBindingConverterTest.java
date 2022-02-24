@@ -32,8 +32,8 @@ public class CustomerBindingConverterTest extends AbstractIntegrationTest {
                                 )
                                 .setPaymentToken(
                                         new BankCardTokenServiceRef(random(LegacyBankCardTokenProvider.class).name())
-                                )
-                        , new TBaseHandler<>(BankCard.class))));
+                                ),
+                        new TBaseHandler<>(BankCard.class))));
         dev.vality.swag_webhook_events.model.CustomerBinding target = converter.convert(source);
         assertEquals(source.getId(), target.getId());
         assertEquals(source.getPaymentResource().getPaymentSessionId(),

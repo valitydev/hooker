@@ -40,16 +40,15 @@ public class PaymentConverterTest extends AbstractIntegrationTest {
                         new BankCardTokenServiceRef(random(LegacyBankCardTokenProvider.class).name())
                 );
         if (source.getPayer().isSetPaymentResource()) {
-            source.getPayer().getPaymentResource().getResource()
+            source.getPayer().getPaymentResource()
+                    .getResource()
                     .setPaymentTool(
-                            PaymentTool
-                                    .bank_card(
-                                            mockTBaseProcessor.process(
-                                                    bankCard,
-                                                    new TBaseHandler<>(BankCard.class)
-                                            )
+                            PaymentTool.bank_card(
+                                    mockTBaseProcessor.process(
+                                            bankCard,
+                                            new TBaseHandler<>(BankCard.class)
                                     )
-                    );
+                            ));
         }
         Payment target = converter
                 .convert(new dev.vality.damsel.payment_processing.InvoicePayment(source, of(), of(), of(), of()));
