@@ -27,9 +27,8 @@ public class PaymentToolUtils {
                             paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getLastDigits())
                     .tokenProvider(
                             Optional.ofNullable(TokenProviderUtil.getTokenProviderName(paymentTool.getBankCard()))
-                                    .map(value -> PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(
-                                            TokenProviderUtil.getTokenProviderName(paymentTool.getBankCard())
-                                    )).orElse(null)
+                                    .map(PaymentToolDetailsBankCard.TokenProviderEnum::fromValue)
+                                    .orElse(null)
                     )
                     .paymentSystem(PaymentSystemUtil.getPaymentSystemName(paymentTool.getBankCard()))
                     .issuerCountry(paymentTool.getBankCard().getIssuerCountry() != null
