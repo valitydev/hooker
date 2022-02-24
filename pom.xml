@@ -30,7 +30,7 @@
         <db.password>postgres</db.password>
         <db.schema>hook</db.schema>
 
-        <testcontainers.version>1.15.0</testcontainers.version>
+        <testcontainers.version>1.16.3</testcontainers.version>
     </properties>
 
     <dependencies>
