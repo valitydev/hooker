@@ -4,7 +4,7 @@ import dev.vality.damsel.payment_processing.Event;
 import dev.vality.damsel.payment_processing.EventPayload;
 import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.hooker.exception.ParseException;
-import dev.vality.hooker.handler.poller.invoicing.AbstractInvoiceEventMapper;
+import dev.vality.hooker.handler.invoicing.AbstractInvoiceEventMapper;
 import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.hooker.service.HandlerManager;
 import dev.vality.hooker.service.MessageService;

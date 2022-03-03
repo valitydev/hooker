@@ -28,7 +28,7 @@ management:
 spring:
   application:
     name: '@name@'
-    description: @description@
+    description: '@description@'
   flyway:
     schemas: hook
     table: schema_version

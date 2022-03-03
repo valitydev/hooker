@@ -1,4 +1,4 @@
-package dev.vality.hooker.handler.poller.customer;
+package dev.vality.hooker.handler.customer;
 
 import dev.vality.geck.filter.Filter;
 import dev.vality.geck.filter.PathConditionFilter;
@@ -10,14 +10,14 @@ import dev.vality.hooker.model.EventType;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CustomerBindingSucceededMapper extends NeedReadCustomerEventMapper {
+public class CustomerBindingFailedMapper extends NeedReadCustomerEventMapper {
 
-    private EventType eventType = EventType.CUSTOMER_BINDING_SUCCEEDED;
+    private EventType eventType = EventType.CUSTOMER_BINDING_FAILED;
 
     private Filter filter =
             new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
-    public CustomerBindingSucceededMapper(CustomerDaoImpl customerDao) {
+    public CustomerBindingFailedMapper(CustomerDaoImpl customerDao) {
         super(customerDao);
     }
 

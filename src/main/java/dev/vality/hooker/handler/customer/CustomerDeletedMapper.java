@@ -1,4 +1,4 @@
-package dev.vality.hooker.handler.poller.customer;
+package dev.vality.hooker.handler.customer;
 
 import dev.vality.geck.filter.Filter;
 import dev.vality.geck.filter.PathConditionFilter;

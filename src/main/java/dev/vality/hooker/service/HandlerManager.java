@@ -1,7 +1,7 @@
 package dev.vality.hooker.service;
 
 import dev.vality.damsel.payment_processing.InvoiceChange;
-import dev.vality.hooker.handler.poller.invoicing.AbstractInvoiceEventMapper;
+import dev.vality.hooker.handler.invoicing.AbstractInvoiceEventMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

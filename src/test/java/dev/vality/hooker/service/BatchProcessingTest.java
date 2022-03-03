@@ -31,7 +31,7 @@ import dev.vality.damsel.payment_processing.InvoicePaymentStatusChanged;
 import dev.vality.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.hooker.dao.HookDao;
 import dev.vality.hooker.dao.impl.InvoicingDaoImpl;
-import dev.vality.hooker.handler.poller.invoicing.AbstractInvoiceEventMapper;
+import dev.vality.hooker.handler.invoicing.AbstractInvoiceEventMapper;
 import dev.vality.hooker.model.EventInfo;
 import dev.vality.hooker.model.EventType;
 import dev.vality.hooker.model.InvoicingMessage;

@@ -1,6 +1,5 @@
-package dev.vality.hooker.handler.poller.invoicing;
+package dev.vality.hooker.handler.invoicing;
 
-import dev.vality.damsel.domain.InvoicePayment;
 import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.geck.filter.Filter;
 import dev.vality.geck.filter.PathConditionFilter;
@@ -8,21 +7,21 @@ import dev.vality.geck.filter.condition.IsNullCondition;
 import dev.vality.geck.filter.rule.PathConditionRule;
 import dev.vality.hooker.dao.InvoicingMessageDao;
 import dev.vality.hooker.model.EventType;
+import dev.vality.hooker.model.InvoiceStatusEnum;
 import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.hooker.model.InvoicingMessageEnum;
 import dev.vality.hooker.model.InvoicingMessageKey;
-import dev.vality.hooker.model.PaymentStatusEnum;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
+public class InvoiceStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
-    private EventType eventType = EventType.INVOICE_PAYMENT_STARTED;
+    private EventType eventType = EventType.INVOICE_STATUS_CHANGED;
 
     private Filter filter =
             new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
-    public InvoicePaymentStartedMapper(InvoicingMessageDao messageDao) {
+    public InvoiceStatusChangedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);
     }
 
@@ -32,8 +31,16 @@ public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
     }
 
     @Override
+    protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) {
+        return InvoicingMessageKey.builder()
+                .invoiceId(invoiceId)
+                .type(InvoicingMessageEnum.INVOICE)
+                .build();
+    }
+
+    @Override
     protected InvoicingMessageEnum getMessageType() {
-        return InvoicingMessageEnum.PAYMENT;
+        return InvoicingMessageEnum.INVOICE;
     }
 
     @Override
@@ -43,17 +50,7 @@ public class InvoicePaymentStartedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        InvoicePayment paymentOrigin =
-                ic.getInvoicePaymentChange().getPayload().getInvoicePaymentStarted().getPayment();
-        message.setPaymentId(paymentOrigin.getId());
-        message.setPaymentStatus(PaymentStatusEnum.lookup(paymentOrigin.getStatus().getSetField().getFieldName()));
-    }
-
-    @Override
-    protected InvoicingMessageKey getMessageKey(String invoiceId, InvoiceChange ic) {
-        return InvoicingMessageKey.builder()
-                .invoiceId(invoiceId)
-                .type(InvoicingMessageEnum.INVOICE)
-                .build();
+        message.setInvoiceStatus(
+                InvoiceStatusEnum.lookup(ic.getInvoiceStatusChanged().getStatus().getSetField().getFieldName()));
     }
 }

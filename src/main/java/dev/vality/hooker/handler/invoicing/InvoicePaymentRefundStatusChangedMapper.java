@@ -1,4 +1,4 @@
-package dev.vality.hooker.handler.poller.invoicing;
+package dev.vality.hooker.handler.invoicing;
 
 import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.geck.filter.Filter;
@@ -10,18 +10,18 @@ import dev.vality.hooker.model.EventType;
 import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.hooker.model.InvoicingMessageEnum;
 import dev.vality.hooker.model.InvoicingMessageKey;
-import dev.vality.hooker.model.PaymentStatusEnum;
+import dev.vality.hooker.model.RefundStatusEnum;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InvoicePaymentStatusChangedMapper extends NeedReadInvoiceEventMapper {
+public class InvoicePaymentRefundStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
-    private EventType eventType = EventType.INVOICE_PAYMENT_STATUS_CHANGED;
+    private EventType eventType = EventType.INVOICE_PAYMENT_REFUND_STATUS_CHANGED;
 
     private Filter filter =
             new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
-    public InvoicePaymentStatusChangedMapper(InvoicingMessageDao messageDao) {
+    public InvoicePaymentRefundStatusChangedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);
     }
 
@@ -35,13 +35,14 @@ public class InvoicePaymentStatusChangedMapper extends NeedReadInvoiceEventMappe
         return InvoicingMessageKey.builder()
                 .invoiceId(invoiceId)
                 .paymentId(ic.getInvoicePaymentChange().getId())
-                .type(InvoicingMessageEnum.PAYMENT)
+                .refundId(ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange().getId())
+                .type(InvoicingMessageEnum.REFUND)
                 .build();
     }
 
     @Override
     protected InvoicingMessageEnum getMessageType() {
-        return InvoicingMessageEnum.PAYMENT;
+        return InvoicingMessageEnum.REFUND;
     }
 
     @Override
@@ -51,14 +52,8 @@ public class InvoicePaymentStatusChangedMapper extends NeedReadInvoiceEventMappe
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        message.setPaymentStatus(PaymentStatusEnum.lookup(ic.getInvoicePaymentChange().getPayload()
-                .getInvoicePaymentStatusChanged().getStatus().getSetField().getFieldName()));
-    }
-
-    @Override
-    public boolean accept(InvoiceChange change) {
-        return getFilter().match(change)
-                && !change.getInvoicePaymentChange().getPayload().getInvoicePaymentStatusChanged().getStatus()
-                .isSetChargedBack();
+        message.setRefundStatus(
+                RefundStatusEnum.lookup(ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange()
+                        .getPayload().getInvoicePaymentRefundStatusChanged().getStatus().getSetField().getFieldName()));
     }
 }

@@ -1,4 +1,4 @@
-package dev.vality.hooker.handler.poller.invoicing;
+package dev.vality.hooker.handler.invoicing;
 
 import dev.vality.damsel.domain.Invoice;
 import dev.vality.damsel.payment_processing.InvoiceChange;

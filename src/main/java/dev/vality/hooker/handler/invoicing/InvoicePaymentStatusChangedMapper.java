@@ -1,8 +1,6 @@
-package dev.vality.hooker.handler.poller.invoicing;
+package dev.vality.hooker.handler.invoicing;
 
-import dev.vality.damsel.domain.InvoicePaymentRefund;
 import dev.vality.damsel.payment_processing.InvoiceChange;
-import dev.vality.damsel.payment_processing.InvoicePaymentRefundCreated;
 import dev.vality.geck.filter.Filter;
 import dev.vality.geck.filter.PathConditionFilter;
 import dev.vality.geck.filter.condition.IsNullCondition;
@@ -12,18 +10,18 @@ import dev.vality.hooker.model.EventType;
 import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.hooker.model.InvoicingMessageEnum;
 import dev.vality.hooker.model.InvoicingMessageKey;
-import dev.vality.hooker.model.RefundStatusEnum;
+import dev.vality.hooker.model.PaymentStatusEnum;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMapper {
+public class InvoicePaymentStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
-    private EventType eventType = EventType.INVOICE_PAYMENT_REFUND_STARTED;
+    private EventType eventType = EventType.INVOICE_PAYMENT_STATUS_CHANGED;
 
     private Filter filter =
             new PathConditionFilter(new PathConditionRule(eventType.getThriftPath(), new IsNullCondition().not()));
 
-    public InvoicePaymentRefundStartedMapper(InvoicingMessageDao messageDao) {
+    public InvoicePaymentStatusChangedMapper(InvoicingMessageDao messageDao) {
         super(messageDao);
     }
 
@@ -43,7 +41,7 @@ public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMappe
 
     @Override
     protected InvoicingMessageEnum getMessageType() {
-        return InvoicingMessageEnum.REFUND;
+        return InvoicingMessageEnum.PAYMENT;
     }
 
     @Override
@@ -53,11 +51,14 @@ public class InvoicePaymentRefundStartedMapper extends NeedReadInvoiceEventMappe
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        InvoicePaymentRefundCreated refundCreated =
-                ic.getInvoicePaymentChange().getPayload().getInvoicePaymentRefundChange()
-                        .getPayload().getInvoicePaymentRefundCreated();
-        InvoicePaymentRefund refundOrigin = refundCreated.getRefund();
-        message.setRefundId(refundOrigin.getId());
-        message.setRefundStatus(RefundStatusEnum.lookup(refundOrigin.getStatus().getSetField().getFieldName()));
+        message.setPaymentStatus(PaymentStatusEnum.lookup(ic.getInvoicePaymentChange().getPayload()
+                .getInvoicePaymentStatusChanged().getStatus().getSetField().getFieldName()));
+    }
+
+    @Override
+    public boolean accept(InvoiceChange change) {
+        return getFilter().match(change)
+                && !change.getInvoicePaymentChange().getPayload().getInvoicePaymentStatusChanged().getStatus()
+                .isSetChargedBack();
     }
 }

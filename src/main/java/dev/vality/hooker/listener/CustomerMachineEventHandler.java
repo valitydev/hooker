@@ -4,7 +4,7 @@ import dev.vality.damsel.payment_processing.CustomerChange;
 import dev.vality.damsel.payment_processing.EventPayload;
 import dev.vality.geck.serializer.kit.json.JsonHandler;
 import dev.vality.geck.serializer.kit.tbase.TBaseProcessor;
-import dev.vality.hooker.handler.poller.customer.AbstractCustomerEventMapper;
+import dev.vality.hooker.handler.customer.AbstractCustomerEventMapper;
 import dev.vality.hooker.model.CustomerMessage;
 import dev.vality.hooker.model.EventInfo;
 import dev.vality.hooker.service.MessageService;

@@ -33,7 +33,7 @@ public abstract class AbstractKafkaIntegrationTest {
     public static KafkaContainer kafka = new KafkaContainer(CONFLUENT_PLATFORM_VERSION).withEmbeddedZookeeper();
 
     @ClassRule
-    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer("postgres:12")
+    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer("postgres:14")
             .withStartupTimeout(Duration.ofMinutes(5));
     @Value("${local.server.port}")
     protected int port;

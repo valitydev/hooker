@@ -1,4 +1,4 @@
-package dev.vality.hooker.handler.poller.customer;
+package dev.vality.hooker.handler.customer;
 
 import dev.vality.damsel.payment_processing.CustomerChange;
 import dev.vality.hooker.dao.impl.CustomerDaoImpl;
