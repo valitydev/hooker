@@ -1,4 +1,4 @@
-package dev.vality.hooker.dao;
+package dev.vality.hooker.converter;
 
 import dev.vality.damsel.proxy_provider.Intent;
 import dev.vality.hooker.config.PostgresqlSpringBootITest;

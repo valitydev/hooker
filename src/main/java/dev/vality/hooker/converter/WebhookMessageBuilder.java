@@ -26,12 +26,12 @@ public class WebhookMessageBuilder {
 
     @SneakyThrows
     public WebhookMessage build(WebhookMessageModel webhookMessageModel, Event event, String sourceId, Long parentId) {
-        Message message = webhookMessageModel.getMessage();
         final String messageJson = objectMapper.writeValueAsString(event);
         final String signature = signer.sign(messageJson, webhookMessageModel.getPrivateKey());
         return new WebhookMessage()
-                .setWebhookId(message.getId())
+                .setWebhookId(webhookMessageModel.getHookId())
                 .setSourceId(sourceId)
+                .setEventId(event.getEventID())
                 .setParentEventId(parentId)
                 .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                 .setUrl(webhookMessageModel.getUrl())
