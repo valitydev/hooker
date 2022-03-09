@@ -3,8 +3,6 @@ package dev.vality.hooker.converter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.damsel.json.Null;
 import dev.vality.damsel.json.Value;
-import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

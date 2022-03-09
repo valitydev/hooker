@@ -2,7 +2,6 @@ package dev.vality.hooker.converter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.geck.common.util.TypeUtil;
-import dev.vality.hooker.model.Message;
 import dev.vality.hooker.model.WebhookMessageModel;
 import dev.vality.hooker.service.AdditionalHeadersGenerator;
 import dev.vality.hooker.service.crypt.Signer;

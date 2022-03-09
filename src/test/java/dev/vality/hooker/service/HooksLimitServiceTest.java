@@ -1,10 +1,6 @@
 package dev.vality.hooker.service;
 
-import dev.vality.damsel.webhooker.EventFilter;
-import dev.vality.damsel.webhooker.InvoiceCreated;
-import dev.vality.damsel.webhooker.InvoiceEventFilter;
-import dev.vality.damsel.webhooker.InvoiceEventType;
-import dev.vality.damsel.webhooker.WebhookParams;
+import dev.vality.damsel.webhooker.*;
 import dev.vality.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.hooker.dao.HookDao;
 import dev.vality.hooker.utils.HookConverter;

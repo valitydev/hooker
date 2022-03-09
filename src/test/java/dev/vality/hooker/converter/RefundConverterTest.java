@@ -1,11 +1,9 @@
 package dev.vality.hooker.converter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.damsel.domain.InvoicePaymentRefund;
 import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
 import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
-import dev.vality.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.swag_webhook_events.model.Refund;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

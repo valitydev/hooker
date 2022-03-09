@@ -1,11 +1,6 @@
 package dev.vality.hooker.dao.rowmapper;
 
-import dev.vality.hooker.model.EventType;
-import dev.vality.hooker.model.InvoiceStatusEnum;
-import dev.vality.hooker.model.InvoicingMessage;
-import dev.vality.hooker.model.InvoicingMessageEnum;
-import dev.vality.hooker.model.PaymentStatusEnum;
-import dev.vality.hooker.model.RefundStatusEnum;
+import dev.vality.hooker.model.*;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 

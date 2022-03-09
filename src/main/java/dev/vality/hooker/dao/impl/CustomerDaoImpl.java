@@ -2,9 +2,10 @@ package dev.vality.hooker.dao.impl;
 
 import dev.vality.hooker.dao.CustomerDao;
 import dev.vality.hooker.dao.rowmapper.CustomerRowMapper;
-import dev.vality.hooker.dao.rowmapper.WebhookModelRowMapper;
 import dev.vality.hooker.exception.DaoException;
-import dev.vality.hooker.model.*;
+import dev.vality.hooker.model.CustomerMessage;
+import dev.vality.hooker.model.CustomerMessageEnum;
+import dev.vality.hooker.model.WebhookMessageModel;
 import dev.vality.swag_webhook_events.model.Event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

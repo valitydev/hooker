@@ -8,9 +8,11 @@ import dev.vality.swag_webhook_events.model.Event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @PostgresqlSpringBootITest
 public class InvoicingDaoImplTest {
@@ -132,6 +134,7 @@ public class InvoicingDaoImplTest {
         Long parentEventId2Two = messageDao.getParentId(hook.getId(), invoiceTwo, messageId2Two);
         var webhookModels1Two = messageDao.getWebhookModels(messageId1Two);
         assertEquals(1, webhookModels1Two.size());
+        assertEquals(parentEventId2Two, messageId1Two);
 
         Long parentEventIdThree = messageDao.getParentId(hook.getId(), invoiceThree, messageIdThree);
         assertEquals(-1, parentEventIdThree);

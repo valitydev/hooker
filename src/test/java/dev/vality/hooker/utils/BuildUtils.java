@@ -1,14 +1,7 @@
 package dev.vality.hooker.utils;
 
 import dev.vality.damsel.base.Content;
-import dev.vality.damsel.domain.AdditionalTransactionInfo;
-import dev.vality.damsel.domain.BankCard;
-import dev.vality.damsel.domain.Invoice;
-import dev.vality.damsel.domain.InvoicePaymentRefund;
-import dev.vality.damsel.domain.InvoicePaymentStatus;
-import dev.vality.damsel.domain.InvoiceStatus;
-import dev.vality.damsel.domain.PaymentTool;
-import dev.vality.damsel.domain.TransactionInfo;
+import dev.vality.damsel.domain.*;
 import dev.vality.damsel.json.Value;
 import dev.vality.damsel.payment_processing.InvoicePayment;
 import dev.vality.damsel.payment_processing.InvoiceRefundSession;
@@ -16,26 +9,12 @@ import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
 import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
 import dev.vality.hooker.dao.WebhookAdditionalFilter;
-import dev.vality.hooker.model.CustomerMessage;
-import dev.vality.hooker.model.CustomerMessageEnum;
-import dev.vality.hooker.model.EventType;
-import dev.vality.hooker.model.Hook;
-import dev.vality.hooker.model.InvoiceStatusEnum;
-import dev.vality.hooker.model.InvoicingMessage;
-import dev.vality.hooker.model.InvoicingMessageEnum;
-import dev.vality.hooker.model.PaymentStatusEnum;
-import dev.vality.hooker.model.RefundStatusEnum;
+import dev.vality.hooker.model.*;
 import dev.vality.swag_webhook_events.model.Event;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class BuildUtils {
     private static int messageId = 1;

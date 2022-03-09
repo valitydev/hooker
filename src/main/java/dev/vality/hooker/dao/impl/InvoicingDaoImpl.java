@@ -2,7 +2,6 @@ package dev.vality.hooker.dao.impl;
 
 import dev.vality.hooker.dao.InvoicingMessageDao;
 import dev.vality.hooker.dao.rowmapper.InvoicingRowMapper;
-import dev.vality.hooker.dao.rowmapper.WebhookModelRowMapper;
 import dev.vality.hooker.exception.DaoException;
 import dev.vality.hooker.exception.NotFoundException;
 import dev.vality.hooker.model.InvoicingMessage;

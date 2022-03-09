@@ -11,7 +11,6 @@ import dev.vality.swag_webhook_events.model.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Optional;
 
 public class PaymentToolUtils {
 

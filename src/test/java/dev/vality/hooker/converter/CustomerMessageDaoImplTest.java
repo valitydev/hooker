@@ -1,6 +1,5 @@
 package dev.vality.hooker.converter;
 
-import dev.vality.damsel.proxy_provider.Intent;
 import dev.vality.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.hooker.dao.impl.CustomerDaoImpl;
 import dev.vality.hooker.model.CustomerMessage;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

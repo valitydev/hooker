@@ -1,23 +1,24 @@
 package dev.vality.hooker.converter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.hooker.configuration.AppConfig;
-import dev.vality.hooker.model.*;
+import dev.vality.hooker.model.WebhookMessageModel;
 import dev.vality.hooker.service.AdditionalHeadersGenerator;
 import dev.vality.hooker.service.crypt.AsymSigner;
-import dev.vality.hooker.service.crypt.Signer;
-import dev.vality.hooker.utils.BuildUtils;
 import dev.vality.swag_webhook_events.model.Event;
 import dev.vality.webhook.dispatcher.WebhookMessage;
 import org.apache.http.entity.ContentType;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 
 @ContextConfiguration(classes = {
         WebhookMessageBuilder.class,
@@ -32,6 +33,11 @@ public class WebhookMessageBuilderTest {
 
     @Autowired
     private WebhookMessageBuilder builder;
+
+    @BeforeEach
+    public void setUp() {
+        Mockito.when(signer.sign(any(), any())).thenReturn("signature");
+    }
 
     @Test
     public void testBuild() {

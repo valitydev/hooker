@@ -9,7 +9,6 @@ import dev.vality.hooker.model.PartyMetadata;
 import dev.vality.hooker.utils.EventFilterUtils;
 import dev.vality.hooker.utils.HookConverter;
 import dev.vality.swag_webhook_events.model.Event;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,9 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Created by inalarsanukaev on 08.04.17.

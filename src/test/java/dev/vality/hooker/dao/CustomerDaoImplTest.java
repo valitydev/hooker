@@ -2,7 +2,10 @@ package dev.vality.hooker.dao;
 
 import dev.vality.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.hooker.dao.impl.CustomerDaoImpl;
-import dev.vality.hooker.model.*;
+import dev.vality.hooker.model.CustomerMessage;
+import dev.vality.hooker.model.CustomerMessageEnum;
+import dev.vality.hooker.model.EventType;
+import dev.vality.hooker.model.Hook;
 import dev.vality.hooker.utils.BuildUtils;
 import dev.vality.swag_webhook_events.model.Event;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @PostgresqlSpringBootITest
 public class CustomerDaoImplTest {
@@ -109,6 +111,7 @@ public class CustomerDaoImplTest {
         Long parentEventId2Two = messageDao.getParentId(hook.getId(), customerIdTwo, messageId2Two);
         var webhookModels1Two = messageDao.getWebhookModels(messageId1Two);
         assertEquals(1, webhookModels1Two.size());
+        assertEquals(parentEventId2Two, messageId1Two);
 
         Long parentEventIdThree = messageDao.getParentId(hook.getId(), customerIdThree, messageIdThree);
         assertEquals(-1, parentEventIdThree);
