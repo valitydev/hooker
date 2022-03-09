@@ -136,7 +136,8 @@ public class HookDaoImplTest {
 
     @Test
     public void getPartyWebhooks() throws Exception {
-        assertEquals(hookDao.getPartyHooks("123").stream().filter(Hook::isEnabled).collect(Collectors.toList()).size(),
+        assertEquals(
+                hookDao.getPartyHooks("123").stream().filter(Hook::isEnabled).collect(Collectors.toList()).size(),
                 3);
         assertTrue(hookDao.getPartyHooks("88888").stream().filter(Hook::isEnabled).collect(Collectors.toList()).isEmpty());
     }
