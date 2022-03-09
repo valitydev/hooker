@@ -10,5 +10,5 @@ public interface MessageDao<M extends Message> {
 
     List<WebhookMessageModel<M>> getWebhookModels(Long messageId);
 
-    Long getParentEventId(Long hookId, String sourceId, Long messageId);
+    Long getParentId(Long hookId, String sourceId, Long messageId);
 }

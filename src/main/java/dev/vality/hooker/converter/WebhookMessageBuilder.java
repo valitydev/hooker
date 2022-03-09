@@ -32,7 +32,6 @@ public class WebhookMessageBuilder {
         return new WebhookMessage()
                 .setWebhookId(message.getId())
                 .setSourceId(sourceId)
-                .setEventId(message.getEventId())
                 .setParentEventId(parentId)
                 .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                 .setUrl(webhookMessageModel.getUrl())

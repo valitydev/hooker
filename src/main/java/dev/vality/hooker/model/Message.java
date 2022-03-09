@@ -7,7 +7,6 @@ import lombok.Setter;
 @Setter
 public class Message {
     private Long id;
-    private Long eventId;
     private Long sequenceId;
     private Integer changeId;
     private String eventTime;

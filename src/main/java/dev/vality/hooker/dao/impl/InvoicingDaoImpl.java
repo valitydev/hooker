@@ -38,18 +38,16 @@ public class InvoicingDaoImpl implements InvoicingMessageDao {
     public Long save(InvoicingMessage message) {
         try {
             final String sql = "INSERT INTO hook.message" +
-                    "(id, new_event_id, event_time, sequence_id, change_id, type, party_id, event_type, " +
+                    "(event_time, sequence_id, change_id, type, party_id, event_type, " +
                     "invoice_id, shop_id, invoice_status, payment_id, payment_status, refund_id, refund_status) " +
                     "VALUES " +
-                    "(:id, :new_event_id, :event_time, :sequence_id, :change_id, :type, :party_id, " +
+                    "(:event_time, :sequence_id, :change_id, :type, :party_id, " +
                     "CAST(:event_type as hook.eventtype), :invoice_id, :shop_id, :invoice_status, :payment_id, " +
                     ":payment_status, :refund_id, :refund_status) " +
                     "ON CONFLICT (invoice_id, sequence_id, change_id) DO NOTHING " +
                     "RETURNING id";
 
             MapSqlParameterSource sqlParameterSources = new MapSqlParameterSource()
-                            .addValue(InvoicingRowMapper.ID, message.getId())
-                            .addValue(InvoicingRowMapper.NEW_EVENT_ID, message.getEventId())
                             .addValue(InvoicingRowMapper.EVENT_TIME, message.getEventTime())
                             .addValue(InvoicingRowMapper.SEQUENCE_ID, message.getSequenceId())
                             .addValue(InvoicingRowMapper.CHANGE_ID, message.getChangeId())
@@ -113,8 +111,8 @@ public class InvoicingDaoImpl implements InvoicingMessageDao {
     }
 
     @Override
-    public Long getParentEventId(Long hookId, String invoiceId, Long messageId) {
-        final String sql = "select m.new_event_id"  +
+    public Long getParentId(Long hookId, String invoiceId, Long messageId) {
+        final String sql = "select m.id"  +
                 " from hook.message m " +
                 " join hook.webhook w on w.id=:hook_id" +
                 " join hook.webhook_to_events wte on wte.hook_id = w.id" +
@@ -126,7 +124,7 @@ public class InvoicingDaoImpl implements InvoicingMessageDao {
                 " and (m.payment_status = wte.invoice_payment_status or wte.invoice_payment_status is null)" +
                 " and (m.refund_status = wte.invoice_payment_refund_status " +
                 "      or wte.invoice_payment_refund_status is null)" +
-                " order by new_event_id desc limit 1 ";
+                " order by id desc limit 1 ";
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
                 .addValue("hook_id", hookId)
                 .addValue("invoice_id", invoiceId)

@@ -52,16 +52,15 @@ public class CustomerDaoImpl implements CustomerDao {
     @Override
     public Long save(CustomerMessage message) throws DaoException {
         final String sql = "INSERT INTO hook.customer_message " +
-                "(event_id, occured_at, sequence_id, change_id, type, " +
+                "(occured_at, sequence_id, change_id, type, " +
                 "party_id, event_type, customer_id, customer_shop_id, binding_id) " +
                 "VALUES " +
-                "(:event_id, :occured_at, :sequence_id, :change_id, CAST(:type as hook.customer_message_type), " +
+                "(:occured_at, :sequence_id, :change_id, CAST(:type as hook.customer_message_type), " +
                 ":party_id, CAST(:event_type as hook.eventtype), :customer_id, :customer_shop_id,  :binding_id) " +
                 "ON CONFLICT (customer_id, sequence_id, change_id) DO NOTHING " +
                 "RETURNING id";
 
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue(CustomerRowMapper.EVENT_ID, message.getEventId())
                 .addValue(CustomerRowMapper.OCCURED_AT, message.getEventTime())
                 .addValue(CustomerRowMapper.SEQUENCE_ID, message.getSequenceId())
                 .addValue(CustomerRowMapper.CHANGE_ID, message.getChangeId())
@@ -103,8 +102,8 @@ public class CustomerDaoImpl implements CustomerDao {
     }
 
     @Override
-    public Long getParentEventId(Long hookId, String customerId, Long messageId) {
-        final String sql = "select m.event_id"  +
+    public Long getParentId(Long hookId, String customerId, Long messageId) {
+        final String sql = "select m.id"  +
                 " from hook.customer_message m " +
                 " join hook.webhook w on w.id=:hook_id" +
                 " join hook.webhook_to_events wte on wte.hook_id = w.id" +
@@ -112,7 +111,7 @@ public class CustomerDaoImpl implements CustomerDao {
                 " and m.id <:id " +
                 " and m.event_type = wte.event_type " +
                 " and (m.customer_shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
-                " order by event_id desc limit 1 ";
+                " order by id desc limit 1 ";
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
                 .addValue("hook_id", hookId)
                 .addValue("customer_id", customerId)

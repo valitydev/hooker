@@ -49,7 +49,6 @@ public class CustomerEventServiceTest {
         Event event = service.getEventByMessage(message);
         assertTrue(event instanceof CustomerBindingSucceeded);
         CustomerBindingSucceeded bindingSucceeded = (CustomerBindingSucceeded) event;
-        assertEquals(message.getEventId().intValue(), event.getEventID().intValue());
         assertEquals("customerId", bindingSucceeded.getCustomer().getId());
         assertEquals("bindingId", bindingSucceeded.getBinding().getId());
     }

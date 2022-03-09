@@ -16,7 +16,6 @@ import java.sql.SQLException;
 public class InvoicingRowMapper implements RowMapper<InvoicingMessage> {
 
     public static final String ID = "id";
-    public static final String NEW_EVENT_ID = "new_event_id";
     public static final String EVENT_TIME = "event_time";
     public static final String SEQUENCE_ID = "sequence_id";
     public static final String CHANGE_ID = "change_id";
@@ -35,7 +34,6 @@ public class InvoicingRowMapper implements RowMapper<InvoicingMessage> {
     public InvoicingMessage mapRow(ResultSet rs, int i) throws SQLException {
         InvoicingMessage message = new InvoicingMessage();
         message.setId(rs.getLong(ID));
-        message.setEventId(rs.getLong(NEW_EVENT_ID));
         message.setEventTime(rs.getString(EVENT_TIME));
         message.setSequenceId(rs.getLong(SEQUENCE_ID));
         message.setChangeId(rs.getInt(CHANGE_ID));

@@ -12,7 +12,6 @@ import java.sql.SQLException;
 @Component
 public class CustomerRowMapper implements RowMapper<CustomerMessage> {
     public static final String ID = "id";
-    public static final String EVENT_ID = "event_id";
     public static final String TYPE = "type";
     public static final String OCCURED_AT = "occured_at";
     public static final String SEQUENCE_ID = "sequence_id";
@@ -27,7 +26,6 @@ public class CustomerRowMapper implements RowMapper<CustomerMessage> {
     public CustomerMessage mapRow(ResultSet rs, int rowNum) throws SQLException {
         CustomerMessage message = new CustomerMessage();
         message.setId(rs.getLong(ID));
-        message.setEventId(rs.getLong(EVENT_ID));
         message.setPartyId(rs.getString(PARTY_ID));
         message.setEventTime(rs.getString(OCCURED_AT));
         message.setSequenceId(rs.getLong(SEQUENCE_ID));

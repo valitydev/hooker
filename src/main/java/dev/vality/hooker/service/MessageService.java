@@ -21,13 +21,14 @@ public class MessageService<T extends Message> {
         Long id = messageDao.save(message);
         String sourceId = message.getSourceId();
         if (id != null) {
+            message.setId(id);
             var webhookModels = messageDao.getWebhookModels(id);
             if (!webhookModels.isEmpty()) {
                 log.info("Processing {} webhook(s)", webhookModels.size());
                 Event event = eventService.getEventByMessage(message);
                 webhookModels.forEach(w -> {
                     Long hookId = w.getHookId();
-                    Long parentEventId = messageDao.getParentEventId(hookId, sourceId, id);
+                    Long parentEventId = messageDao.getParentId(hookId, sourceId, id);
                     WebhookMessage webhookMessage = webhookMessageBuilder.build(w, event, sourceId, parentEventId);
                     log.info("Try to send webhook to kafka: {}", webhookMessage);
                     webhookKafkaProducerService.send(webhookMessage);

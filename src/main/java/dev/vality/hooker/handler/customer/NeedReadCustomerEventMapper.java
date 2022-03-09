@@ -23,7 +23,6 @@ public abstract class NeedReadCustomerEventMapper extends AbstractCustomerEventM
         }
         message.setEventType(getEventType());
         message.setType(getMessageType());
-        message.setEventId(eventInfo.getEventId());
         message.setEventTime(eventInfo.getEventCreatedAt());
         message.setSequenceId(eventInfo.getSequenceId());
         message.setChangeId(eventInfo.getChangeId());

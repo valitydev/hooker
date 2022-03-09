@@ -49,8 +49,6 @@ public class BuildUtils {
                                                 InvoiceStatusEnum invoiceStatus, PaymentStatusEnum paymentStatus,
                                                 Long sequenceId, Integer changeId) {
         InvoicingMessage message = new InvoicingMessage();
-        message.setId((long) messageId++);
-        message.setEventId((long) messageId++);
         message.setEventTime("2016-03-22T06:12:27Z");
         message.setType(InvoicingMessageEnum.lookup(type));
         message.setPartyId(partyId);
@@ -193,7 +191,6 @@ public class BuildUtils {
     public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType,
                                                        CustomerMessageEnum type, String custId, String shopId) {
         CustomerMessage customerMessage = new CustomerMessage();
-        customerMessage.setEventId(eventId);
         customerMessage.setPartyId(partyId);
         customerMessage.setEventTime("2018-03-22T06:12:27Z");
         customerMessage.setEventType(eventType);

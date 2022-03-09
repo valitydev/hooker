@@ -105,7 +105,6 @@ public class KafkaMachineEventListenerKafkaTest extends AbstractKafkaIntegration
         Value data = new Value();
         data.setBin(new byte[0]);
         message.setCreatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
-        message.setEventId(1L);
         message.setSourceNs(SOURCE_NS);
         message.setSourceId(SOURCE_ID);
         message.setData(data);

@@ -59,7 +59,6 @@ public class InvoicingEventServiceTest {
         Event event = service.getEventByMessage(message);
         assertTrue(event instanceof RefundSucceeded);
         RefundSucceeded refundSucceded = (RefundSucceeded) event;
-        assertEquals(message.getEventId().intValue(), event.getEventID().intValue());
         assertEquals("invoiceId", refundSucceded.getInvoice().getId());
         assertEquals("1", refundSucceded.getPayment().getId());
         assertEquals("1", refundSucceded.getRefund().getId());

@@ -44,7 +44,7 @@ public class CustomerEventService implements EventService<CustomerMessage> {
             ).call();
 
             return resolveEvent(message, customer)
-                    .eventID(message.getEventId().intValue())
+                    .eventID(message.getId().intValue())
                     .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
                     .topic(Event.TopicEnum.CUSTOMERSTOPIC);
         } catch (CustomerNotFound e) {

@@ -57,7 +57,6 @@ public class CustomerMachineEventHandler implements MachineEventHandler {
             log.info("We got an event {}", new TBaseProcessor()
                     .process(machineEvent, JsonHandler.newPrettyJsonInstance()));
             EventInfo eventInfo = new EventInfo(
-                    machineEvent.getEventId(),
                     machineEvent.getCreatedAt(),
                     machineEvent.getSourceId(),
                     machineEvent.getEventId(),

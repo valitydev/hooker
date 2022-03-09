@@ -30,7 +30,6 @@ public class CustomerCreatedMapper extends AbstractCustomerEventMapper {
     protected CustomerMessage buildEvent(CustomerChange cc, EventInfo eventInfo) throws DaoException {
         dev.vality.damsel.payment_processing.CustomerCreated customerCreatedOrigin = cc.getCustomerCreated();
         CustomerMessage customerMessage = new CustomerMessage();
-        customerMessage.setEventId(eventInfo.getEventId());
         customerMessage.setEventTime(eventInfo.getEventCreatedAt());
         customerMessage.setSequenceId(eventInfo.getSequenceId());
         customerMessage.setChangeId(eventInfo.getChangeId());
