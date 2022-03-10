@@ -10,7 +10,6 @@ import dev.vality.hooker.utils.EventFilterUtils;
 import dev.vality.hooker.utils.HookConverter;
 import dev.vality.swag_webhook_events.model.Event;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
