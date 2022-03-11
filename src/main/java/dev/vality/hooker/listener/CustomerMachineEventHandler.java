@@ -2,8 +2,6 @@ package dev.vality.hooker.listener;
 
 import dev.vality.damsel.payment_processing.CustomerChange;
 import dev.vality.damsel.payment_processing.EventPayload;
-import dev.vality.geck.serializer.kit.json.JsonHandler;
-import dev.vality.geck.serializer.kit.tbase.TBaseProcessor;
 import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.CustomerMessage;
 import dev.vality.hooker.model.EventInfo;
@@ -30,43 +28,26 @@ public class CustomerMachineEventHandler implements MachineEventHandler {
     @Override
     @Transactional
     public void handle(List<MachineEvent> machineEvents, Acknowledgment ack) {
-        for (MachineEvent machineEvent : machineEvents) {
-            EventPayload payload = parser.parse(machineEvent);
-            if (!payload.isSetCustomerChanges()) {
-                return;
+        machineEvents.forEach(me -> {
+            EventPayload payload = parser.parse(me);
+            if (payload.isSetInvoiceChanges()) {
+                for (int i = 0; i < payload.getInvoiceChanges().size(); ++i) {
+                    CustomerChange customerChange = payload.getCustomerChanges().get(i);
+                    int j = i;
+                    customerEventMappers.stream()
+                            .filter(handler -> handler.accept(customerChange))
+                            .findFirst()
+                            .ifPresent(handler -> {
+                                log.info("Start to handle event {}", customerChange);
+                                var eventInfo = new EventInfo(me.getCreatedAt(), me.getSourceId(), me.getEventId(), j);
+                                CustomerMessage message = handler.map(customerChange, eventInfo);
+                                if (message != null) {
+                                    customerMessageService.process(message);
+                                }
+                            });
+                }
             }
-
-            List<CustomerChange> changes = payload.getCustomerChanges();
-            for (int i = 0; i < changes.size(); ++i) {
-                preparePollingHandlers(changes.get(i), machineEvent, i);
-            }
-        }
+        });
         ack.acknowledge();
-    }
-
-    private void preparePollingHandlers(CustomerChange cc, MachineEvent machineEvent, int i) {
-        customerEventMappers.stream()
-                .filter(handler -> handler.accept(cc))
-                .findFirst()
-                .ifPresent(handler -> processEvent(handler, cc, machineEvent, i));
-    }
-
-    private void processEvent(Mapper<CustomerChange, CustomerMessage> mapper,
-                              CustomerChange cc, MachineEvent machineEvent, int i) {
-        long id = machineEvent.getEventId();
-        try {
-            log.info("We got an event {}", new TBaseProcessor()
-                    .process(machineEvent, JsonHandler.newPrettyJsonInstance()));
-            EventInfo eventInfo = new EventInfo(
-                    machineEvent.getCreatedAt(),
-                    machineEvent.getSourceId(),
-                    machineEvent.getEventId(),
-                    i
-            );
-            CustomerMessage message = mapper.map(cc, eventInfo);
-            customerMessageService.process(message);
-        } catch (Exception e) {
-            log.error("Error when poller handling with id {}", id, e);
-        }
     }
 }

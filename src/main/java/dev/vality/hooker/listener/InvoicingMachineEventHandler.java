@@ -2,6 +2,7 @@ package dev.vality.hooker.listener;
 
 import dev.vality.damsel.payment_processing.EventPayload;
 import dev.vality.damsel.payment_processing.InvoiceChange;
+import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.EventInfo;
 import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.hooker.service.HandlerManager;
@@ -21,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InvoicingMachineEventHandler implements MachineEventHandler {
 
-    private final HandlerManager handlerManager;
+    private final List<Mapper<InvoiceChange, InvoicingMessage>> handlers;
     private final MachineEventParser<EventPayload> parser;
     private final MessageService<InvoicingMessage> invoicingMessageService;
 
@@ -34,14 +35,17 @@ public class InvoicingMachineEventHandler implements MachineEventHandler {
                 for (int i = 0; i < payload.getInvoiceChanges().size(); ++i) {
                     InvoiceChange invoiceChange = payload.getInvoiceChanges().get(i);
                     int j = i;
-                    handlerManager.getHandler(invoiceChange).ifPresent(handler -> {
-                        log.info("Start to handle event {}", invoiceChange);
-                        EventInfo eventInfo = new EventInfo(me.getCreatedAt(), me.getSourceId(), me.getEventId(), j);
-                        InvoicingMessage message = handler.map(invoiceChange, eventInfo);
-                        if (message != null) {
-                            invoicingMessageService.process(message);
-                        }
-                    });
+                    handlers.stream()
+                            .filter(handler -> handler.accept(invoiceChange))
+                            .findFirst()
+                            .ifPresent(handler -> {
+                                log.info("Start to handle event {}", invoiceChange);
+                                var eventInfo = new EventInfo(me.getCreatedAt(), me.getSourceId(), me.getEventId(), j);
+                                InvoicingMessage message = handler.map(invoiceChange, eventInfo);
+                                if (message != null) {
+                                    invoicingMessageService.process(message);
+                                }
+                            });
                 }
             }
         });
