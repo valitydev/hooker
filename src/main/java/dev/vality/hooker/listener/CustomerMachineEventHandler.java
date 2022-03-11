@@ -30,8 +30,8 @@ public class CustomerMachineEventHandler implements MachineEventHandler {
     public void handle(List<MachineEvent> machineEvents, Acknowledgment ack) {
         machineEvents.forEach(me -> {
             EventPayload payload = parser.parse(me);
-            if (payload.isSetInvoiceChanges()) {
-                for (int i = 0; i < payload.getInvoiceChanges().size(); ++i) {
+            if (payload.isSetCustomerChanges()) {
+                for (int i = 0; i < payload.getCustomerChanges().size(); ++i) {
                     CustomerChange customerChange = payload.getCustomerChanges().get(i);
                     int j = i;
                     customerEventMappers.stream()
