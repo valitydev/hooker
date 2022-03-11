@@ -13,7 +13,6 @@ import dev.vality.hooker.utils.BuildUtils;
 import dev.vality.swag_webhook_events.model.Event;
 import dev.vality.swag_webhook_events.model.RefundSucceeded;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
