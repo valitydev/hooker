@@ -149,7 +149,7 @@ public class InvoicingDaoImplTest {
         var webhookModels2Two = messageDao.getWebhookModels(messageIdCreatedTwo);
         assertEquals(1, webhookModels2Two.size());
         assertEquals(parentEventIdCapturedTwo, messageIdProcessedTwo);
-        
+
         Long parentEventIdThree = messageDao.getParentId(hook.getId(), invoiceThree, messageIdThree);
         assertEquals(-1, parentEventIdThree);
     }
