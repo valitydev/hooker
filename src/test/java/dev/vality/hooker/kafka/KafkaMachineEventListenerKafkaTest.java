@@ -48,9 +48,6 @@ public class KafkaMachineEventListenerKafkaTest extends AbstractKafkaIntegration
     private String customerTopic;
 
     @MockBean
-    private HandlerManager handlerManager;
-
-    @MockBean
     private MachineEventParser<EventPayload> eventParser;
 
     public static Producer<String, SinkEvent> createProducer() {

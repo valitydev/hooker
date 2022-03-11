@@ -19,13 +19,12 @@ import org.springframework.kafka.support.Acknowledgment;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 
 public class InvoicingMachineEventHandlerTest {
 
-    @Mock
-    private HandlerManager handlerManager;
     @Mock
     private Mapper<InvoiceChange, InvoicingMessage> handler;
     @Mock
@@ -40,13 +39,11 @@ public class InvoicingMachineEventHandlerTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        machineEventHandler = new InvoicingMachineEventHandler(handlerManager, eventParser, invoicingService);
+        machineEventHandler = new InvoicingMachineEventHandler(List.of(handler), eventParser, invoicingService);
     }
 
     @Test
     public void listenEmptyChanges() {
-        Mockito.when(handlerManager.getHandler(any())).thenReturn(java.util.Optional.of(handler));
-
         MachineEvent message = new MachineEvent();
         Event event = new Event();
         EventPayload payload = new EventPayload();
@@ -56,7 +53,6 @@ public class InvoicingMachineEventHandlerTest {
 
         machineEventHandler.handle(Collections.singletonList(message), ack);
 
-        Mockito.verify(handlerManager, Mockito.times(0)).getHandler(any());
         Mockito.verify(handler, Mockito.times(0)).map(any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
@@ -81,12 +77,10 @@ public class InvoicingMachineEventHandlerTest {
         MachineEvent message = new MachineEvent();
 
         Mockito.when(eventParser.parse(message)).thenReturn(payload);
-        Mockito.when(handlerManager.getHandler(any())).thenReturn(java.util.Optional.of(handler));
 
         machineEventHandler.handle(Collections.singletonList(message), ack);
 
-        Mockito.verify(handlerManager, Mockito.times(1)).getHandler(any());
-        Mockito.verify(handler, Mockito.times(1)).map(any(), any());
+        Mockito.verify(handler, Mockito.times(1)).accept(any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 
