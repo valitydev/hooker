@@ -4,18 +4,19 @@ import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.hooker.dao.InvoicingMessageDao;
 import dev.vality.hooker.exception.DaoException;
 import dev.vality.hooker.exception.NotFoundException;
+import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract class NeedReadInvoiceEventMapper extends AbstractInvoiceEventMapper {
+public abstract class NeedReadInvoiceEventMapper implements Mapper<InvoiceChange, InvoicingMessage> {
 
     private final InvoicingMessageDao messageDao;
 
     @Override
-    protected InvoicingMessage buildEvent(InvoiceChange ic, EventInfo eventInfo) throws DaoException {
+    public InvoicingMessage map(InvoiceChange ic, EventInfo eventInfo) throws DaoException {
         InvoicingMessage message;
         InvoicingMessageKey messageKey = getMessageKey(eventInfo.getSourceId(), ic);
         try {

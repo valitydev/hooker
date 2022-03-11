@@ -4,7 +4,7 @@ import dev.vality.damsel.payment_processing.CustomerChange;
 import dev.vality.damsel.payment_processing.EventPayload;
 import dev.vality.geck.serializer.kit.json.JsonHandler;
 import dev.vality.geck.serializer.kit.tbase.TBaseProcessor;
-import dev.vality.hooker.handler.customer.AbstractCustomerEventMapper;
+import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.CustomerMessage;
 import dev.vality.hooker.model.EventInfo;
 import dev.vality.hooker.service.MessageService;
@@ -24,7 +24,7 @@ import java.util.List;
 public class CustomerMachineEventHandler implements MachineEventHandler {
 
     private final MachineEventParser<EventPayload> parser;
-    private final List<AbstractCustomerEventMapper> customerEventMappers;
+    private final List<Mapper<CustomerChange, CustomerMessage>> customerEventMappers;
     private final MessageService<CustomerMessage> customerMessageService;
 
     @Override
@@ -51,7 +51,8 @@ public class CustomerMachineEventHandler implements MachineEventHandler {
                 .ifPresent(handler -> processEvent(handler, cc, machineEvent, i));
     }
 
-    private void processEvent(AbstractCustomerEventMapper mapper, CustomerChange cc, MachineEvent machineEvent, int i) {
+    private void processEvent(Mapper<CustomerChange, CustomerMessage> mapper,
+                              CustomerChange cc, MachineEvent machineEvent, int i) {
         long id = machineEvent.getEventId();
         try {
             log.info("We got an event {}", new TBaseProcessor()
@@ -62,11 +63,10 @@ public class CustomerMachineEventHandler implements MachineEventHandler {
                     machineEvent.getEventId(),
                     i
             );
-            CustomerMessage message = mapper.handle(cc, eventInfo);
+            CustomerMessage message = mapper.map(cc, eventInfo);
             customerMessageService.process(message);
         } catch (Exception e) {
             log.error("Error when poller handling with id {}", id, e);
         }
     }
-
 }

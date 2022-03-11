@@ -7,12 +7,13 @@ import dev.vality.geck.filter.PathConditionFilter;
 import dev.vality.geck.filter.condition.IsNullCondition;
 import dev.vality.geck.filter.rule.PathConditionRule;
 import dev.vality.hooker.exception.DaoException;
+import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-public class InvoiceCreatedMapper extends AbstractInvoiceEventMapper {
+public class InvoiceCreatedMapper implements Mapper<InvoiceChange, InvoicingMessage> {
 
     private EventType eventType = EventType.INVOICE_CREATED;
 
@@ -21,7 +22,7 @@ public class InvoiceCreatedMapper extends AbstractInvoiceEventMapper {
 
     @Override
     @Transactional
-    public InvoicingMessage buildEvent(InvoiceChange ic, EventInfo eventInfo) throws DaoException {
+    public InvoicingMessage map(InvoiceChange ic, EventInfo eventInfo) throws DaoException {
         Invoice invoiceOrigin = ic.getInvoiceCreated().getInvoice();
         InvoicingMessage message = new InvoicingMessage();
         message.setEventTime(eventInfo.getEventCreatedAt());

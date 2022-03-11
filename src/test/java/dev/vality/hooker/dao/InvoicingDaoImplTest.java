@@ -29,8 +29,9 @@ public class InvoicingDaoImplTest {
     private final String invoiceThree = "1236";
 
     private Long messageIdOne;
-    private Long messageId1Two;
-    private Long messageId2Two;
+    private Long messageIdCreatedTwo;
+    private Long messageIdProcessedTwo;
+    private Long messageIdCapturedTwo;
     private Long messageIdThree;
 
     private Hook hook;
@@ -47,20 +48,28 @@ public class InvoicingDaoImplTest {
                                 .build(),
                         WebhookAdditionalFilter.builder()
                                 .eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED)
+                                .invoicePaymentStatus("processed")
+                                .build(),
+                        WebhookAdditionalFilter.builder()
+                                .eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED)
                                 .invoicePaymentStatus("captured")
-                                .build()))
+                                .build()
+                        ))
                 .build();
 
         hookDao.create(hook);
         messageIdOne = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
                 invoiceOne, partyId, EventType.INVOICE_CREATED,
                 InvoiceStatusEnum.UNPAID, null));
-        messageId1Two = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
+        messageIdCreatedTwo = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
                 invoiceTwo, partyId, EventType.INVOICE_CREATED,
                 InvoiceStatusEnum.UNPAID, null, 1L, 1));
-        messageId2Two = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.PAYMENT.getValue(),
+        messageIdProcessedTwo = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.PAYMENT.getValue(),
                 invoiceTwo, partyId, EventType.INVOICE_PAYMENT_STATUS_CHANGED,
-                InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED, 1L, 2));
+                InvoiceStatusEnum.PAID, PaymentStatusEnum.PROCESSED, 1L, 2));
+        messageIdCapturedTwo = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.PAYMENT.getValue(),
+                invoiceTwo, partyId, EventType.INVOICE_PAYMENT_STATUS_CHANGED,
+                InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED, 1L, 3));
         messageIdThree = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
                 invoiceThree, partyId, EventType.INVOICE_STATUS_CHANGED,
                 InvoiceStatusEnum.PAID, null));
@@ -88,7 +97,7 @@ public class InvoicingDaoImplTest {
         assertEquals(PaymentStatusEnum.CAPTURED, messageTwo.getPaymentStatus());
         assertEquals(partyId, messageTwo.getPartyId());
 
-        assertNotEquals(messageId1Two, messageId2Two);
+        assertNotEquals(messageIdCreatedTwo, messageIdProcessedTwo);
 
         InvoicingMessage messageThree = messageDao.getInvoicingMessage(
                 InvoicingMessageKey.builder()
@@ -108,16 +117,16 @@ public class InvoicingDaoImplTest {
         assertEquals(invoiceOne, webhookModelsOne.get(0).getMessage().getSourceId());
         assertEquals(InvoiceStatusEnum.UNPAID, webhookModelsOne.get(0).getMessage().getInvoiceStatus());
 
-        var webhookModels1Two = messageDao.getWebhookModels(messageId1Two);
+        var webhookModels1Two = messageDao.getWebhookModels(messageIdCreatedTwo);
         assertEquals(hook.getId(), webhookModels1Two.get(0).getHookId());
         assertEquals(invoiceTwo, webhookModels1Two.get(0).getMessage().getSourceId());
         assertEquals(InvoiceStatusEnum.UNPAID, webhookModels1Two.get(0).getMessage().getInvoiceStatus());
 
-        var webhookModels2Two = messageDao.getWebhookModels(messageId2Two);
+        var webhookModels2Two = messageDao.getWebhookModels(messageIdProcessedTwo);
         assertEquals(hook.getId(), webhookModels2Two.get(0).getHookId());
         assertEquals(invoiceTwo, webhookModels2Two.get(0).getMessage().getSourceId());
         assertEquals(InvoiceStatusEnum.PAID, webhookModels2Two.get(0).getMessage().getInvoiceStatus());
-        assertEquals(PaymentStatusEnum.CAPTURED, webhookModels2Two.get(0).getMessage().getPaymentStatus());
+        assertEquals(PaymentStatusEnum.PROCESSED, webhookModels2Two.get(0).getMessage().getPaymentStatus());
 
         var webhookModelsThree = messageDao.getWebhookModels(messageIdThree);
         assertEquals(0, webhookModelsThree.size());
@@ -128,14 +137,19 @@ public class InvoicingDaoImplTest {
         Long parentEventIdOne = messageDao.getParentId(hook.getId(), invoiceOne, messageIdOne);
         assertEquals(-1, parentEventIdOne);
 
-        Long parentEventId1Two = messageDao.getParentId(hook.getId(), invoiceTwo, messageId1Two);
-        assertEquals(-1, parentEventId1Two);
+        Long parentEventIdCreatedTwo = messageDao.getParentId(hook.getId(), invoiceTwo, messageIdCreatedTwo);
+        assertEquals(-1, parentEventIdCreatedTwo);
 
-        Long parentEventId2Two = messageDao.getParentId(hook.getId(), invoiceTwo, messageId2Two);
-        var webhookModels1Two = messageDao.getWebhookModels(messageId1Two);
+        Long parentEventIdProcessedTwo = messageDao.getParentId(hook.getId(), invoiceTwo, messageIdProcessedTwo);
+        var webhookModels1Two = messageDao.getWebhookModels(messageIdCreatedTwo);
         assertEquals(1, webhookModels1Two.size());
-        assertEquals(parentEventId2Two, messageId1Two);
+        assertEquals(parentEventIdProcessedTwo, messageIdCreatedTwo);
 
+        Long parentEventIdCapturedTwo = messageDao.getParentId(hook.getId(), invoiceTwo, messageIdCapturedTwo);
+        var webhookModels2Two = messageDao.getWebhookModels(messageIdCreatedTwo);
+        assertEquals(1, webhookModels2Two.size());
+        assertEquals(parentEventIdCapturedTwo, messageIdProcessedTwo);
+        
         Long parentEventIdThree = messageDao.getParentId(hook.getId(), invoiceThree, messageIdThree);
         assertEquals(-1, parentEventIdThree);
     }

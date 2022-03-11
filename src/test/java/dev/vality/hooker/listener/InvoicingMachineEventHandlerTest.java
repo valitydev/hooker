@@ -4,7 +4,7 @@ import dev.vality.damsel.payment_processing.Event;
 import dev.vality.damsel.payment_processing.EventPayload;
 import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.hooker.exception.ParseException;
-import dev.vality.hooker.handler.invoicing.AbstractInvoiceEventMapper;
+import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.hooker.service.HandlerManager;
 import dev.vality.hooker.service.MessageService;
@@ -27,7 +27,7 @@ public class InvoicingMachineEventHandlerTest {
     @Mock
     private HandlerManager handlerManager;
     @Mock
-    private AbstractInvoiceEventMapper handler;
+    private Mapper<InvoiceChange, InvoicingMessage> handler;
     @Mock
     private MachineEventParser<EventPayload> eventParser;
     @Mock
@@ -57,7 +57,7 @@ public class InvoicingMachineEventHandlerTest {
         machineEventHandler.handle(Collections.singletonList(message), ack);
 
         Mockito.verify(handlerManager, Mockito.times(0)).getHandler(any());
-        Mockito.verify(handler, Mockito.times(0)).handle(any(), any());
+        Mockito.verify(handler, Mockito.times(0)).map(any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 
@@ -86,7 +86,7 @@ public class InvoicingMachineEventHandlerTest {
         machineEventHandler.handle(Collections.singletonList(message), ack);
 
         Mockito.verify(handlerManager, Mockito.times(1)).getHandler(any());
-        Mockito.verify(handler, Mockito.times(1)).handle(any(), any());
+        Mockito.verify(handler, Mockito.times(1)).map(any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 

@@ -9,7 +9,7 @@ public interface Mapper<C, M extends Message> {
         return getFilter().match(change);
     }
 
-    M handle(C change, EventInfo eventInfo);
+    M map(C change, EventInfo eventInfo);
 
     Filter getFilter();
 }

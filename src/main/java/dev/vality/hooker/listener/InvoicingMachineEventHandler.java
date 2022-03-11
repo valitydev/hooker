@@ -37,7 +37,7 @@ public class InvoicingMachineEventHandler implements MachineEventHandler {
                     handlerManager.getHandler(invoiceChange).ifPresent(handler -> {
                         log.info("Start to handle event {}", invoiceChange);
                         EventInfo eventInfo = new EventInfo(me.getCreatedAt(), me.getSourceId(), me.getEventId(), j);
-                        InvoicingMessage message = handler.handle(invoiceChange, eventInfo);
+                        InvoicingMessage message = handler.map(invoiceChange, eventInfo);
                         if (message != null) {
                             invoicingMessageService.process(message);
                         }

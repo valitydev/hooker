@@ -6,6 +6,7 @@ import dev.vality.geck.filter.PathConditionFilter;
 import dev.vality.geck.filter.condition.IsNullCondition;
 import dev.vality.geck.filter.rule.PathConditionRule;
 import dev.vality.hooker.exception.DaoException;
+import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.CustomerMessage;
 import dev.vality.hooker.model.CustomerMessageEnum;
 import dev.vality.hooker.model.EventInfo;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CustomerCreatedMapper extends AbstractCustomerEventMapper {
+public class CustomerCreatedMapper implements Mapper<CustomerChange, CustomerMessage> {
 
     private EventType eventType = EventType.CUSTOMER_CREATED;
     private Filter filter =
@@ -27,7 +28,7 @@ public class CustomerCreatedMapper extends AbstractCustomerEventMapper {
     }
 
     @Override
-    protected CustomerMessage buildEvent(CustomerChange cc, EventInfo eventInfo) throws DaoException {
+    public CustomerMessage map(CustomerChange cc, EventInfo eventInfo) throws DaoException {
         dev.vality.damsel.payment_processing.CustomerCreated customerCreatedOrigin = cc.getCustomerCreated();
         CustomerMessage customerMessage = new CustomerMessage();
         customerMessage.setEventTime(eventInfo.getEventCreatedAt());

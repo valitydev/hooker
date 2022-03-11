@@ -25,10 +25,12 @@ public class PaymentToolUtils {
                             paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getLastDigits())
                     .tokenProvider(paymentTool.getBankCard().getTokenProviderDeprecated() != null
                             ? PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(
-                            paymentTool.getBankCard().getTokenProviderDeprecated().name()) : null)
+                            paymentTool.getBankCard().getTokenProviderDeprecated().name())
+                            : null)
                     .paymentSystem(PaymentSystemUtil.getPaymentSystemName(paymentTool.getBankCard()))
                     .issuerCountry(paymentTool.getBankCard().getIssuerCountry() != null
-                            ? paymentTool.getBankCard().getIssuerCountry().name() : null)
+                            ? paymentTool.getBankCard().getIssuerCountry().name()
+                            : null)
                     .bankName(paymentTool.getBankCard().getBankName())
                     .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD);
         } else if (paymentTool.isSetPaymentTerminal()) {
