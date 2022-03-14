@@ -32,23 +32,30 @@ public class InvoicingMachineEventHandler implements MachineEventHandler {
         machineEvents.forEach(me -> {
             EventPayload payload = parser.parse(me);
             if (payload.isSetInvoiceChanges()) {
-                for (int i = 0; i < payload.getInvoiceChanges().size(); ++i) {
-                    InvoiceChange invoiceChange = payload.getInvoiceChanges().get(i);
-                    int j = i;
-                    handlers.stream()
-                            .filter(handler -> handler.accept(invoiceChange))
-                            .findFirst()
-                            .ifPresent(handler -> {
-                                log.info("Start to handle event {}", invoiceChange);
-                                var eventInfo = new EventInfo(me.getCreatedAt(), me.getSourceId(), me.getEventId(), j);
-                                InvoicingMessage message = handler.map(invoiceChange, eventInfo);
-                                if (message != null) {
-                                    invoicingMessageService.process(message);
-                                }
-                            });
-                }
+                handleChanges(me, payload);
             }
         });
         ack.acknowledge();
+    }
+
+    private void handleChanges(MachineEvent me, EventPayload payload) {
+        for (int i = 0; i < payload.getInvoiceChanges().size(); ++i) {
+            InvoiceChange invoiceChange = payload.getInvoiceChanges().get(i);
+            handleChange(me, invoiceChange, i);
+        }
+    }
+
+    private void handleChange(MachineEvent me, InvoiceChange invoiceChange, int i) {
+        handlers.stream()
+                .filter(handler -> handler.accept(invoiceChange))
+                .findFirst()
+                .ifPresent(handler -> {
+                    log.info("Start to handle event {}", invoiceChange);
+                    var eventInfo = new EventInfo(me.getCreatedAt(), me.getSourceId(), me.getEventId(), i);
+                    InvoicingMessage message = handler.map(invoiceChange, eventInfo);
+                    if (message != null) {
+                        invoicingMessageService.process(message);
+                    }
+                });
     }
 }

@@ -31,23 +31,30 @@ public class CustomerMachineEventHandler implements MachineEventHandler {
         machineEvents.forEach(me -> {
             EventPayload payload = parser.parse(me);
             if (payload.isSetCustomerChanges()) {
-                for (int i = 0; i < payload.getCustomerChanges().size(); ++i) {
-                    CustomerChange customerChange = payload.getCustomerChanges().get(i);
-                    int j = i;
-                    customerEventMappers.stream()
-                            .filter(handler -> handler.accept(customerChange))
-                            .findFirst()
-                            .ifPresent(handler -> {
-                                log.info("Start to handle event {}", customerChange);
-                                var eventInfo = new EventInfo(me.getCreatedAt(), me.getSourceId(), me.getEventId(), j);
-                                CustomerMessage message = handler.map(customerChange, eventInfo);
-                                if (message != null) {
-                                    customerMessageService.process(message);
-                                }
-                            });
-                }
+                handleChanges(me, payload);
             }
         });
         ack.acknowledge();
+    }
+
+    private void handleChanges(MachineEvent me, EventPayload payload) {
+        for (int i = 0; i < payload.getCustomerChanges().size(); ++i) {
+            CustomerChange customerChange = payload.getCustomerChanges().get(i);
+            handleChange(me, customerChange, i);
+        }
+    }
+
+    private void handleChange(MachineEvent me, CustomerChange customerChange, int i) {
+        customerEventMappers.stream()
+                .filter(handler -> handler.accept(customerChange))
+                .findFirst()
+                .ifPresent(handler -> {
+                    log.info("Start to handle event {}", customerChange);
+                    var eventInfo = new EventInfo(me.getCreatedAt(), me.getSourceId(), me.getEventId(), i);
+                    CustomerMessage message = handler.map(customerChange, eventInfo);
+                    if (message != null) {
+                        customerMessageService.process(message);
+                    }
+                });
     }
 }
