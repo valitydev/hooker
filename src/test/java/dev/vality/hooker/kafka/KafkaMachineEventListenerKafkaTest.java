@@ -48,9 +48,6 @@ public class KafkaMachineEventListenerKafkaTest extends AbstractKafkaIntegration
     private String customerTopic;
 
     @MockBean
-    private HandlerManager handlerManager;
-
-    @MockBean
     private MachineEventParser<EventPayload> eventParser;
 
     public static Producer<String, SinkEvent> createProducer() {
@@ -102,7 +99,6 @@ public class KafkaMachineEventListenerKafkaTest extends AbstractKafkaIntegration
         Value data = new Value();
         data.setBin(new byte[0]);
         message.setCreatedAt(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
-        message.setEventId(1L);
         message.setSourceNs(SOURCE_NS);
         message.setSourceId(SOURCE_ID);
         message.setData(data);

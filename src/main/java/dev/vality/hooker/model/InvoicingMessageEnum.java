@@ -12,7 +12,7 @@ public enum InvoicingMessageEnum {
     PAYMENT("payment"),
     REFUND("refund");
 
-    private String value;
+    private final String value;
 
     public static InvoicingMessageEnum lookup(String v) {
         return Arrays.stream(values()).filter(value -> v.equals(value.getValue())).findFirst()

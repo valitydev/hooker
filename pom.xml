@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hooker</artifactId>
-    <version>2.0.60-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>hooker</name>
@@ -87,10 +87,6 @@
             <artifactId>mamsel</artifactId>
         </dependency>
         <dependency>
-            <groupId>dev.vality.logback</groupId>
-            <artifactId>nop-rolling</artifactId>
-        </dependency>
-        <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>shared-resources</artifactId>
         </dependency>
@@ -101,15 +97,6 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>kafka-common-lib</artifactId>
-            <version>0.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>dev.vality</groupId>
-            <artifactId>custom-metrics-spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>dev.vality</groupId>
-            <artifactId>custom-actuator-endpoints</artifactId>
         </dependency>
         <dependency>
             <groupId>dev.vality.woody</groupId>
@@ -143,7 +130,11 @@
             <artifactId>swag-webhook-events</artifactId>
             <version>1.1-67063f3-client</version>
         </dependency>
-
+        <dependency>
+            <groupId>dev.vality</groupId>
+            <artifactId>webhook-dispatcher-proto</artifactId>
+            <version>1.12-49f714e</version>
+        </dependency>
         <!--Thirdparty libs-->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -220,6 +211,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>dev.vality</groupId>
+            <artifactId>testcontainers-annotations</artifactId>
+            <version>1.4.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
             <version>${testcontainers.version}</version>
@@ -286,7 +283,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>1.5</version>
+                <version>1.7.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.shared</groupId>

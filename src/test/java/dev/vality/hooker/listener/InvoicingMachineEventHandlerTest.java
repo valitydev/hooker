@@ -4,9 +4,10 @@ import dev.vality.damsel.payment_processing.Event;
 import dev.vality.damsel.payment_processing.EventPayload;
 import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.hooker.exception.ParseException;
-import dev.vality.hooker.handler.poller.invoicing.AbstractInvoiceEventMapper;
-import dev.vality.hooker.service.BatchService;
+import dev.vality.hooker.handler.Mapper;
+import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.hooker.service.HandlerManager;
+import dev.vality.hooker.service.MessageService;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.sink.common.parser.impl.MachineEventParser;
 import org.junit.Before;
@@ -18,15 +19,14 @@ import org.springframework.kafka.support.Acknowledgment;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 
 public class InvoicingMachineEventHandlerTest {
 
     @Mock
-    private HandlerManager handlerManager;
-    @Mock
-    private AbstractInvoiceEventMapper handler;
+    private Mapper<InvoiceChange, InvoicingMessage> handler;
     @Mock
     private MachineEventParser<EventPayload> eventParser;
     @Mock
@@ -34,18 +34,16 @@ public class InvoicingMachineEventHandlerTest {
 
     private InvoicingMachineEventHandler machineEventHandler;
 
-    private BatchService batchService;
+    private MessageService<InvoicingMessage> invoicingService;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        machineEventHandler = new InvoicingMachineEventHandler(handlerManager, eventParser, batchService);
+        machineEventHandler = new InvoicingMachineEventHandler(List.of(handler), eventParser, invoicingService);
     }
 
     @Test
     public void listenEmptyChanges() {
-        Mockito.when(handlerManager.getHandler(any())).thenReturn(java.util.Optional.of(handler));
-
         MachineEvent message = new MachineEvent();
         Event event = new Event();
         EventPayload payload = new EventPayload();
@@ -55,8 +53,7 @@ public class InvoicingMachineEventHandlerTest {
 
         machineEventHandler.handle(Collections.singletonList(message), ack);
 
-        Mockito.verify(handlerManager, Mockito.times(0)).getHandler(any());
-        Mockito.verify(handler, Mockito.times(0)).handle(any(), any(), any());
+        Mockito.verify(handler, Mockito.times(0)).map(any(), any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 
@@ -80,12 +77,10 @@ public class InvoicingMachineEventHandlerTest {
         MachineEvent message = new MachineEvent();
 
         Mockito.when(eventParser.parse(message)).thenReturn(payload);
-        Mockito.when(handlerManager.getHandler(any())).thenReturn(java.util.Optional.of(handler));
 
         machineEventHandler.handle(Collections.singletonList(message), ack);
 
-        Mockito.verify(handlerManager, Mockito.times(1)).getHandler(any());
-        Mockito.verify(handler, Mockito.times(1)).handle(any(), any(), any());
+        Mockito.verify(handler, Mockito.times(1)).accept(any());
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 

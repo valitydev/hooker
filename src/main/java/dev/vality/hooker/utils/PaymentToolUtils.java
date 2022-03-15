@@ -11,8 +11,6 @@ import dev.vality.swag_webhook_events.model.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Objects;
-import java.util.Optional;
 
 public class PaymentToolUtils {
 
@@ -25,14 +23,14 @@ public class PaymentToolUtils {
                     .lastDigits(paymentTool.getBankCard().getLastDigits())
                     .cardNumberMask(
                             paymentTool.getBankCard().getBin() + "******" + paymentTool.getBankCard().getLastDigits())
-                    .tokenProvider(
-                            Optional.ofNullable(TokenProviderUtil.getTokenProviderName(paymentTool.getBankCard()))
-                                    .map(PaymentToolDetailsBankCard.TokenProviderEnum::fromValue)
-                                    .orElse(null)
-                    )
+                    .tokenProvider(paymentTool.getBankCard().getTokenProviderDeprecated() != null
+                            ? PaymentToolDetailsBankCard.TokenProviderEnum.fromValue(
+                            paymentTool.getBankCard().getTokenProviderDeprecated().name())
+                            : null)
                     .paymentSystem(PaymentSystemUtil.getPaymentSystemName(paymentTool.getBankCard()))
                     .issuerCountry(paymentTool.getBankCard().getIssuerCountry() != null
-                            ? paymentTool.getBankCard().getIssuerCountry().name() : null)
+                            ? paymentTool.getBankCard().getIssuerCountry().name()
+                            : null)
                     .bankName(paymentTool.getBankCard().getBankName())
                     .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD);
         } else if (paymentTool.isSetPaymentTerminal()) {
@@ -41,7 +39,6 @@ public class PaymentToolUtils {
                             TerminalPaymentUtil.getTerminalPaymentProviderName(paymentTool.getPaymentTerminal())))
                     .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL);
         } else if (paymentTool.isSetDigitalWallet()) {
-            //TODO Bump swag-webhook-events api
             LegacyDigitalWalletProvider walletProvider = LegacyDigitalWalletProvider.valueOf(
                     DigitalWalletUtil.getDigitalWalletName(paymentTool.getDigitalWallet()));
             if (walletProvider == LegacyDigitalWalletProvider.qiwi) {

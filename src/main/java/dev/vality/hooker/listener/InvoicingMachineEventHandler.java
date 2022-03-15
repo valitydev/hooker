@@ -2,12 +2,11 @@ package dev.vality.hooker.listener;
 
 import dev.vality.damsel.payment_processing.EventPayload;
 import dev.vality.damsel.payment_processing.InvoiceChange;
+import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.EventInfo;
 import dev.vality.hooker.model.InvoicingMessage;
-import dev.vality.hooker.model.InvoicingMessageKey;
-import dev.vality.hooker.service.BatchService;
 import dev.vality.hooker.service.HandlerManager;
-import dev.vality.hooker.utils.KeyUtils;
+import dev.vality.hooker.service.MessageService;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.sink.common.parser.impl.MachineEventParser;
 import lombok.RequiredArgsConstructor;
@@ -16,47 +15,47 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class InvoicingMachineEventHandler implements MachineEventHandler {
 
-    private final HandlerManager handlerManager;
+    private final List<Mapper<InvoiceChange, InvoicingMessage>> handlers;
     private final MachineEventParser<EventPayload> parser;
-    private final BatchService batchService;
+    private final MessageService<InvoicingMessage> invoicingMessageService;
 
     @Override
     @Transactional
     public void handle(List<MachineEvent> machineEvents, Acknowledgment ack) {
-        List<InvoicingMessage> messages = new ArrayList<>();
-        Map<InvoicingMessageKey, InvoicingMessage> localCache = new HashMap<>();
         machineEvents.forEach(me -> {
             EventPayload payload = parser.parse(me);
             if (payload.isSetInvoiceChanges()) {
-                for (int i = 0; i < payload.getInvoiceChanges().size(); ++i) {
-                    InvoiceChange invoiceChange = payload.getInvoiceChanges().get(i);
-                    int j = i;
-                    handlerManager.getHandler(invoiceChange).ifPresent(handler -> {
-                        log.info("Start to handle event {}", invoiceChange);
-                        InvoicingMessage message = handler.handle(invoiceChange,
-                                new EventInfo(null, me.getCreatedAt(), me.getSourceId(), me.getEventId(), j),
-                                localCache);
-                        if (message != null) {
-                            localCache.put(KeyUtils.key(message), message);
-                            messages.add(message);
-                        }
-                    });
-                }
+                handleChanges(me, payload);
             }
         });
-        if (!localCache.isEmpty()) {
-            batchService.process(messages);
-        }
         ack.acknowledge();
+    }
+
+    private void handleChanges(MachineEvent me, EventPayload payload) {
+        for (int i = 0; i < payload.getInvoiceChanges().size(); ++i) {
+            InvoiceChange invoiceChange = payload.getInvoiceChanges().get(i);
+            handleChange(me, invoiceChange, i);
+        }
+    }
+
+    private void handleChange(MachineEvent me, InvoiceChange invoiceChange, int i) {
+        handlers.stream()
+                .filter(handler -> handler.accept(invoiceChange))
+                .findFirst()
+                .ifPresent(handler -> {
+                    log.info("Start to handle event {}", invoiceChange);
+                    var eventInfo = new EventInfo(me.getCreatedAt(), me.getSourceId(), me.getEventId(), i);
+                    InvoicingMessage message = handler.map(invoiceChange, eventInfo);
+                    if (message != null) {
+                        invoicingMessageService.process(message);
+                    }
+                });
     }
 }

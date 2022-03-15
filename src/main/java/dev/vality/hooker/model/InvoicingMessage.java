@@ -5,17 +5,12 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.beans.BeanUtils;
 
-
-/**
- * Created by inalarsanukaev on 07.04.17.
- */
 @NoArgsConstructor
 @Data
 @ToString
 public class InvoicingMessage extends Message {
 
     private InvoicingMessageEnum type;
-    private String invoiceId;
     private InvoiceStatusEnum invoiceStatus;
     private String paymentId;
     private PaymentStatusEnum paymentStatus;

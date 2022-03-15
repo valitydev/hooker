@@ -1,11 +1,6 @@
 package dev.vality.hooker.utils;
 
-import dev.vality.damsel.domain.Cash;
-import dev.vality.damsel.domain.CashFlowAccount;
-import dev.vality.damsel.domain.FinalCashFlowAccount;
-import dev.vality.damsel.domain.FinalCashFlowPosting;
-import dev.vality.damsel.domain.MerchantCashFlowAccount;
-import dev.vality.damsel.domain.SystemCashFlowAccount;
+import dev.vality.damsel.domain.*;
 import org.junit.Assert;
 import org.junit.Test;
 

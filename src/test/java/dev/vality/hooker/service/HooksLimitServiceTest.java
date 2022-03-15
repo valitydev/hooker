@@ -1,15 +1,11 @@
 package dev.vality.hooker.service;
 
-import dev.vality.damsel.webhooker.EventFilter;
-import dev.vality.damsel.webhooker.InvoiceCreated;
-import dev.vality.damsel.webhooker.InvoiceEventFilter;
-import dev.vality.damsel.webhooker.InvoiceEventType;
-import dev.vality.damsel.webhooker.WebhookParams;
-import dev.vality.hooker.AbstractIntegrationTest;
+import dev.vality.damsel.webhooker.*;
+import dev.vality.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.hooker.dao.HookDao;
 import dev.vality.hooker.utils.HookConverter;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -17,10 +13,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class HooksLimitServiceTest extends AbstractIntegrationTest {
+@PostgresqlSpringBootITest
+public class HooksLimitServiceTest {
 
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
@@ -68,7 +65,7 @@ public class HooksLimitServiceTest extends AbstractIntegrationTest {
     }
 
 
-    @After
+    @AfterEach
     public void after() {
         jdbcTemplate.update("truncate hook.webhook cascade", new MapSqlParameterSource());
         jdbcTemplate.update("truncate hook.party_data cascade", new MapSqlParameterSource());

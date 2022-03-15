@@ -4,17 +4,22 @@ import dev.vality.damsel.domain.InvoicePaymentRefund;
 import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
 import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
-import dev.vality.hooker.AbstractIntegrationTest;
 import dev.vality.swag_webhook_events.model.Refund;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.io.IOException;
 
 import static java.util.List.of;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class RefundConverterTest extends AbstractIntegrationTest {
+@ContextConfiguration(classes = {
+        RefundConverter.class
+})
+@SpringBootTest
+public class RefundConverterTest {
 
     @Autowired
     private RefundConverter converter;

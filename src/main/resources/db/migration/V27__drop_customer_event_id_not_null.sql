@@ -1,0 +1,1 @@
+ALTER TABLE hook.customer_message ALTER COLUMN event_id DROP NOT NULL;

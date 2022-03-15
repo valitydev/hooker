@@ -7,27 +7,24 @@ import dev.vality.damsel.domain.InvoicePaymentPending;
 import dev.vality.damsel.domain.InvoicePaymentStatus;
 import dev.vality.damsel.domain.InvoiceStatus;
 import dev.vality.damsel.payment_processing.InvoicingSrv;
-import dev.vality.hooker.AbstractIntegrationTest;
-import dev.vality.hooker.model.EventType;
-import dev.vality.hooker.model.InvoicingMessage;
-import dev.vality.hooker.model.InvoicingMessageEnum;
-import dev.vality.hooker.model.PaymentStatusEnum;
-import dev.vality.hooker.model.RefundStatusEnum;
+import dev.vality.hooker.config.PostgresqlSpringBootITest;
+import dev.vality.hooker.model.*;
 import dev.vality.hooker.utils.BuildUtils;
 import dev.vality.swag_webhook_events.model.Event;
 import dev.vality.swag_webhook_events.model.RefundSucceeded;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
-public class InvoicingEventServiceTest extends AbstractIntegrationTest {
+@PostgresqlSpringBootITest
+public class InvoicingEventServiceTest {
 
     @MockBean
     private InvoicingSrv.Iface invoicingClient;
@@ -38,14 +35,12 @@ public class InvoicingEventServiceTest extends AbstractIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Mockito.when(invoicingClient.get(any(), any(), any()))
                 .thenReturn(BuildUtils.buildInvoice("partyId", "invoiceId", "1", "1",
                         InvoiceStatus.paid(new InvoicePaid()),
-                        InvoicePaymentStatus.pending(
-                                new InvoicePaymentPending()
-                        )));
+                        InvoicePaymentStatus.pending(new InvoicePaymentPending())));
     }
 
     @Test
@@ -60,7 +55,6 @@ public class InvoicingEventServiceTest extends AbstractIntegrationTest {
         Event event = service.getEventByMessage(message);
         assertTrue(event instanceof RefundSucceeded);
         RefundSucceeded refundSucceded = (RefundSucceeded) event;
-        assertEquals(message.getEventId().intValue(), event.getEventID().intValue());
         assertEquals("invoiceId", refundSucceded.getInvoice().getId());
         assertEquals("1", refundSucceded.getPayment().getId());
         assertEquals("1", refundSucceded.getRefund().getId());

@@ -1,10 +1,14 @@
 package dev.vality.hooker.dao;
 
-import dev.vality.hooker.exception.DaoException;
+import dev.vality.hooker.model.Message;
+import dev.vality.hooker.model.WebhookMessageModel;
 
-import java.util.Collection;
 import java.util.List;
 
-public interface MessageDao<M> {
-    List<M> getBy(Collection<Long> messageIds) throws DaoException;
+public interface MessageDao<M extends Message> {
+    Long save(M message);
+
+    List<WebhookMessageModel<M>> getWebhookModels(Long messageId);
+
+    Long getParentId(Long hookId, String sourceId, Long messageId);
 }

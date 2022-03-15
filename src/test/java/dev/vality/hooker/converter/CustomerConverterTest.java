@@ -1,20 +1,28 @@
 package dev.vality.hooker.converter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.damsel.json.Value;
 import dev.vality.damsel.payment_processing.Customer;
 import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
 import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
-import dev.vality.hooker.AbstractIntegrationTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CustomerConverterTest extends AbstractIntegrationTest {
+@ContextConfiguration(classes = {
+        CustomerConverter.class,
+        MetadataDeserializer.class,
+        ObjectMapper.class
+})
+@SpringBootTest
+public class CustomerConverterTest {
 
     @Autowired
     private CustomerConverter converter;

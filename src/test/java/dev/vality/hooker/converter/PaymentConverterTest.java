@@ -1,25 +1,32 @@
 package dev.vality.hooker.converter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.damsel.domain.*;
 import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
 import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
-import dev.vality.hooker.AbstractIntegrationTest;
 import dev.vality.swag_webhook_events.model.CustomerPayer;
 import dev.vality.swag_webhook_events.model.Payment;
 import dev.vality.swag_webhook_events.model.PaymentResourcePayer;
 import dev.vality.swag_webhook_events.model.RecurrentPayer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.io.IOException;
+import java.util.List;
 
-import static io.github.benas.randombeans.api.EnhancedRandom.random;
-import static java.util.List.of;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PaymentConverterTest extends AbstractIntegrationTest {
+@ContextConfiguration(classes = {
+        PaymentConverter.class,
+        MetadataDeserializer.class,
+        ObjectMapper.class
+})
+@SpringBootTest
+public class PaymentConverterTest  {
 
     @Autowired
     private PaymentConverter converter;
@@ -30,32 +37,17 @@ public class PaymentConverterTest extends AbstractIntegrationTest {
         InvoicePayment source = mockTBaseProcessor
                 .process(new InvoicePayment(), new TBaseHandler<>(InvoicePayment.class));
         source.setCreatedAt("2016-03-22T06:12:27Z");
-        BankCard bankCard = new BankCard()
-                .setPaymentSystem(
-                        new PaymentSystemRef(
-                                random(LegacyBankCardPaymentSystem.class).name()
-                        )
-                )
-                .setPaymentToken(
-                        new BankCardTokenServiceRef(random(LegacyBankCardTokenProvider.class).name())
-                );
         if (source.getPayer().isSetPaymentResource()) {
-            source.getPayer().getPaymentResource()
-                    .getResource()
-                    .setPaymentTool(
-                            PaymentTool.bank_card(
-                                    mockTBaseProcessor.process(
-                                            bankCard,
-                                            new TBaseHandler<>(BankCard.class)
-                                    )
-                            ));
+            source.getPayer().getPaymentResource().getResource()
+                    .setPaymentTool(PaymentTool
+                            .bank_card(mockTBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))));
         }
+        source.setStatus(InvoicePaymentStatus.pending(new InvoicePaymentPending()));
         Payment target = converter
-                .convert(new dev.vality.damsel.payment_processing.InvoicePayment(source, of(), of(), of(), of()));
+                .convert(new dev.vality.damsel.payment_processing.InvoicePayment(source,
+                        List.of(), List.of(), List.of(), List.of()));
         assertEquals(source.getId(), target.getId());
-        if (!source.getStatus().isSetChargedBack()) {
-            assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
-        }
+        assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
         if (source.getStatus().isSetCaptured() && source.getStatus().getCaptured().isSetCost()) {
             assertEquals(source.getStatus().getCaptured().getCost().getAmount(), target.getAmount().longValue());
             assertEquals(source.getStatus().getCaptured().getCost().getCurrency().getSymbolicCode(),

@@ -7,7 +7,7 @@ public class KeyUtils {
 
     public static InvoicingMessageKey key(InvoicingMessage message) {
         return InvoicingMessageKey.builder()
-                .invoiceId(message.getInvoiceId())
+                .invoiceId(message.getSourceId())
                 .paymentId(message.getPaymentId())
                 .refundId(message.getRefundId())
                 .type(message.getType())

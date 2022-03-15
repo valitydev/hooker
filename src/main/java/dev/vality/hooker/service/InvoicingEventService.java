@@ -11,23 +11,7 @@ import dev.vality.hooker.exception.RemoteHostException;
 import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.hooker.utils.HellgateUtils;
 import dev.vality.hooker.utils.TimeUtils;
-import dev.vality.swag_webhook_events.model.Event;
-import dev.vality.swag_webhook_events.model.Invoice;
-import dev.vality.swag_webhook_events.model.InvoiceCancelled;
-import dev.vality.swag_webhook_events.model.InvoiceCreated;
-import dev.vality.swag_webhook_events.model.InvoiceFulfilled;
-import dev.vality.swag_webhook_events.model.InvoicePaid;
-import dev.vality.swag_webhook_events.model.Payment;
-import dev.vality.swag_webhook_events.model.PaymentCancelled;
-import dev.vality.swag_webhook_events.model.PaymentCaptured;
-import dev.vality.swag_webhook_events.model.PaymentFailed;
-import dev.vality.swag_webhook_events.model.PaymentProcessed;
-import dev.vality.swag_webhook_events.model.PaymentRefunded;
-import dev.vality.swag_webhook_events.model.PaymentStarted;
-import dev.vality.swag_webhook_events.model.Refund;
-import dev.vality.swag_webhook_events.model.RefundCreated;
-import dev.vality.swag_webhook_events.model.RefundFailed;
-import dev.vality.swag_webhook_events.model.RefundSucceeded;
+import dev.vality.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.thrift.TException;
 import org.springframework.stereotype.Service;
@@ -45,7 +29,7 @@ public class InvoicingEventService
     @Override
     public Event getEventByMessage(InvoicingMessage message) {
         return resolveEvent(message, getInvoiceByMessage(message))
-                .eventID(message.getEventId().intValue())
+                .eventID(message.getId().intValue())
                 .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
                 .topic(Event.TopicEnum.INVOICESTOPIC);
     }
@@ -60,41 +44,34 @@ public class InvoicingEventService
         try {
             return invoicingClient.get(
                     HellgateUtils.USER_INFO,
-                    message.getInvoiceId(),
+                    message.getSourceId(),
                     HellgateUtils.getEventRange(message.getSequenceId().intValue())
             );
         } catch (InvoiceNotFound e) {
-            throw new NotFoundException("Invoice not found, invoiceId=" + message.getInvoiceId());
+            throw new NotFoundException("Invoice not found, invoiceId=" + message.getSourceId());
         } catch (TException e) {
             throw new RemoteHostException(e);
         }
     }
 
     private Event resolveEvent(InvoicingMessage m, dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
-        switch (m.getEventType()) {
-            case INVOICE_CREATED:
-                return new InvoiceCreated()
-                        .invoice(getSwagInvoice(invoiceInfo))
-                        .eventType(Event.EventTypeEnum.INVOICECREATED);
-            case INVOICE_STATUS_CHANGED:
-                return resolveInvoiceStatusChanged(m, invoiceInfo);
-            case INVOICE_PAYMENT_STARTED:
-                return new PaymentStarted()
-                        .invoice(getSwagInvoice(invoiceInfo))
-                        .payment(getSwagPayment(m, invoiceInfo))
-                        .eventType(Event.EventTypeEnum.PAYMENTSTARTED);
-            case INVOICE_PAYMENT_STATUS_CHANGED:
-                return resolvePaymentStatusChanged(m, invoiceInfo);
-            case INVOICE_PAYMENT_REFUND_STARTED:
-                return new RefundCreated()
-                        .invoice(getSwagInvoice(invoiceInfo))
-                        .payment(getSwagPayment(m, invoiceInfo))
-                        .refund(getSwagRefund(m, invoiceInfo));
-            case INVOICE_PAYMENT_REFUND_STATUS_CHANGED:
-                return resolveRefundStatusChanged(m, invoiceInfo);
-            default:
-                throw new UnsupportedOperationException("Unknown event type " + m.getEventType());
-        }
+        return switch (m.getEventType()) {
+            case INVOICE_CREATED -> new InvoiceCreated()
+                    .invoice(getSwagInvoice(invoiceInfo))
+                    .eventType(Event.EventTypeEnum.INVOICECREATED);
+            case INVOICE_STATUS_CHANGED -> resolveInvoiceStatusChanged(m, invoiceInfo);
+            case INVOICE_PAYMENT_STARTED -> new PaymentStarted()
+                    .invoice(getSwagInvoice(invoiceInfo))
+                    .payment(getSwagPayment(m, invoiceInfo))
+                    .eventType(Event.EventTypeEnum.PAYMENTSTARTED);
+            case INVOICE_PAYMENT_STATUS_CHANGED -> resolvePaymentStatusChanged(m, invoiceInfo);
+            case INVOICE_PAYMENT_REFUND_STARTED -> new RefundCreated()
+                    .invoice(getSwagInvoice(invoiceInfo))
+                    .payment(getSwagPayment(m, invoiceInfo))
+                    .refund(getSwagRefund(m, invoiceInfo));
+            case INVOICE_PAYMENT_REFUND_STATUS_CHANGED -> resolveRefundStatusChanged(m, invoiceInfo);
+            default -> throw new UnsupportedOperationException("Unknown event type " + m.getEventType());
+        };
     }
 
     private Invoice getSwagInvoice(dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
@@ -134,7 +111,7 @@ public class InvoicingEventService
                 .findFirst()
                 .orElseThrow(
                         () -> new NotFoundException(
-                                String.format("Payment not found, invoiceId=%s, paymentId=%s", message.getInvoiceId(),
+                                String.format("Payment not found, invoiceId=%s, paymentId=%s", message.getSourceId(),
                                         message.getPaymentId())
                         )
                 );
@@ -194,7 +171,7 @@ public class InvoicingEventService
                         () -> new NotFoundException(
                                 String.format(
                                         "Refund not found, invoiceId=%s, paymentId=%s, refundId=%s",
-                                        m.getInvoiceId(), m.getPaymentId(), m.getRefundId()
+                                        m.getSourceId(), m.getPaymentId(), m.getRefundId()
                                 )
                         )
                 );
@@ -205,15 +182,11 @@ public class InvoicingEventService
         Invoice swagInvoice = getSwagInvoice(invoiceInfo);
         Payment swagPayment = getSwagPayment(message, invoiceInfo);
         Refund swagRefund = getSwagRefund(message, invoiceInfo);
-        switch (message.getRefundStatus()) {
-            case PENDING:
-                return new RefundCreated().invoice(swagInvoice).payment(swagPayment).refund(swagRefund);
-            case SUCCEEDED:
-                return new RefundSucceeded().invoice(swagInvoice).payment(swagPayment).refund(swagRefund);
-            case FAILED:
-                return new RefundFailed().invoice(swagInvoice).payment(swagPayment).refund(swagRefund);
-            default:
-                throw new UnsupportedOperationException("Unknown refund status " + message.getRefundStatus());
-        }
+        return switch (message.getRefundStatus()) {
+            case PENDING -> new RefundCreated().invoice(swagInvoice).payment(swagPayment).refund(swagRefund);
+            case SUCCEEDED -> new RefundSucceeded().invoice(swagInvoice).payment(swagPayment).refund(swagRefund);
+            case FAILED -> new RefundFailed().invoice(swagInvoice).payment(swagPayment).refund(swagRefund);
+            default -> throw new UnsupportedOperationException("Unknown refund status " + message.getRefundStatus());
+        };
     }
 }

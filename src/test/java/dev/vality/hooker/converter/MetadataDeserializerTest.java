@@ -3,17 +3,26 @@ package dev.vality.hooker.converter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.damsel.json.Null;
 import dev.vality.damsel.json.Value;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ContextConfiguration(classes = {
+        MetadataDeserializer.class,
+        ObjectMapper.class
+})
+@SpringBootTest
 public class MetadataDeserializerTest {
 
-    private final MetadataDeserializer metadataDeserializer = new MetadataDeserializer(new ObjectMapper());
+    @Autowired
+    private MetadataDeserializer metadataDeserializer;
 
     @Test
     public void deserialize() {

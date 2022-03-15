@@ -12,13 +12,7 @@ import dev.vality.hooker.exception.RemoteHostException;
 import dev.vality.hooker.model.CustomerMessage;
 import dev.vality.hooker.utils.HellgateUtils;
 import dev.vality.hooker.utils.TimeUtils;
-import dev.vality.swag_webhook_events.model.CustomerBindingFailed;
-import dev.vality.swag_webhook_events.model.CustomerBindingStarted;
-import dev.vality.swag_webhook_events.model.CustomerBindingSucceeded;
-import dev.vality.swag_webhook_events.model.CustomerCreated;
-import dev.vality.swag_webhook_events.model.CustomerDeleted;
-import dev.vality.swag_webhook_events.model.CustomerReady;
-import dev.vality.swag_webhook_events.model.Event;
+import dev.vality.swag_webhook_events.model.*;
 import dev.vality.woody.api.flow.WFlow;
 import dev.vality.woody.api.trace.ContextUtils;
 import lombok.RequiredArgsConstructor;
@@ -38,17 +32,17 @@ public class CustomerEventService implements EventService<CustomerMessage> {
         try {
             Customer customer = woodyFlow.createServiceFork(() -> {
                         addWoodyContext();
-                        return customerClient.get(message.getCustomerId(),
+                        return customerClient.get(message.getSourceId(),
                                 HellgateUtils.getEventRange(message.getSequenceId().intValue()));
                     }
             ).call();
 
             return resolveEvent(message, customer)
-                    .eventID(message.getEventId().intValue())
+                    .eventID(message.getId().intValue())
                     .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
                     .topic(Event.TopicEnum.CUSTOMERSTOPIC);
         } catch (CustomerNotFound e) {
-            throw new NotFoundException("Customer not found, invoiceId=" + message.getCustomerId());
+            throw new NotFoundException("Customer not found, invoiceId=" + message.getSourceId());
         } catch (Exception e) {
             throw new RemoteHostException(e);
         }
@@ -87,12 +81,12 @@ public class CustomerEventService implements EventService<CustomerMessage> {
     }
 
     private dev.vality.damsel.payment_processing.CustomerBinding extractBinding(CustomerMessage message,
-                                                                                Customer customer) {
+                                                                                  Customer customer) {
         return customer.getBindings().stream()
                 .filter(b -> b.getId().equals(message.getBindingId()))
                 .findFirst()
                 .orElseThrow(() ->
                         new NotFoundException(String.format("Customer binding not found, customerId=%s, bindingId=%s",
-                                message.getCustomerId(), message.getBindingId())));
+                                message.getSourceId(), message.getBindingId())));
     }
 }

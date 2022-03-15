@@ -25,7 +25,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 public abstract class AbstractIntegrationTest {
 
     @ClassRule
-    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer("postgres:14")
+    public static PostgreSQLContainer postgres = (PostgreSQLContainer) new PostgreSQLContainer("postgres:12")
             .withStartupTimeout(Duration.ofMinutes(5));
     @Value("${local.server.port}")
     protected int port;
@@ -35,13 +35,13 @@ public abstract class AbstractIntegrationTest {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             log.info("Postgres URL: " + postgres.getJdbcUrl());
             TestPropertyValues.of(
-                    "spring.datasource.url=" + postgres.getJdbcUrl(),
-                    "spring.datasource.username=" + postgres.getUsername(),
-                    "spring.datasource.password=" + postgres.getPassword(),
-                    "flyway.url=" + postgres.getJdbcUrl(),
-                    "flyway.user=" + postgres.getUsername(),
-                    "flyway.password=" + postgres.getPassword()
-            )
+                            "spring.datasource.url=" + postgres.getJdbcUrl(),
+                            "spring.datasource.username=" + postgres.getUsername(),
+                            "spring.datasource.password=" + postgres.getPassword(),
+                            "flyway.url=" + postgres.getJdbcUrl(),
+                            "flyway.user=" + postgres.getUsername(),
+                            "flyway.password=" + postgres.getPassword()
+                    )
                     .applyTo(configurableApplicationContext);
         }
     }

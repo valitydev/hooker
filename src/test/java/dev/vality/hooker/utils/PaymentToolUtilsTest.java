@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PaymentToolUtilsTest {
@@ -31,7 +30,6 @@ public class PaymentToolUtilsTest {
                 ((PaymentToolDetailsCryptoWallet) paymentToolDetails).getCryptoCurrency().getValue());
     }
 
-    //TODO Bump swag-webhook-events
     @Test
     public void testDigitalWalletJson() throws JsonProcessingException {
         PaymentTool paymentTool =
@@ -71,14 +69,7 @@ public class PaymentToolUtilsTest {
     @Test
     public void testGetPaymentToolDetailsBankCard() throws IOException {
         PaymentTool paymentTool = PaymentTool.bank_card(new MockTBaseProcessor(MockMode.RANDOM, 15, 2)
-                .process(new BankCard()
-                                .setPaymentSystem(
-                                        new PaymentSystemRef(random(LegacyBankCardPaymentSystem.class).name())
-                                )
-                                .setPaymentToken(
-                                        new BankCardTokenServiceRef(random(LegacyBankCardTokenProvider.class).name())
-                                ),
-                        new TBaseHandler<>(BankCard.class)));
+                .process(new BankCard(), new TBaseHandler<>(BankCard.class)));
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsBankCard);
         assertNotNull(paymentToolDetails.getDetailsType());

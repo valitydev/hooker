@@ -2,23 +2,19 @@ package dev.vality.hooker.dao;
 
 import dev.vality.damsel.webhooker.EventFilter;
 import dev.vality.damsel.webhooker.WebhookParams;
-import dev.vality.hooker.AbstractIntegrationTest;
+import dev.vality.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.hooker.model.EventType;
 import dev.vality.hooker.model.Hook;
 import dev.vality.hooker.model.PartyMetadata;
 import dev.vality.hooker.utils.EventFilterUtils;
 import dev.vality.hooker.utils.HookConverter;
 import dev.vality.swag_webhook_events.model.Event;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,18 +22,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Created by inalarsanukaev on 08.04.17.
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class HookDaoImplTest extends AbstractIntegrationTest {
+@PostgresqlSpringBootITest
+public class HookDaoImplTest {
 
-    List<Long> ids = new ArrayList<>();
+    private List<Long> ids = new ArrayList<>();
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
     @Autowired
@@ -72,7 +65,7 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
         return hook;
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
         webhookAdditionalFilters
@@ -103,7 +96,7 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
         ids.add(hook.getId());
         String pubKey1 = hook.getPubKey();
         String pubKey2 = hook.getPubKey();
-        Assert.assertEquals(pubKey1, pubKey2);
+        assertEquals(pubKey1, pubKey2);
         webhookAdditionalFilters.clear();
         webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_CREATED).build());
         webhookAdditionalFilters
@@ -113,7 +106,7 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
         hook = hookDao.create(HookConverter.convert(webhookParams));
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         List<Hook> list = hookDao.getPartyHooks("123");
         for (Hook w : list) {
@@ -142,10 +135,14 @@ public class HookDaoImplTest extends AbstractIntegrationTest {
 
     @Test
     public void getPartyWebhooks() throws Exception {
-        assertEquals(hookDao.getPartyHooks("123").stream().filter(Hook::isEnabled).collect(Collectors.toList()).size(),
-                3);
-        Assert.assertTrue(
-                hookDao.getPartyHooks("88888").stream().filter(Hook::isEnabled).collect(Collectors.toList()).isEmpty());
+        List<Hook> partyHooks = hookDao.getPartyHooks("123").stream()
+                .filter(Hook::isEnabled)
+                .collect(Collectors.toList());
+        assertEquals(3, partyHooks.size());
+        List<Hook> notExistsPartyHooks = hookDao.getPartyHooks("88888").stream()
+                .filter(Hook::isEnabled)
+                .collect(Collectors.toList());
+        assertTrue(notExistsPartyHooks.isEmpty());
     }
 
     @Test
