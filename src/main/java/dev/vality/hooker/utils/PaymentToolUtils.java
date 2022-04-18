@@ -2,10 +2,8 @@ package dev.vality.hooker.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import dev.vality.damsel.domain.BankCard;
-import dev.vality.damsel.domain.MobilePhone;
-import dev.vality.damsel.domain.PaymentSystemRef;
-import dev.vality.damsel.domain.PaymentTool;
+import dev.vality.damsel.domain.*;
+import dev.vality.swag_webhook_events.model.CryptoCurrency;
 import dev.vality.swag_webhook_events.model.*;
 
 import java.nio.charset.StandardCharsets;
@@ -23,7 +21,8 @@ public class PaymentToolUtils {
                     Arrays.stream(PaymentToolDetailsBankCard.TokenProviderEnum.values())
                             .filter(tokenProviderEnum ->
                                     tokenProviderEnum.name().equalsIgnoreCase(
-                                            paymentTool.getBankCard().getPaymentToken().getId()
+                                            Optional.ofNullable(paymentTool.getBankCard().getPaymentToken())
+                                                    .map(BankCardTokenServiceRef::getId).orElse(null)
                                     )
                             )
                             .findFirst().orElse(PaymentToolDetailsBankCard.TokenProviderEnum.UNKNOWN);
@@ -35,7 +34,10 @@ public class PaymentToolUtils {
                     .tokenProvider(paymentTool.getBankCard().getPaymentToken() != null
                             ? tokenProvider
                             : null)
-                    .tokenProviderName(paymentTool.getBankCard().getPaymentToken().getId())
+                    .tokenProviderName(
+                            Optional.ofNullable(paymentTool.getBankCard().getPaymentToken())
+                                    .map(BankCardTokenServiceRef::getId).orElse(null))
+
                     .paymentSystem(
                             Optional.ofNullable(paymentTool.getBankCard().getPaymentSystem())
                                     .map(PaymentSystemRef::getId).orElse(null))
@@ -49,7 +51,8 @@ public class PaymentToolUtils {
                     Arrays.stream(PaymentToolDetailsPaymentTerminal.ProviderEnum.values())
                             .filter(providerEnum ->
                                     providerEnum.name().equalsIgnoreCase(
-                                            paymentTool.getPaymentTerminal().getPaymentService().getId())
+                                            Optional.ofNullable(paymentTool.getPaymentTerminal().getPaymentService())
+                                                    .map(PaymentServiceRef::getId).orElse(null))
                             )
                             .findFirst().orElse(PaymentToolDetailsPaymentTerminal.ProviderEnum.UNKNOWN);
             return new PaymentToolDetailsPaymentTerminal()
@@ -57,7 +60,8 @@ public class PaymentToolUtils {
                     .providerName(paymentTool.getPaymentTerminal().getPaymentService().getId())
                     .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL);
         } else if (paymentTool.isSetDigitalWallet()) {
-            if (paymentTool.getDigitalWallet().getPaymentService().getId().equals("qiwi")) {
+            if ("qiwi".equals(Optional.ofNullable(paymentTool.getDigitalWallet().getPaymentService())
+                    .map(PaymentServiceRef::getId).orElse(null))) {
                 return new PaymentToolDetailsDigitalWallet()
                         .digitalWalletDetailsType(
                                 PaymentToolDetailsDigitalWallet.DigitalWalletDetailsTypeEnum.DIGITALWALLETDETAILSQIWI)
@@ -90,10 +94,16 @@ public class PaymentToolUtils {
             BankCard paymentCard = paymentTool.getBankCard();
             rootNode.put("type", "bank_card");
             rootNode.put("token", paymentCard.getToken());
-            rootNode.put("payment_system", paymentCard.getPaymentSystem().getId());
+            rootNode.put(
+                    "payment_system",
+                    Optional.ofNullable(paymentCard.getPaymentSystem()).map(PaymentSystemRef::getId).orElse(null)
+            );
             rootNode.put("bin", paymentCard.getBin());
             rootNode.put("masked_pan", paymentCard.getLastDigits());
-            rootNode.put("token_provider", paymentCard.getPaymentToken().getId());
+            rootNode.put(
+                    "token_provider",
+                    Optional.ofNullable(paymentCard.getPaymentToken()).map(BankCardTokenServiceRef::getId).orElse(null)
+            );
         } else if (paymentTool.isSetPaymentTerminal()) {
             rootNode.put("type", "payment_terminal");
             rootNode.put(

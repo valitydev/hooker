@@ -21,13 +21,13 @@ public class PaymentToolUtilsTest {
 
     @Test
     public void testGetPaymentToolDetailsCryptoWallet() {
-        PaymentTool paymentTool = PaymentTool.crypto_currency_deprecated(LegacyCryptoCurrency.bitcoin);
+        PaymentTool paymentTool = PaymentTool.crypto_currency(new CryptoCurrencyRef("bitcoin"));
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsCryptoWallet);
         assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET,
                 paymentToolDetails.getDetailsType());
         assertEquals(dev.vality.swag_webhook_events.model.CryptoCurrency.BITCOIN.getValue(),
-                ((PaymentToolDetailsCryptoWallet) paymentToolDetails).getCryptoCurrency().getValue());
+                ((PaymentToolDetailsCryptoWallet) paymentToolDetails).getCryptoCurrencyType());
     }
 
     @Test
@@ -35,6 +35,7 @@ public class PaymentToolUtilsTest {
         PaymentTool paymentTool =
                 PaymentTool.digital_wallet(new DigitalWallet("kke"));
         paymentTool.getDigitalWallet().setProviderDeprecated(LegacyDigitalWalletProvider.qiwi);
+        paymentTool.getDigitalWallet().setPaymentService(new PaymentServiceRef("qiwi"));
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         String json = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .writeValueAsString(paymentToolDetails);
@@ -46,7 +47,7 @@ public class PaymentToolUtilsTest {
     @Test
     public void testGetPaymentToolDetailsPaymentTerminal() {
         PaymentTool paymentTool = PaymentTool.payment_terminal(new PaymentTerminal()
-                .setTerminalTypeDeprecated(LegacyTerminalPaymentProvider.alipay)
+                .setPaymentService(new PaymentServiceRef("alipay"))
         );
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsPaymentTerminal);
@@ -56,7 +57,7 @@ public class PaymentToolUtilsTest {
                 ((PaymentToolDetailsPaymentTerminal) paymentToolDetails).getProvider().getValue());
 
         paymentTool = PaymentTool.payment_terminal(new PaymentTerminal()
-                .setTerminalTypeDeprecated(LegacyTerminalPaymentProvider.wechat)
+                .setPaymentService(new PaymentServiceRef("wechat"))
         );
         paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertTrue(paymentToolDetails instanceof PaymentToolDetailsPaymentTerminal);
