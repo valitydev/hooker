@@ -180,6 +180,14 @@
             <artifactId>guava</artifactId>
             <version>29.0-jre</version>
         </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
 
         <!--Test libs-->
         <!--JUnit Jupiter Engine to depend on the JUnit5 engine and JUnit 5 API -->
