@@ -3,6 +3,7 @@ package dev.vality.hooker.service;
 import dev.vality.damsel.payment_processing.Customer;
 import dev.vality.damsel.payment_processing.CustomerManagementSrv;
 import dev.vality.damsel.payment_processing.CustomerNotFound;
+import dev.vality.damsel.payment_processing.EventRange;
 import dev.vality.hooker.configuration.meta.UserIdentityIdExtensionKit;
 import dev.vality.hooker.configuration.meta.UserIdentityRealmExtensionKit;
 import dev.vality.hooker.converter.CustomerBindingConverter;
@@ -10,7 +11,6 @@ import dev.vality.hooker.converter.CustomerConverter;
 import dev.vality.hooker.exception.NotFoundException;
 import dev.vality.hooker.exception.RemoteHostException;
 import dev.vality.hooker.model.CustomerMessage;
-import dev.vality.hooker.utils.HellgateUtils;
 import dev.vality.hooker.utils.TimeUtils;
 import dev.vality.swag_webhook_events.model.*;
 import dev.vality.woody.api.flow.WFlow;
@@ -32,8 +32,7 @@ public class CustomerEventService implements EventService<CustomerMessage> {
         try {
             Customer customer = woodyFlow.createServiceFork(() -> {
                         addWoodyContext();
-                        return customerClient.get(message.getSourceId(),
-                                HellgateUtils.getEventRange(message.getSequenceId().intValue()));
+                        return customerClient.get(message.getSourceId(), getEventRange(message));
                     }
             ).call();
 
@@ -46,6 +45,10 @@ public class CustomerEventService implements EventService<CustomerMessage> {
         } catch (Exception e) {
             throw new RemoteHostException(e);
         }
+    }
+
+    private EventRange getEventRange(CustomerMessage message) {
+        return new EventRange().setLimit(message.getSequenceId().intValue());
     }
 
     private void addWoodyContext() {
