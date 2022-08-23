@@ -9,6 +9,7 @@ import dev.vality.swag_webhook_events.model.CustomerPayer;
 import dev.vality.swag_webhook_events.model.Payment;
 import dev.vality.swag_webhook_events.model.PaymentResourcePayer;
 import dev.vality.swag_webhook_events.model.RecurrentPayer;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,16 +32,19 @@ public class PaymentConverterTest  {
     @Autowired
     private PaymentConverter converter;
 
-    @Test
+    @RepeatedTest(7)
     public void testConvert() throws IOException {
         MockTBaseProcessor mockTBaseProcessor = new MockTBaseProcessor(MockMode.RANDOM, 15, 1);
         InvoicePayment source = mockTBaseProcessor
                 .process(new InvoicePayment(), new TBaseHandler<>(InvoicePayment.class));
         source.setCreatedAt("2016-03-22T06:12:27Z");
+        PaymentTool paymentTool = PaymentTool
+                .bank_card(mockTBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class)));
         if (source.getPayer().isSetPaymentResource()) {
             source.getPayer().getPaymentResource().getResource()
-                    .setPaymentTool(PaymentTool
-                            .bank_card(mockTBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))));
+                    .setPaymentTool(paymentTool);
+        } else if (source.getPayer().isSetCustomer()) {
+            source.getPayer().getCustomer().setPaymentTool(paymentTool);
         }
         source.setStatus(InvoicePaymentStatus.pending(new InvoicePaymentPending()));
         Payment target = converter
