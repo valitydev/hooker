@@ -32,8 +32,7 @@ public class CustomerEventService implements EventService<CustomerMessage> {
         try {
             Customer customer = woodyFlow.createServiceFork(() -> {
                         addWoodyContext();
-                        return customerClient.get(message.getSourceId(),
-                                new EventRange().setLimit(message.getSequenceId().intValue()));
+                        return customerClient.get(message.getSourceId(), getEventRange(message));
                     }
             ).call();
 
@@ -46,6 +45,10 @@ public class CustomerEventService implements EventService<CustomerMessage> {
         } catch (Exception e) {
             throw new RemoteHostException(e);
         }
+    }
+
+    private EventRange getEventRange(CustomerMessage message) {
+        return new EventRange().setLimit(message.getSequenceId().intValue());
     }
 
     private void addWoodyContext() {

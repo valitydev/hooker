@@ -42,15 +42,16 @@ public class InvoicingEventService
     @Override
     public dev.vality.damsel.payment_processing.Invoice getInvoiceByMessage(InvoicingMessage message) {
         try {
-            return invoicingClient.get(
-                    message.getSourceId(),
-                    new EventRange().setLimit(message.getSequenceId().intValue())
-            );
+            return invoicingClient.get(message.getSourceId(), getEventRange(message));
         } catch (InvoiceNotFound e) {
             throw new NotFoundException("Invoice not found, invoiceId=" + message.getSourceId());
         } catch (TException e) {
             throw new RemoteHostException(e);
         }
+    }
+
+    private EventRange getEventRange(InvoicingMessage message) {
+        return new EventRange().setLimit(message.getSequenceId().intValue());
     }
 
     private Event resolveEvent(InvoicingMessage m, dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
