@@ -31,7 +31,7 @@ public class WebhookMessageBuilder {
                 .setWebhookId(webhookMessageModel.getHookId())
                 .setSourceId(sourceId)
                 .setEventId(event.getEventID())
-                .setParentEventId(-1) //TODO REMOVE
+                .setParentEventId(parentId)
                 .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                 .setUrl(webhookMessageModel.getUrl())
                 .setContentType(ContentType.APPLICATION_JSON.getMimeType())
