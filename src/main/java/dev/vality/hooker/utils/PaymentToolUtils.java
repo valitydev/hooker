@@ -84,7 +84,7 @@ public class PaymentToolUtils {
                     .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSMOBILECOMMERCE);
         } else {
             throw new UnsupportedOperationException(
-                    "Unknown payment tool type. Must be bank card, terminal or digital wallet");
+                    "Unknown payment tool type " + paymentTool);
         }
     }
 
@@ -123,7 +123,7 @@ public class PaymentToolUtils {
             rootNode.put("mobile_commerce", mobilePhone.getCc() + mobilePhone.getCtn());
         } else {
             throw new UnsupportedOperationException(
-                    "Unknown payment tool type. Must be bank card, terminal or digital wallet");
+                    "Unknown payment tool type " + paymentTool);
         }
         return Base64.getUrlEncoder().encodeToString(rootNode.toString().getBytes(StandardCharsets.UTF_8));
     }

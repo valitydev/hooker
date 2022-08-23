@@ -13,6 +13,7 @@ import dev.vality.hooker.utils.BuildUtils;
 import dev.vality.swag_webhook_events.model.Event;
 import dev.vality.swag_webhook_events.model.RefundSucceeded;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class InvoicingEventServiceTest {
                         InvoicePaymentStatus.pending(new InvoicePaymentPending())));
     }
 
-    @Test
+    @RepeatedTest(7)
     public void testRefundSucceeded() {
         InvoicingMessage message = random(InvoicingMessage.class);
         message.setPaymentId("1");
@@ -62,7 +63,7 @@ public class InvoicingEventServiceTest {
         assertEquals("chicken-teriyaki", refundSucceded.getRefund().getRrn());
     }
 
-    @Test
+    @RepeatedTest(7)
     public void testJson() throws JsonProcessingException {
         InvoicingMessage message = random(InvoicingMessage.class);
         message.setPaymentId("1");

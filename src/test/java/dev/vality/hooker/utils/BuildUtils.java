@@ -80,12 +80,18 @@ public class BuildUtils {
         dev.vality.damsel.payment_processing.Invoice invoice = new dev.vality.damsel.payment_processing.Invoice()
                 .setInvoice(buildInvoice(partyId, invoiceId, invoiceStatus, thriftBaseProcessor))
                 .setPayments(buildPayments(partyId, paymentId, refundId, paymentStatus, thriftBaseProcessor));
-        if (invoice.getPayments().get(0).getPayment().getPayer().isSetPaymentResource()) {
+        Payer payer = invoice.getPayments().get(0).getPayment().getPayer();
+        if (payer.isSetPaymentResource()) {
             PaymentTool paymentTool = PaymentTool.bank_card(
                     thriftBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))
             );
-            invoice.getPayments().get(0).getPayment().getPayer().getPaymentResource().getResource()
+            payer.getPaymentResource().getResource()
                     .setPaymentTool(paymentTool);
+        } else if (payer.isSetCustomer()) {
+            PaymentTool paymentTool = PaymentTool.bank_card(
+                    thriftBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))
+            );
+            payer.getCustomer().setPaymentTool(paymentTool);
         }
         return invoice;
     }
