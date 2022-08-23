@@ -37,7 +37,7 @@ public class InvoicingEventServiceTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        Mockito.when(invoicingClient.get(any(), any(), any()))
+        Mockito.when(invoicingClient.get(any(), any()))
                 .thenReturn(BuildUtils.buildInvoice("partyId", "invoiceId", "1", "1",
                         InvoiceStatus.paid(new InvoicePaid()),
                         InvoicePaymentStatus.pending(new InvoicePaymentPending())));

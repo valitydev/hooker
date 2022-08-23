@@ -34,7 +34,6 @@ public class PaymentToolUtilsTest {
     public void testDigitalWalletJson() throws JsonProcessingException {
         PaymentTool paymentTool =
                 PaymentTool.digital_wallet(new DigitalWallet("kke"));
-        paymentTool.getDigitalWallet().setProviderDeprecated(LegacyDigitalWalletProvider.qiwi);
         paymentTool.getDigitalWallet().setPaymentService(new PaymentServiceRef("qiwi"));
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         String json = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)

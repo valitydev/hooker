@@ -1,5 +1,6 @@
 package dev.vality.hooker.service;
 
+import dev.vality.damsel.payment_processing.EventRange;
 import dev.vality.damsel.payment_processing.InvoiceNotFound;
 import dev.vality.damsel.payment_processing.InvoicePayment;
 import dev.vality.damsel.payment_processing.InvoicingSrv;
@@ -9,7 +10,6 @@ import dev.vality.hooker.converter.RefundConverter;
 import dev.vality.hooker.exception.NotFoundException;
 import dev.vality.hooker.exception.RemoteHostException;
 import dev.vality.hooker.model.InvoicingMessage;
-import dev.vality.hooker.utils.HellgateUtils;
 import dev.vality.hooker.utils.TimeUtils;
 import dev.vality.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
@@ -43,9 +43,8 @@ public class InvoicingEventService
     public dev.vality.damsel.payment_processing.Invoice getInvoiceByMessage(InvoicingMessage message) {
         try {
             return invoicingClient.get(
-                    HellgateUtils.USER_INFO,
                     message.getSourceId(),
-                    HellgateUtils.getEventRange(message.getSequenceId().intValue())
+                    new EventRange().setLimit(message.getSequenceId().intValue())
             );
         } catch (InvoiceNotFound e) {
             throw new NotFoundException("Invoice not found, invoiceId=" + message.getSourceId());
