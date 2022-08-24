@@ -27,10 +27,6 @@ spring:
   flyway:
     schemas: hook
     table: schema_version
-  task:
-    scheduling:
-      pool:
-        size: 20
 
 kafka:
   bootstrap-servers: kenny-kafka1.bst1.rbkmoney.net:9092
@@ -92,9 +88,3 @@ spring.datasource:
     idle-timeout: 30000
     data-source-properties:
       reWriteBatchedInserts: true
-
-clean:
-  scheduler:
-    cron: "0 0 * * * *"
-    timezone: Europe/Moscow
-    daysAgo: 30
