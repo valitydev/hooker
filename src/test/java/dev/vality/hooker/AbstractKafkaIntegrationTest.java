@@ -49,13 +49,10 @@ public abstract class AbstractKafkaIntegrationTest {
                     "flyway.url=" + postgres.getJdbcUrl(),
                     "flyway.user=" + postgres.getUsername(),
                     "flyway.password=" + postgres.getPassword()
-            ).and("kafka.bootstrap-servers=" + kafka.getBootstrapServers(),
-                    "kafka.ssl.enabled=false",
-                    "kafka.consumer.group-id=TestListener",
-                    "kafka.consumer.enable-auto-commit=false",
-                    "kafka.consumer.auto-offset-reset=earliest",
-                    "kafka.consumer.client-id=test",
-                    "kafka.client-id=test",
+            ).and("spring.kafka.bootstrap-servers=" + kafka.getBootstrapServers(),
+                    "spring.kafka.consumer.group-id=TestListener",
+                    "spring.kafka.consumer.client-id=test",
+                    "spring.kafka.client-id=test",
                     "kafka.topics.invoicing.enabled=true",
                     "kafka.topics.customer.enabled=true")
                     .applyTo(configurableApplicationContext);
