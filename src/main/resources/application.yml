@@ -27,24 +27,15 @@ spring:
   flyway:
     schemas: hook
     table: schema_version
-
+  kafka:
+    bootstrap-servers: enny-kafka1.bst1.rbkmoney.net:9092
+    client-id: hooker
+    consumer:
+      group-id: "HookerListener"
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      max-poll-records: 20
 kafka:
-  bootstrap-servers: kenny-kafka1.bst1.rbkmoney.net:9092
-  client-id: hooker
-  ssl:
-    enabled: false
-    trust-store-location: "test"
-    trust-store-password: "test"
-    key-store-location: "test"
-    key-store-password: "test"
-    key-password: "test"
-    key-store-type: PKCS12
-    trust-store-type: PKCS12
-  consumer:
-    group-id: "HookerListener"
-    enable-auto-commit: false
-    auto-offset-reset: earliest
-    max-poll-records: 20
   topics:
     invoice:
       id: mg-invoice-100-2
