@@ -1,7 +1,6 @@
 package dev.vality.hooker.configuration;
 
 import dev.vality.damsel.payment_processing.EventPayload;
-import dev.vality.hooker.configuration.properties.KafkaSslProperties;
 import dev.vality.hooker.serde.SinkEventDeserializer;
 import dev.vality.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
 import dev.vality.kafka.common.serialization.ThriftSerializer;
@@ -13,16 +12,12 @@ import dev.vality.sink.common.serialization.impl.PaymentEventPayloadDeserializer
 import dev.vality.webhook.dispatcher.WebhookMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.config.SslConfigs;
-import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -33,7 +28,6 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -114,7 +108,8 @@ public class KafkaConfig {
     }
 
     private ProducerFactory<String, WebhookMessage> producerFactory() {
-        Map<String, Object> config = new HashMap<>();
+        Map<String, Object> config = kafkaProperties.buildProducerProperties();
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ThriftSerializer.class);
         return new DefaultKafkaProducerFactory<>(config);
     }

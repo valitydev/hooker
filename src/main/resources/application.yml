@@ -30,23 +30,11 @@ spring:
   kafka:
     bootstrap-servers: enny-kafka1.bst1.rbkmoney.net:9092
     client-id: hooker
-    ssl:
-      key-store-location: "test"
-      key-store-type: PKCS12
-      key-store-password: "test"
-      key-password: "test"
-      trust-store-location: "test"
-      trust-store-type: PKCS12
-      trust-store-password: "test"
     consumer:
       group-id: "HookerListener"
       enable-auto-commit: false
       auto-offset-reset: earliest
       max-poll-records: 20
-      client-id: hooker
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: dev.vality.kafka.common.serialization.ThriftSerializer
 kafka:
   topics:
     invoice:
