@@ -11,6 +11,7 @@ import dev.vality.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.hooker.model.*;
 import dev.vality.hooker.utils.BuildUtils;
 import dev.vality.swag_webhook_events.model.Event;
+import dev.vality.swag_webhook_events.model.PaymentCaptured;
 import dev.vality.swag_webhook_events.model.RefundSucceeded;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
@@ -18,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+
+import java.util.Map;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -74,5 +77,6 @@ public class InvoicingEventServiceTest {
         Event event = service.getEventByMessage(message);
         String json = objectMapper.writeValueAsString(event);
         assertTrue(json.contains("\"payment_id\":271771960"));
+        assertTrue(json.contains("\"extraPaymentInfo\":{\"extrakek\":\"100\"}"));
     }
 }

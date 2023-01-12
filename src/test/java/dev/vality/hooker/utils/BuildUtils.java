@@ -4,6 +4,7 @@ import dev.vality.damsel.base.Content;
 import dev.vality.damsel.domain.*;
 import dev.vality.damsel.json.Value;
 import dev.vality.damsel.payment_processing.InvoicePayment;
+import dev.vality.damsel.payment_processing.InvoicePaymentSession;
 import dev.vality.damsel.payment_processing.InvoiceRefundSession;
 import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
@@ -72,9 +73,9 @@ public class BuildUtils {
     }
 
     public static dev.vality.damsel.payment_processing.Invoice buildInvoice(String partyId, String invoiceId,
-                                                                              String paymentId, String refundId,
-                                                                              InvoiceStatus invoiceStatus,
-                                                                              InvoicePaymentStatus paymentStatus)
+                                                                            String paymentId, String refundId,
+                                                                            InvoiceStatus invoiceStatus,
+                                                                            InvoicePaymentStatus paymentStatus)
             throws IOException {
         MockTBaseProcessor thriftBaseProcessor = new MockTBaseProcessor(MockMode.RANDOM, 15, 1);
         dev.vality.damsel.payment_processing.Invoice invoice = new dev.vality.damsel.payment_processing.Invoice()
@@ -99,9 +100,9 @@ public class BuildUtils {
     private static Invoice buildInvoice(String partyId, String invoiceId, InvoiceStatus invoiceStatus,
                                         MockTBaseProcessor thriftBaseProcessor) throws IOException {
         return thriftBaseProcessor.process(
-                new Invoice(),
-                new TBaseHandler<>(Invoice.class)
-        )
+                        new Invoice(),
+                        new TBaseHandler<>(Invoice.class)
+                )
                 .setId(invoiceId)
                 .setOwnerId(partyId)
                 .setCreatedAt("2016-03-22T06:12:27Z")
@@ -118,18 +119,18 @@ public class BuildUtils {
                         .setAdjustments(Collections.emptyList())
                         .setPayment(buildPayment(partyId, paymentId, paymentStatus, thriftBaseProcessor))
                         .setRefunds(buildRefunds(refundId, thriftBaseProcessor))
-                        .setSessions(Collections.emptyList())
-        );
+                        .setSessions(Collections.singletonList(
+                                new InvoicePaymentSession().setTransactionInfo(getTransactionInfo()))));
     }
 
     private static dev.vality.damsel.domain.InvoicePayment buildPayment(String partyId, String paymentId,
-                                                                          InvoicePaymentStatus paymentStatus,
-                                                                          MockTBaseProcessor thriftBaseProcessor)
+                                                                        InvoicePaymentStatus paymentStatus,
+                                                                        MockTBaseProcessor thriftBaseProcessor)
             throws IOException {
         return thriftBaseProcessor.process(
-                new dev.vality.damsel.domain.InvoicePayment(),
-                new TBaseHandler<>(dev.vality.damsel.domain.InvoicePayment.class)
-        )
+                        new dev.vality.damsel.domain.InvoicePayment(),
+                        new TBaseHandler<>(dev.vality.damsel.domain.InvoicePayment.class)
+                )
                 .setCreatedAt("2016-03-22T06:12:27Z")
                 .setId(paymentId)
                 .setOwnerId(partyId)
@@ -153,9 +154,9 @@ public class BuildUtils {
             MockTBaseProcessor thriftBaseProcessor
     ) throws IOException {
         return thriftBaseProcessor.process(
-                new InvoicePaymentRefund(),
-                new TBaseHandler<>(InvoicePaymentRefund.class)
-        )
+                        new InvoicePaymentRefund(),
+                        new TBaseHandler<>(InvoicePaymentRefund.class)
+                )
                 .setReason("keksik")
                 .setCreatedAt("2016-03-22T06:12:27Z")
                 .setId(refundId);
@@ -170,7 +171,8 @@ public class BuildUtils {
 
     private static AdditionalTransactionInfo getAdditionalInfo() {
         return new AdditionalTransactionInfo()
-                .setRrn("chicken-teriyaki");
+                .setRrn("chicken-teriyaki")
+                .setExtraPaymentInfo(Map.of("extrakek", "100"));
     }
 
     public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType,

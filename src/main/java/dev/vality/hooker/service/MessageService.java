@@ -30,6 +30,7 @@ public class MessageService<T extends Message> {
                     Long hookId = w.getHookId();
                     Long parentEventId = messageDao.getParentId(hookId, sourceId, id);
                     WebhookMessage webhookMessage = webhookMessageBuilder.build(w, event, sourceId, parentEventId);
+                    System.out.println(webhookMessage);
                     log.info("Try to send webhook to kafka: {}, parentId {}", webhookMessage, parentEventId);
                     webhookKafkaProducerService.send(webhookMessage);
                     log.info("Webhook to kafka was sent: sourceId={}", webhookMessage.getSourceId());
