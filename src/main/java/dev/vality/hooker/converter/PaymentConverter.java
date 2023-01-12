@@ -5,6 +5,7 @@ import dev.vality.damsel.domain.DisposablePaymentResource;
 import dev.vality.damsel.domain.InvoicePaymentCaptured;
 import dev.vality.damsel.domain.PaymentTool;
 import dev.vality.damsel.payment_processing.InvoicePayment;
+import dev.vality.hooker.model.ExtraPayment;
 import dev.vality.hooker.model.FeeType;
 import dev.vality.hooker.utils.CashFlowUtils;
 import dev.vality.hooker.utils.ErrorUtils;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 @RequiredArgsConstructor
 public class PaymentConverter implements Converter<InvoicePayment, Payment> {
@@ -22,18 +25,18 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
     private final MetadataDeserializer deserializer;
 
     @Override
-    public Payment convert(InvoicePayment sourceWrapper) {
+    public ExtraPayment convert(InvoicePayment sourceWrapper) {
         var source = sourceWrapper.getPayment();
-
-        Payment target = new Payment()
-                .id(source.getId())
-                .createdAt(TimeUtils.toOffsetDateTime(source.getCreatedAt()))
-                .status(Payment.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
-                .amount(source.getCost().getAmount())
-                .currency(source.getCost().getCurrency().getSymbolicCode())
-                .metadata(getMetadata(source))
-                .fee(getFee(sourceWrapper))
-                .rrn(getRrn(sourceWrapper));
+        ExtraPayment target = new ExtraPayment();
+        target.setId(source.getId());
+        target.setCreatedAt(TimeUtils.toOffsetDateTime(source.getCreatedAt()));
+        target.setStatus(Payment.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()));
+        target.setAmount(source.getCost().getAmount());
+        target.setCurrency(source.getCost().getCurrency().getSymbolicCode());
+        target.setMetadata(getMetadata(source));
+        target.setFee(getFee(sourceWrapper));
+        target.setRrn(getRrn(sourceWrapper));
+        target.setExtraPaymentInfo(getExtraPaymentInfo(sourceWrapper));
 
         if (source.getStatus().isSetFailed()) {
             setErrorDetails(source, target);
@@ -63,6 +66,10 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
 
     private String getRrn(InvoicePayment sourceWrapper) {
         return isSetAdditionalInfo(sourceWrapper) ? getAdditionalInfo(sourceWrapper).getRrn() : null;
+    }
+
+    private Map<String, String> getExtraPaymentInfo(InvoicePayment sourceWrapper) {
+        return isSetAdditionalInfo(sourceWrapper) ? getAdditionalInfo(sourceWrapper).getExtraPaymentInfo() : null;
     }
 
     private void setErrorDetails(dev.vality.damsel.domain.InvoicePayment source, Payment target) {
