@@ -5,7 +5,7 @@ import dev.vality.damsel.domain.DisposablePaymentResource;
 import dev.vality.damsel.domain.InvoicePaymentCaptured;
 import dev.vality.damsel.domain.PaymentTool;
 import dev.vality.damsel.payment_processing.InvoicePayment;
-import dev.vality.hooker.model.ExtraPayment;
+import dev.vality.hooker.model.ExpandedPayment;
 import dev.vality.hooker.model.FeeType;
 import dev.vality.hooker.utils.CashFlowUtils;
 import dev.vality.hooker.utils.ErrorUtils;
@@ -25,9 +25,9 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
     private final MetadataDeserializer deserializer;
 
     @Override
-    public ExtraPayment convert(InvoicePayment sourceWrapper) {
+    public ExpandedPayment convert(InvoicePayment sourceWrapper) {
         var source = sourceWrapper.getPayment();
-        ExtraPayment target = new ExtraPayment();
+        ExpandedPayment target = new ExpandedPayment();
         target.setId(source.getId());
         target.setCreatedAt(TimeUtils.toOffsetDateTime(source.getCreatedAt()));
         target.setStatus(Payment.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()));

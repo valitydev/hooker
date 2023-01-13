@@ -172,7 +172,7 @@ public class BuildUtils {
     private static AdditionalTransactionInfo getAdditionalInfo() {
         return new AdditionalTransactionInfo()
                 .setRrn("chicken-teriyaki")
-                .setExtraPaymentInfo(Map.of("extrakek", "100"));
+                .setExtraPaymentInfo(Map.of("c2c_commission", "100"));
     }
 
     public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType,

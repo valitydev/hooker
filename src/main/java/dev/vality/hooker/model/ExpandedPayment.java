@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ExtraPayment extends Payment {
+public class ExpandedPayment extends Payment {
 
     private Map<String, String> extraPaymentInfo;
 
