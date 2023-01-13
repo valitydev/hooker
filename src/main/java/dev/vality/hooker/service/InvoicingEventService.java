@@ -99,7 +99,8 @@ public class InvoicingEventService
         };
     }
 
-    private ExpandedPayment getSwagPayment(InvoicingMessage m, dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
+    private ExpandedPayment getSwagPayment(InvoicingMessage m,
+                                           dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
         var damselPayment = extractPayment(m, invoiceInfo);
 
         return paymentConverter.convert(damselPayment);
