@@ -9,6 +9,7 @@ import dev.vality.hooker.converter.PaymentConverter;
 import dev.vality.hooker.converter.RefundConverter;
 import dev.vality.hooker.exception.NotFoundException;
 import dev.vality.hooker.exception.RemoteHostException;
+import dev.vality.hooker.model.ExpandedPayment;
 import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.hooker.utils.TimeUtils;
 import dev.vality.swag_webhook_events.model.*;
@@ -98,7 +99,8 @@ public class InvoicingEventService
         };
     }
 
-    private Payment getSwagPayment(InvoicingMessage m, dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
+    private ExpandedPayment getSwagPayment(InvoicingMessage m,
+                                           dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
         var damselPayment = extractPayment(m, invoiceInfo);
 
         return paymentConverter.convert(damselPayment);
@@ -120,7 +122,7 @@ public class InvoicingEventService
     private Event resolvePaymentStatusChanged(InvoicingMessage message,
                                               dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
         Invoice swagInvoice = getSwagInvoice(invoiceInfo);
-        Payment swagPayment = getSwagPayment(message, invoiceInfo);
+        ExpandedPayment swagPayment = getSwagPayment(message, invoiceInfo);
         return switch (message.getPaymentStatus()) {
             case PENDING -> new PaymentStarted()
                     .invoice(swagInvoice)
@@ -180,7 +182,7 @@ public class InvoicingEventService
     private Event resolveRefundStatusChanged(InvoicingMessage message,
                                              dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
         Invoice swagInvoice = getSwagInvoice(invoiceInfo);
-        Payment swagPayment = getSwagPayment(message, invoiceInfo);
+        ExpandedPayment swagPayment = getSwagPayment(message, invoiceInfo);
         Refund swagRefund = getSwagRefund(message, invoiceInfo);
         return switch (message.getRefundStatus()) {
             case PENDING -> new RefundCreated().invoice(swagInvoice).payment(swagPayment).refund(swagRefund);
