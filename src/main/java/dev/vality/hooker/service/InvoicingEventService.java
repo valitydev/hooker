@@ -69,7 +69,8 @@ public class InvoicingEventService
             case INVOICE_PAYMENT_REFUND_STARTED -> new RefundCreated()
                     .invoice(getSwagInvoice(invoiceInfo))
                     .payment(getSwagPayment(m, invoiceInfo))
-                    .refund(getSwagRefund(m, invoiceInfo));
+                    .refund(getSwagRefund(m, invoiceInfo))
+                    .eventType(Event.EventTypeEnum.REFUNDCREATED);
             case INVOICE_PAYMENT_REFUND_STATUS_CHANGED -> resolveRefundStatusChanged(m, invoiceInfo);
             default -> throw new UnsupportedOperationException("Unknown event type " + m.getEventType());
         };
@@ -165,7 +166,7 @@ public class InvoicingEventService
     }
 
     private dev.vality.damsel.payment_processing.InvoicePaymentRefund extractRefund(InvoicingMessage m,
-                                                                                      InvoicePayment damselPayment) {
+                                                                                    InvoicePayment damselPayment) {
         return damselPayment.getRefunds().stream()
                 .filter(invoicePaymentRefund -> invoicePaymentRefund.getRefund().getId().equals(m.getRefundId()))
                 .findFirst()
@@ -185,9 +186,21 @@ public class InvoicingEventService
         ExpandedPayment swagPayment = getSwagPayment(message, invoiceInfo);
         Refund swagRefund = getSwagRefund(message, invoiceInfo);
         return switch (message.getRefundStatus()) {
-            case PENDING -> new RefundCreated().invoice(swagInvoice).payment(swagPayment).refund(swagRefund);
-            case SUCCEEDED -> new RefundSucceeded().invoice(swagInvoice).payment(swagPayment).refund(swagRefund);
-            case FAILED -> new RefundFailed().invoice(swagInvoice).payment(swagPayment).refund(swagRefund);
+            case PENDING -> new RefundCreated()
+                    .invoice(swagInvoice)
+                    .payment(swagPayment)
+                    .refund(swagRefund)
+                    .eventType(Event.EventTypeEnum.REFUNDPENDING);
+            case SUCCEEDED -> new RefundSucceeded()
+                    .invoice(swagInvoice)
+                    .payment(swagPayment)
+                    .refund(swagRefund)
+                    .eventType(Event.EventTypeEnum.REFUNDSUCCEEDED);
+            case FAILED -> new RefundFailed()
+                    .invoice(swagInvoice)
+                    .payment(swagPayment)
+                    .refund(swagRefund)
+                    .eventType(Event.EventTypeEnum.REFUNDFAILED);
             default -> throw new UnsupportedOperationException("Unknown refund status " + message.getRefundStatus());
         };
     }
