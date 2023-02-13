@@ -7,4 +7,4 @@ on:
 
 jobs:
   lint:
-    uses: valitydev/base-workflows/.github/workflows/basic-linters.yml@v2
+    uses: valitydev/base-workflows/.github/workflows/basic-linters.yml@v1
