@@ -33,7 +33,8 @@ public class InvoiceConverter implements Converter<dev.vality.damsel.domain.Invo
                 .reason(source.getStatus().isSetCancelled() ? source.getStatus().getCancelled().getDetails() :
                         source.getStatus().isSetFulfilled() ? source.getStatus().getFulfilled().getDetails() : null)
                 .description(source.getDetails().getDescription())
-                .cart(source.getDetails().isSetCart() ? convertCart(source.getDetails().getCart().getLines()) : null);
+                .cart(source.getDetails().isSetCart() ? convertCart(source.getDetails().getCart().getLines()) : null)
+                .externalId(source.getExternalId());
     }
 
     private List<InvoiceCartLine> convertCart(List<InvoiceLine> cartLines) {

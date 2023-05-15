@@ -74,5 +74,7 @@ public class InvoicingEventServiceTest {
         String json = objectMapper.writeValueAsString(event);
         assertTrue(json.contains("\"payment_id\":271771960"));
         assertTrue(json.contains("\"extraPaymentInfo\":{\"c2c_commission\":\"100\"}"));
+        assertTrue(json.contains("\"externalId\":\"payment-external-id\""));
+        assertTrue(json.contains("\"externalId\":\"invoice-external-id\""));
     }
 }
