@@ -108,7 +108,8 @@ public class BuildUtils {
                 .setCreatedAt("2016-03-22T06:12:27Z")
                 .setContext(new Content("lel", ByteBuffer.wrap("{\"payment_id\": 271771960}".getBytes())))
                 .setDue("2016-03-22T06:12:27Z")
-                .setStatus(invoiceStatus);
+                .setStatus(invoiceStatus)
+                .setExternalId("invoice-external-id");
     }
 
     private static List<InvoicePayment> buildPayments(String partyId, String paymentId, String refundId,
@@ -134,7 +135,8 @@ public class BuildUtils {
                 .setCreatedAt("2016-03-22T06:12:27Z")
                 .setId(paymentId)
                 .setOwnerId(partyId)
-                .setStatus(paymentStatus);
+                .setStatus(paymentStatus)
+                .setExternalId("payment-external-id");
     }
 
     private static List<dev.vality.damsel.payment_processing.InvoicePaymentRefund> buildRefunds(

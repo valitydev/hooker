@@ -52,6 +52,7 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
             setRecurrentPaymentTool(source, target);
         }
 
+        target.setExternalId(source.getExternalId());
         return target;
     }
 
