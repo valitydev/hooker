@@ -16,6 +16,7 @@ public enum EventType {
     INVOICE_PAYMENT_REFUND_STATUS_CHANGED(
             "invoice_payment_change.payload.invoice_payment_refund_change.payload.invoice_payment_refund_status_changed"),
     INVOICE_PAYMENT_CASH_FLOW_CHANGED("invoice_payment_change.payload.invoice_payment_cash_flow_changed"),
+    INVOICE_PAYMENT_CASH_CHANGED("invoice_payment_change.payload.invoice_payment_cash_changed"),
 
     CUSTOMER_CREATED("customer_created"),
     CUSTOMER_DELETED("customer_deleted"),

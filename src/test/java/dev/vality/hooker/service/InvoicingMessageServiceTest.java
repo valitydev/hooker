@@ -57,6 +57,18 @@ public class InvoicingMessageServiceTest {
         Mockito.verify(webhookKafkaProducerService, Mockito.times(2)).send(any());
     }
 
+    @Test
+    public void testInvoiceCashChange() {
+        hookDao.create(BuildUtils.buildHook(PARTY_ID, "www.kek.ru", EventType.INVOICE_PAYMENT_CASH_CHANGED));
+        hookDao.create(BuildUtils.buildHook(PARTY_ID, "www.lol.ru", EventType.INVOICE_PAYMENT_CASH_CHANGED));
+        InvoicingMessage invoicingMessage = buildMessage(PARTY_ID, "invoice_id",
+                InvoicingMessageEnum.PAYMENT, EventType.INVOICE_PAYMENT_CASH_CHANGED);
+        invoicingService.process(invoicingMessage);
+        Mockito.verify(invoicingMessageEventService, Mockito.times(1)).getEventByMessage(any());
+        Mockito.verify(webhookMessageBuilder, Mockito.times(2)).build(any(), any(), any(), any());
+        Mockito.verify(webhookKafkaProducerService, Mockito.times(2)).send(any());
+    }
+
     private InvoicingMessage buildMessage(String partyId, String invoiceId,
                                           InvoicingMessageEnum type, EventType eventType) {
         InvoicingMessage invoicingMessage = new InvoicingMessage();
