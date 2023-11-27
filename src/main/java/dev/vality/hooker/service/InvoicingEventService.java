@@ -72,6 +72,7 @@ public class InvoicingEventService
                     .refund(getSwagRefund(m, invoiceInfo))
                     .eventType(Event.EventTypeEnum.REFUNDCREATED);
             case INVOICE_PAYMENT_REFUND_STATUS_CHANGED -> resolveRefundStatusChanged(m, invoiceInfo);
+            case INVOICE_PAYMENT_CASH_CHANGED -> resolvePaymentCashChange(m, invoiceInfo);
             default -> throw new UnsupportedOperationException("Unknown event type " + m.getEventType());
         };
     }
@@ -203,5 +204,15 @@ public class InvoicingEventService
                     .eventType(Event.EventTypeEnum.REFUNDFAILED);
             default -> throw new UnsupportedOperationException("Unknown refund status " + message.getRefundStatus());
         };
+    }
+
+    private Event resolvePaymentCashChange(InvoicingMessage message,
+                                            dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
+        Invoice swagInvoice = getSwagInvoice(invoiceInfo);
+        ExpandedPayment swagPayment = getSwagPayment(message, invoiceInfo);
+        return new PaymentCashChanged()
+                .invoice(swagInvoice)
+                .payment(swagPayment)
+                .eventType(Event.EventTypeEnum.PAYMENTCASHCHANGED);
     }
 }

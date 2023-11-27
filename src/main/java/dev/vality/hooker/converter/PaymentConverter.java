@@ -32,6 +32,9 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
         target.setCreatedAt(TimeUtils.toOffsetDateTime(source.getCreatedAt()));
         target.setStatus(Payment.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()));
         target.setAmount(source.getCost().getAmount());
+        if (source.isSetChangedCost()) {
+            target.setChangedAmount(source.getChangedCost().getAmount());
+        }
         target.setCurrency(source.getCost().getCurrency().getSymbolicCode());
         target.setMetadata(getMetadata(source));
         target.setFee(getFee(sourceWrapper));

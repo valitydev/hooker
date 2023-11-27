@@ -81,6 +81,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>damsel</artifactId>
+            <version>1.611-958e5f0</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -126,7 +127,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>swag-webhook-events</artifactId>
-            <version>1.101-e778740-client</version>
+            <version>1.112-a02ceb6-client</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -316,6 +317,11 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.7.1</version>
             </plugin>
         </plugins>
     </build>
