@@ -1,5 +1,6 @@
 package dev.vality.hooker.utils;
 
+import dev.vality.damsel.user_interaction.UserInteraction;
 import dev.vality.damsel.webhooker.*;
 import dev.vality.hooker.dao.WebhookAdditionalFilter;
 import dev.vality.hooker.model.EventType;
@@ -203,6 +204,14 @@ public class EventFilterUtils {
                                         refundChange.getInvoicePaymentRefundStatusChanged().getValue().getSetField()
                                                 .getFieldName());
                             }
+                        }
+                    } else if (payment.isSetUserInteraction()) {
+                        if (payment.getUserInteraction().getStatus().isSetRequested()) {
+                            webhookAdditionalFilter.setEventType(
+                                    EventType.INVOICE_PAYMENT_USER_INTERACTION_CHANGE_REQUESTED);
+                        } else if (payment.getUserInteraction().getStatus().isSetCompleted()) {
+                            webhookAdditionalFilter.setEventType(
+                                    EventType.INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED);
                         }
                     }
                 }

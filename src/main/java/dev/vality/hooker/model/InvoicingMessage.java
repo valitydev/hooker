@@ -1,5 +1,6 @@
 package dev.vality.hooker.model;
 
+import dev.vality.hooker.model.interaction.UserInteraction;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -16,6 +17,7 @@ public class InvoicingMessage extends Message {
     private PaymentStatusEnum paymentStatus;
     private String refundId;
     private RefundStatusEnum refundStatus;
+    private UserInteraction userInteraction;
 
     public boolean isInvoice() {
         return type == InvoicingMessageEnum.INVOICE;
