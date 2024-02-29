@@ -46,8 +46,7 @@ public class UserInteractionConverter implements Converter<InvoicingMessage, Use
     @NotNull
     private static dev.vality.swag_webhook_events.model.PaymentTerminalReceipt createPaymentTerminalReceipt(
             PaymentTerminalReceipt paymentTerminalReceipt) {
-        dev.vality.swag_webhook_events.model.PaymentTerminalReceipt paymentTerminalReceiptRequest =
-                new dev.vality.swag_webhook_events.model.PaymentTerminalReceipt();
+        var paymentTerminalReceiptRequest = new dev.vality.swag_webhook_events.model.PaymentTerminalReceipt();
         PaymentTerminalReceiptInfo paymentTerminalReceiptInfo = new PaymentTerminalReceiptInfo();
         paymentTerminalReceiptInfo.setShortPaymentId(paymentTerminalReceipt.getShortPaymentId());
         paymentTerminalReceiptInfo.setDue(TimeUtils.toOffsetDateTime(paymentTerminalReceipt.getDue()));

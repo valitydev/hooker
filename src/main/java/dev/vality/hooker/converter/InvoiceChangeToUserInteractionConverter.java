@@ -1,6 +1,9 @@
 package dev.vality.hooker.converter;
 
 import dev.vality.damsel.payment_processing.InvoiceChange;
+import dev.vality.damsel.user_interaction.*;
+import dev.vality.hooker.model.interaction.PaymentTerminalReceipt;
+import dev.vality.hooker.model.interaction.UserInteraction;
 import dev.vality.hooker.model.interaction.*;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -13,9 +16,8 @@ public class InvoiceChangeToUserInteractionConverter implements Converter<Invoic
 
     @Override
     public UserInteraction convert(InvoiceChange source) {
-        dev.vality.damsel.user_interaction.UserInteraction interaction =
-                source.getInvoicePaymentChange().getPayload().getInvoicePaymentSessionChange().getPayload()
-                        .getSessionInteractionChanged().interaction;
+        var interaction = source.getInvoicePaymentChange().getPayload().getInvoicePaymentSessionChange().getPayload()
+                .getSessionInteractionChanged().getInteraction();
         return createUserInteraction(interaction);
     }
 
@@ -26,23 +28,27 @@ public class InvoiceChangeToUserInteractionConverter implements Converter<Invoic
         if (interaction.isSetApiExtensionRequest()) {
             userInteraction = new ApiExtension(interaction.getApiExtensionRequest().getApiType());
         } else if (interaction.isSetCryptoCurrencyTransferRequest()) {
-            userInteraction =
-                    new CryptoCurrencyTransfer(interaction.getCryptoCurrencyTransferRequest().getCryptoAddress(),
-                            interaction.getCryptoCurrencyTransferRequest().getCryptoCash().getCryptoAmount(),
-                            interaction.getCryptoCurrencyTransferRequest().getCryptoCash().getCryptoSymbolicCode());
+            CryptoCurrencyTransferRequest cryptoCurrencyTransferRequest =
+                    interaction.getCryptoCurrencyTransferRequest();
+            CryptoCash cryptoCash = cryptoCurrencyTransferRequest.getCryptoCash();
+            userInteraction = new CryptoCurrencyTransfer(cryptoCurrencyTransferRequest.getCryptoAddress(),
+                    cryptoCash.getCryptoAmount(),
+                    cryptoCash.getCryptoSymbolicCode());
         } else if (interaction.isSetPaymentTerminalReciept()) {
-            userInteraction = new PaymentTerminalReceipt(interaction.getPaymentTerminalReciept().getShortPaymentId(),
-                    interaction.getPaymentTerminalReciept().getDue());
+            dev.vality.damsel.user_interaction.PaymentTerminalReceipt paymentTerminalReciept =
+                    interaction.getPaymentTerminalReciept();
+            userInteraction = new PaymentTerminalReceipt(paymentTerminalReciept.getShortPaymentId(),
+                    paymentTerminalReciept.getDue());
         } else if (interaction.isSetQrCodeDisplayRequest()) {
-            userInteraction = new QrCodeDisplay(interaction.getQrCodeDisplayRequest().getQrCode().getPayload());
+            QrCode qrCode = interaction.getQrCodeDisplayRequest().getQrCode();
+            userInteraction = new QrCodeDisplay(qrCode.getPayload());
         } else if (interaction.isSetRedirect()) {
             if (interaction.getRedirect().isSetPostRequest()) {
-                userInteraction = new BrowserHttpInteraction("post",
-                        interaction.getRedirect().getPostRequest().getUri(),
-                        interaction.getRedirect().getPostRequest().getForm());
+                BrowserPostRequest postRequest = interaction.getRedirect().getPostRequest();
+                userInteraction = new BrowserHttpInteraction("post", postRequest.getUri(), postRequest.getForm());
             } else {
-                userInteraction = new BrowserHttpInteraction("get",
-                        interaction.getRedirect().getPostRequest().getUri(), null);
+                BrowserGetRequest getRequest = interaction.getRedirect().getGetRequest();
+                userInteraction = new BrowserHttpInteraction("get", getRequest.getUri(), null);
             }
         }
         return userInteraction;
