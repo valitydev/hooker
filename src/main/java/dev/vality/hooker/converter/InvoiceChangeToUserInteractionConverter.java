@@ -3,6 +3,7 @@ package dev.vality.hooker.converter;
 import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.hooker.model.interaction.*;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,13 @@ public class InvoiceChangeToUserInteractionConverter implements Converter<Invoic
         dev.vality.damsel.user_interaction.UserInteraction interaction =
                 source.getInvoicePaymentChange().getPayload().getInvoicePaymentSessionChange().getPayload()
                         .getSessionInteractionChanged().interaction;
-        dev.vality.hooker.model.interaction.UserInteraction userInteraction = null;
+        return createUserInteraction(interaction);
+    }
+
+    @Nullable
+    private static UserInteraction createUserInteraction(
+            dev.vality.damsel.user_interaction.UserInteraction interaction) {
+        UserInteraction userInteraction = null;
         if (interaction.isSetApiExtensionRequest()) {
             userInteraction = new ApiExtension(interaction.getApiExtensionRequest().getApiType());
         } else if (interaction.isSetCryptoCurrencyTransferRequest()) {
