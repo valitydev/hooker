@@ -18,6 +18,9 @@ public enum EventType {
     INVOICE_PAYMENT_CASH_FLOW_CHANGED("invoice_payment_change.payload.invoice_payment_cash_flow_changed"),
     INVOICE_PAYMENT_CASH_CHANGED("invoice_payment_change.payload.invoice_payment_cash_changed"),
 
+    INVOICE_PAYMENT_USER_INTERACTION_CHANGE_REQUESTED("invoice_payment_change.payload.user_interaction.status.requested"),
+    INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED("invoice_payment_change.payload.user_interaction.status.completed"),
+
     CUSTOMER_CREATED("customer_created"),
     CUSTOMER_DELETED("customer_deleted"),
     CUSTOMER_READY("customer_status_changed.status.ready"),

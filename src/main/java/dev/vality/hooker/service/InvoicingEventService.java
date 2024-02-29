@@ -7,6 +7,7 @@ import dev.vality.damsel.payment_processing.InvoicingSrv;
 import dev.vality.hooker.converter.InvoiceConverter;
 import dev.vality.hooker.converter.PaymentConverter;
 import dev.vality.hooker.converter.RefundConverter;
+import dev.vality.hooker.converter.UserInteractionConverter;
 import dev.vality.hooker.exception.NotFoundException;
 import dev.vality.hooker.exception.RemoteHostException;
 import dev.vality.hooker.model.ExpandedPayment;
@@ -26,6 +27,7 @@ public class InvoicingEventService
     private final InvoiceConverter invoiceConverter;
     private final PaymentConverter paymentConverter;
     private final RefundConverter refundConverter;
+    private final UserInteractionConverter userInteractionConverter;
 
     @Override
     public Event getEventByMessage(InvoicingMessage message) {
@@ -73,6 +75,10 @@ public class InvoicingEventService
                     .eventType(Event.EventTypeEnum.REFUNDCREATED);
             case INVOICE_PAYMENT_REFUND_STATUS_CHANGED -> resolveRefundStatusChanged(m, invoiceInfo);
             case INVOICE_PAYMENT_CASH_CHANGED -> resolvePaymentCashChange(m, invoiceInfo);
+            case INVOICE_PAYMENT_USER_INTERACTION_CHANGE_REQUESTED -> resolvePaymentUserInteraction(m)
+                    .eventType(Event.EventTypeEnum.PAYMENTINTERACTIONREQUESTED);
+            case INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED -> resolvePaymentUserInteraction(m)
+                    .eventType(Event.EventTypeEnum.PAYMENTINTERACTIONCOMPLETED);
             default -> throw new UnsupportedOperationException("Unknown event type " + m.getEventType());
         };
     }
@@ -207,12 +213,17 @@ public class InvoicingEventService
     }
 
     private Event resolvePaymentCashChange(InvoicingMessage message,
-                                            dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
+                                           dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
         Invoice swagInvoice = getSwagInvoice(invoiceInfo);
         ExpandedPayment swagPayment = getSwagPayment(message, invoiceInfo);
         return new PaymentCashChanged()
                 .invoice(swagInvoice)
                 .payment(swagPayment)
                 .eventType(Event.EventTypeEnum.PAYMENTCASHCHANGED);
+    }
+
+    private Event resolvePaymentUserInteraction(InvoicingMessage message) {
+        return new PaymentInteractionRequested()
+                .userInteractionDetails(userInteractionConverter.convert(message));
     }
 }
