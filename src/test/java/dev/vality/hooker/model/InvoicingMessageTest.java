@@ -9,7 +9,7 @@ public class InvoicingMessageTest {
 
     @Test
     public void testCopy() {
-        InvoicingMessage invoicingMessage = random(InvoicingMessage.class);
+        InvoicingMessage invoicingMessage = random(InvoicingMessage.class, "userInteraction");
         InvoicingMessage copy = invoicingMessage.copy();
         invoicingMessage.setRefundId("asd");
         assertNotEquals("asd", copy.getRefundId());
