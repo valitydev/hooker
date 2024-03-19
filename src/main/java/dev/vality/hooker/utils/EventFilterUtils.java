@@ -1,6 +1,5 @@
 package dev.vality.hooker.utils;
 
-import dev.vality.damsel.user_interaction.UserInteraction;
 import dev.vality.damsel.webhooker.*;
 import dev.vality.hooker.dao.WebhookAdditionalFilter;
 import dev.vality.hooker.model.EventType;
@@ -111,6 +110,16 @@ public class EventFilterUtils {
                         invoiceEventTypes.add(InvoiceEventType.payment(InvoicePaymentEventType
                                 .invoice_payment_refund_change(InvoicePaymentRefundChange
                                         .invoice_payment_refund_status_changed(invoicePaymentRefundStatusChanged))));
+                        break;
+                    case INVOICE_PAYMENT_USER_INTERACTION_CHANGE_REQUESTED:
+                        invoiceEventTypes.add(InvoiceEventType.payment(InvoicePaymentEventType
+                                .user_interaction(new InvoicePaymentUserInteractionChange(
+                                        UserInteractionStatus.requested(new UserInteractionStatusRequested())))));
+                        break;
+                    case INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED:
+                        invoiceEventTypes.add(InvoiceEventType.payment(InvoicePaymentEventType
+                                .user_interaction(new InvoicePaymentUserInteractionChange(
+                                        UserInteractionStatus.completed(new UserInteractionStatusCompleted())))));
                         break;
                     default:
                         throw new UnsupportedOperationException(
