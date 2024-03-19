@@ -5,13 +5,18 @@ import dev.vality.geck.filter.Filter;
 import dev.vality.geck.filter.PathConditionFilter;
 import dev.vality.geck.filter.condition.IsNullCondition;
 import dev.vality.geck.filter.rule.PathConditionRule;
+import dev.vality.hooker.converter.InvoiceChangeToUserInteractionConverter;
 import dev.vality.hooker.dao.InvoicingMessageDao;
 import dev.vality.hooker.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class InvoicePaymentUserInteractionChangeRequestedMapper extends NeedReadInvoiceEventMapper {
 
+    @Autowired
+    private InvoiceChangeToUserInteractionConverter userInteractionConverter;
+    
     private EventType eventType = EventType.INVOICE_PAYMENT_USER_INTERACTION_CHANGE_REQUESTED;
 
     private Filter filter =
@@ -47,8 +52,7 @@ public class InvoicePaymentUserInteractionChangeRequestedMapper extends NeedRead
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        message.setPaymentStatus(PaymentStatusEnum.lookup(ic.getInvoicePaymentChange().getPayload()
-                .getInvoicePaymentStatusChanged().getStatus().getSetField().getFieldName()));
+        message.setUserInteraction(userInteractionConverter.convert(ic));
     }
-    
+
 }
