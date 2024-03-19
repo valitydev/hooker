@@ -58,11 +58,4 @@ public class InvoicePaymentUserInteractionChangeCompletedMapper extends NeedRead
         message.setUserInteraction(userInteractionConverter.convert(ic));
     }
 
-    @Override
-    public boolean accept(InvoiceChange change) {
-        return getFilter().match(change)
-                && !change.getInvoicePaymentChange().getPayload().getInvoicePaymentSessionChange().getPayload()
-                .getSessionInteractionChanged()
-                .getStatus().isSetCompleted();
-    }
 }

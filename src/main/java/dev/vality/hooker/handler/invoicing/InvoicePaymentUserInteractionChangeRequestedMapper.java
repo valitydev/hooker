@@ -50,14 +50,5 @@ public class InvoicePaymentUserInteractionChangeRequestedMapper extends NeedRead
         message.setPaymentStatus(PaymentStatusEnum.lookup(ic.getInvoicePaymentChange().getPayload()
                 .getInvoicePaymentStatusChanged().getStatus().getSetField().getFieldName()));
     }
-
-    @Override
-    public boolean accept(InvoiceChange change) {
-        return getFilter().match(change)
-                && !change.getInvoicePaymentChange().getPayload().getInvoicePaymentSessionChange()
-                .getPayload()
-                .getSessionInteractionChanged()
-                .getStatus()
-                .isSetRequested();
-    }
+    
 }
