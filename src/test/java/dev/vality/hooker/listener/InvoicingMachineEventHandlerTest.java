@@ -6,8 +6,7 @@ import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.hooker.exception.ParseException;
 import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.InvoicingMessage;
-import dev.vality.hooker.service.HandlerManager;
-import dev.vality.hooker.service.MessageService;
+import dev.vality.hooker.service.InvoiceMessageService;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.sink.common.parser.impl.MachineEventParser;
 import org.junit.Before;
@@ -34,7 +33,7 @@ public class InvoicingMachineEventHandlerTest {
 
     private InvoicingMachineEventHandler machineEventHandler;
 
-    private MessageService<InvoicingMessage> invoicingService;
+    private InvoiceMessageService invoicingService;
 
     @Before
     public void init() {

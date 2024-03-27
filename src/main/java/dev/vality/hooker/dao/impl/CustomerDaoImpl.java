@@ -3,6 +3,7 @@ package dev.vality.hooker.dao.impl;
 import dev.vality.hooker.dao.CustomerDao;
 import dev.vality.hooker.dao.rowmapper.CustomerRowMapper;
 import dev.vality.hooker.exception.DaoException;
+import dev.vality.hooker.exception.NotFoundException;
 import dev.vality.hooker.model.CustomerMessage;
 import dev.vality.hooker.model.CustomerMessageEnum;
 import dev.vality.hooker.model.WebhookMessageModel;
@@ -87,7 +88,7 @@ public class CustomerDaoImpl implements CustomerDao {
 
     @Override
     public List<WebhookMessageModel<CustomerMessage>> getWebhookModels(Long messageId) {
-        final String sql = "select m.*, w.id as hook_id, w.url, pk.priv_key"  +
+        final String sql = "select m.*, w.id as hook_id, w.url, pk.priv_key" +
                 " from hook.customer_message m" +
                 " join hook.webhook w on m.party_id = w.party_id " +
                 " and w.enabled and w.topic=CAST(:message_type as hook.message_topic)" +
@@ -104,7 +105,7 @@ public class CustomerDaoImpl implements CustomerDao {
 
     @Override
     public Long getParentId(Long hookId, String customerId, Long messageId) {
-        final String sql = "select m.id"  +
+        final String sql = "select m.id" +
                 " from hook.customer_message m " +
                 " join hook.webhook w on w.id=:hook_id" +
                 " join hook.webhook_to_events wte on wte.hook_id = w.id" +
@@ -123,4 +124,5 @@ public class CustomerDaoImpl implements CustomerDao {
             return parentNotExistId;
         }
     }
+
 }

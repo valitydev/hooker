@@ -1,8 +1,8 @@
 package dev.vality.hooker.service;
 
 import dev.vality.hooker.converter.WebhookMessageBuilder;
-import dev.vality.hooker.dao.MessageDao;
-import dev.vality.hooker.model.Message;
+import dev.vality.hooker.dao.InvoicingMessageDao;
+import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.swag_webhook_events.model.Event;
 import dev.vality.webhook.dispatcher.WebhookMessage;
 import lombok.RequiredArgsConstructor;
@@ -10,14 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class MessageService<T extends Message> {
-    private final MessageDao<T> messageDao;
-    private final EventService<T> eventService;
+public class InvoiceMessageService {
+    private final InvoicingMessageDao messageDao;
+    private final EventService<InvoicingMessage> eventService;
     private final WebhookMessageBuilder webhookMessageBuilder;
     private final WebhookKafkaProducerService webhookKafkaProducerService;
 
-    public void process(T message) {
+    public void process(InvoicingMessage message) {
         log.info("Start processing of message {}", message);
+        if (!messageDao.hasWebhooks(message)) {
+            log.info("End without hook processing of message {}", message);
+        }
         Long id = messageDao.save(message);
         String sourceId = message.getSourceId();
         if (id != null) {
