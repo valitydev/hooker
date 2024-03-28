@@ -5,7 +5,7 @@ import dev.vality.damsel.payment_processing.EventPayload;
 import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.CustomerMessage;
 import dev.vality.hooker.model.EventInfo;
-import dev.vality.hooker.service.MessageService;
+import dev.vality.hooker.service.CustomerMessageService;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.sink.common.parser.impl.MachineEventParser;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class CustomerMachineEventHandler implements MachineEventHandler {
 
     private final MachineEventParser<EventPayload> parser;
     private final List<Mapper<CustomerChange, CustomerMessage>> customerEventMappers;
-    private final MessageService<CustomerMessage> customerMessageService;
+    private final CustomerMessageService<CustomerMessage> customerMessageService;
 
     @Override
     @Transactional

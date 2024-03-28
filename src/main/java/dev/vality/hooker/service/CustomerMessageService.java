@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class MessageService<T extends Message> {
+public class CustomerMessageService<T extends Message> {
     private final MessageDao<T> messageDao;
     private final EventService<T> eventService;
     private final WebhookMessageBuilder webhookMessageBuilder;

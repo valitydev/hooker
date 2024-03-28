@@ -5,8 +5,7 @@ import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.EventInfo;
 import dev.vality.hooker.model.InvoicingMessage;
-import dev.vality.hooker.service.HandlerManager;
-import dev.vality.hooker.service.MessageService;
+import dev.vality.hooker.service.InvoiceMessageService;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.sink.common.parser.impl.MachineEventParser;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,7 @@ public class InvoicingMachineEventHandler implements MachineEventHandler {
 
     private final List<Mapper<InvoiceChange, InvoicingMessage>> handlers;
     private final MachineEventParser<EventPayload> parser;
-    private final MessageService<InvoicingMessage> invoicingMessageService;
+    private final InvoiceMessageService invoicingMessageService;
 
     @Override
     @Transactional
