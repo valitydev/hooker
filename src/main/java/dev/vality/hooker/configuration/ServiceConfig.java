@@ -23,10 +23,11 @@ public class ServiceConfig {
     }
 
     @Bean
-    public CustomerMessageService<CustomerMessage> customerService(MessageDao<CustomerMessage> messageDao,
-                                                                   EventService<CustomerMessage> eventService,
-                                                                   WebhookMessageBuilder webhookMessageBuilder,
-                                                                   WebhookKafkaProducerService webhookKafkaProducerService) {
+    public CustomerMessageService<CustomerMessage> customerService(
+            MessageDao<CustomerMessage> messageDao,
+            EventService<CustomerMessage> eventService,
+            WebhookMessageBuilder webhookMessageBuilder,
+            WebhookKafkaProducerService webhookKafkaProducerService) {
         return new CustomerMessageService<>(messageDao, eventService, webhookMessageBuilder,
                 webhookKafkaProducerService);
     }

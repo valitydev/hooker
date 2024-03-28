@@ -5,7 +5,6 @@ import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.EventInfo;
 import dev.vality.hooker.model.InvoicingMessage;
-import dev.vality.hooker.service.CustomerMessageService;
 import dev.vality.hooker.service.InvoiceMessageService;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.sink.common.parser.impl.MachineEventParser;

@@ -28,7 +28,6 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j

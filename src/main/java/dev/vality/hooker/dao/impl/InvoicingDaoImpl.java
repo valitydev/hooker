@@ -120,7 +120,8 @@ public class InvoicingDaoImpl implements InvoicingMessageDao {
                 " and (wte.invoice_shop_id = :shop_id or wte.invoice_shop_id is null) " +
                 " and (wte.invoice_status = :invoice_status or wte.invoice_status is null) " +
                 " and (wte.invoice_payment_status = :payment_status or wte.invoice_payment_status is null)" +
-                " and (wte.invoice_payment_refund_status = :refund_status or wte.invoice_payment_refund_status is null)";
+                " and (wte.invoice_payment_refund_status = :refund_status " +
+                "or wte.invoice_payment_refund_status is null)";
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
                 .addValue("id", invoicingMessage.getPartyId())
                 .addValue("shop_id", invoicingMessage.getShopId())

@@ -3,7 +3,6 @@ package dev.vality.hooker.dao.impl;
 import dev.vality.hooker.dao.CustomerDao;
 import dev.vality.hooker.dao.rowmapper.CustomerRowMapper;
 import dev.vality.hooker.exception.DaoException;
-import dev.vality.hooker.exception.NotFoundException;
 import dev.vality.hooker.model.CustomerMessage;
 import dev.vality.hooker.model.CustomerMessageEnum;
 import dev.vality.hooker.model.WebhookMessageModel;

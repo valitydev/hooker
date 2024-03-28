@@ -1,7 +1,5 @@
 package dev.vality.hooker.dao;
 
-import dev.vality.hooker.exception.DaoException;
-import dev.vality.hooker.exception.NotFoundException;
 import dev.vality.hooker.model.Message;
 import dev.vality.hooker.model.WebhookMessageModel;
 
