@@ -20,6 +20,7 @@ public class InvoiceMessageService {
         log.info("Start processing of message {}", message);
         if (!messageDao.hasWebhooks(message)) {
             log.info("End without hook processing of message {}", message);
+            return;
         }
         Long id = messageDao.save(message);
         String sourceId = message.getSourceId();
