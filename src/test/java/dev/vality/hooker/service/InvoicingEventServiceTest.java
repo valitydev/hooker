@@ -13,6 +13,8 @@ import dev.vality.hooker.model.*;
 import dev.vality.hooker.model.interaction.*;
 import dev.vality.hooker.utils.BuildUtils;
 import dev.vality.swag_webhook_events.model.Event;
+import dev.vality.swag_webhook_events.model.PaymentInteractionCompleted;
+import dev.vality.swag_webhook_events.model.PaymentInteractionRequested;
 import dev.vality.swag_webhook_events.model.RefundSucceeded;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
 @PostgresqlSpringBootITest
-public class InvoicingEventServiceTest {
+class InvoicingEventServiceTest {
 
     @MockBean
     private InvoicingSrv.Iface invoicingClient;
@@ -48,7 +50,7 @@ public class InvoicingEventServiceTest {
     }
 
     @RepeatedTest(7)
-    public void testRefundSucceeded() {
+    void testRefundSucceeded() {
         InvoicingMessage message = random(InvoicingMessage.class, "userInteraction");
         message.setPaymentId("1");
         message.setRefundId("1");
@@ -67,7 +69,7 @@ public class InvoicingEventServiceTest {
     }
 
     @RepeatedTest(7)
-    public void testJson() throws JsonProcessingException {
+    void testJson() throws JsonProcessingException {
         InvoicingMessage message = random(InvoicingMessage.class, "userInteraction");
         message.setPaymentId("1");
         message.setType(InvoicingMessageEnum.PAYMENT);
@@ -83,7 +85,7 @@ public class InvoicingEventServiceTest {
     }
 
     @Test
-    public void testUserInteractions() throws JsonProcessingException {
+    void testUserInteractionRequested() throws JsonProcessingException {
         InvoicingMessage message = createDefaultInvoicingMessage();
         message.setEventType(EventType.INVOICE_PAYMENT_USER_INTERACTION_CHANGE_REQUESTED);
         message.setUserInteraction(new BrowserHttpInteraction("get", "http://test", null));
@@ -92,10 +94,13 @@ public class InvoicingEventServiceTest {
         assertTrue(json.contains("\"eventType\":\"PaymentInteractionRequested\""));
         assertTrue(json.contains("\"requestType\":\"get\""));
         assertTrue(json.contains("\"userInteractionType\":\"BrowserHTTPRequest\""));
+        assertTrue(json.contains("\"invoiceId\":\"invoiceId\""));
+        assertTrue(json.contains("\"paymentId\":\"%s\"".formatted(message.getPaymentId())));
+        assertTrue(event instanceof PaymentInteractionRequested);
     }
 
     @Test
-    public void testUserInteractionsCompleted() throws JsonProcessingException {
+    void testUserInteractionsCompleted() throws JsonProcessingException {
         InvoicingMessage message = createDefaultInvoicingMessage();
         message.setEventType(EventType.INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED);
         message.setUserInteraction(new QrCodeDisplay("wefvqewvrq32fveqrw".getBytes()));
@@ -103,10 +108,13 @@ public class InvoicingEventServiceTest {
         String json = objectMapper.writeValueAsString(event);
         assertTrue(json.contains("\"eventType\":\"PaymentInteractionCompleted\""));
         assertTrue(json.contains("\"userInteractionType\":\"QrCodeDisplayRequest\""));
+        assertTrue(json.contains("\"invoiceId\":\"invoiceId\""));
+        assertTrue(json.contains("\"paymentId\":\"%s\"".formatted(message.getPaymentId())));
+        assertTrue(event instanceof PaymentInteractionCompleted);
     }
 
     @Test
-    public void testUserInteractionsCompletedApiExtension() throws JsonProcessingException {
+    void testUserInteractionsCompletedApiExtension() throws JsonProcessingException {
         InvoicingMessage message = createDefaultInvoicingMessage();
         message.setEventType(EventType.INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED);
         message.setUserInteraction(new ApiExtension("p2p"));
@@ -114,10 +122,13 @@ public class InvoicingEventServiceTest {
         String json = objectMapper.writeValueAsString(event);
         assertTrue(json.contains("\"eventType\":\"PaymentInteractionCompleted\""));
         assertTrue(json.contains("\"userInteractionType\":\"ApiExtensionRequest\""));
+        assertTrue(json.contains("\"invoiceId\":\"invoiceId\""));
+        assertTrue(json.contains("\"paymentId\":\"%s\"".formatted(message.getPaymentId())));
+        assertTrue(event instanceof PaymentInteractionCompleted);
     }
 
     @Test
-    public void testUserInteractionsCompletedPaymentTerminal() throws JsonProcessingException {
+    void testUserInteractionsCompletedPaymentTerminal() throws JsonProcessingException {
         InvoicingMessage message = createDefaultInvoicingMessage();
         message.setEventType(EventType.INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED);
         message.setUserInteraction(new PaymentTerminalReceipt("p2p", "2016-03-22T06:12:27Z"));
@@ -125,10 +136,13 @@ public class InvoicingEventServiceTest {
         String json = objectMapper.writeValueAsString(event);
         assertTrue(json.contains("\"eventType\":\"PaymentInteractionCompleted\""));
         assertTrue(json.contains("\"userInteractionType\":\"PaymentTerminalReceipt\""));
+        assertTrue(json.contains("\"invoiceId\":\"invoiceId\""));
+        assertTrue(json.contains("\"paymentId\":\"%s\"".formatted(message.getPaymentId())));
+        assertTrue(event instanceof PaymentInteractionCompleted);
     }
 
     @Test
-    public void testUserInteractionsCompletedCrypto() throws JsonProcessingException {
+    void testUserInteractionsCompletedCrypto() throws JsonProcessingException {
         InvoicingMessage message = createDefaultInvoicingMessage();
         message.setEventType(EventType.INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED);
         message.setUserInteraction(new CryptoCurrencyTransfer("address", new Rational(1L, 10L), "bitcoin"));
@@ -139,6 +153,9 @@ public class InvoicingEventServiceTest {
         assertTrue(json.contains("\"cryptoAddress\":\"address\""));
         assertTrue(json.contains("\"cryptoCurrency\":\"bitcoin\""));
         assertTrue(json.contains("\"denominator\":1"));
+        assertTrue(json.contains("\"invoiceId\":\"invoiceId\""));
+        assertTrue(json.contains("\"paymentId\":\"%s\"".formatted(message.getPaymentId())));
+        assertTrue(event instanceof PaymentInteractionCompleted);
     }
 
     @NotNull
