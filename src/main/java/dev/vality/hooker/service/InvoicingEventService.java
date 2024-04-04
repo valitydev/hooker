@@ -75,9 +75,9 @@ public class InvoicingEventService
                     .eventType(Event.EventTypeEnum.REFUNDCREATED);
             case INVOICE_PAYMENT_REFUND_STATUS_CHANGED -> resolveRefundStatusChanged(m, invoiceInfo);
             case INVOICE_PAYMENT_CASH_CHANGED -> resolvePaymentCashChange(m, invoiceInfo);
-            case INVOICE_PAYMENT_USER_INTERACTION_CHANGE_REQUESTED -> resolvePaymentUserInteraction(m, invoiceInfo)
+            case INVOICE_PAYMENT_USER_INTERACTION_CHANGE_REQUESTED -> resolvePaymentInteractionRequested(m, invoiceInfo)
                     .eventType(Event.EventTypeEnum.PAYMENTINTERACTIONREQUESTED);
-            case INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED -> resolvePaymentUserInteraction(m, invoiceInfo)
+            case INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED -> resolvePaymentInteractionCompleted(m, invoiceInfo)
                     .eventType(Event.EventTypeEnum.PAYMENTINTERACTIONCOMPLETED);
             default -> throw new UnsupportedOperationException("Unknown event type " + m.getEventType());
         };
@@ -222,9 +222,17 @@ public class InvoicingEventService
                 .eventType(Event.EventTypeEnum.PAYMENTCASHCHANGED);
     }
 
-    private Event resolvePaymentUserInteraction(InvoicingMessage message,
-                                                dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
+    private Event resolvePaymentInteractionRequested(InvoicingMessage message,
+                                                     dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
         return new PaymentInteractionRequested()
+                .userInteractionDetails(userInteractionConverter.convert(message))
+                .invoiceId(invoiceInfo.getInvoice().getId())
+                .paymentId(message.getPaymentId());
+    }
+
+    private Event resolvePaymentInteractionCompleted(InvoicingMessage message,
+                                                dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
+        return new PaymentInteractionCompleted()
                 .userInteractionDetails(userInteractionConverter.convert(message))
                 .invoiceId(invoiceInfo.getInvoice().getId())
                 .paymentId(message.getPaymentId());
