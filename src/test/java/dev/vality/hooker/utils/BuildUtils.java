@@ -201,35 +201,7 @@ public class BuildUtils {
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
         for (EventType type : types) {
-            webhookAdditionalFilters.add(WebhookAdditionalFilter.builder()
-                    .eventType(type)
-                    .build());
-        }
-        hook.setFilters(webhookAdditionalFilters);
-        return hook;
-    }
-
-    public static Hook buildHook(String partyId,
-                                 String shopId,
-                                 String invoiceStatus,
-                                 String invoicePaymentRefundStatus,
-                                 String url,
-                                 EventType type,
-                                 String... invoicePaymentStatuses) {
-        Hook hook = new Hook();
-        hook.setPartyId(partyId);
-        hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
-        hook.setUrl(url);
-
-        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
-        for (String invoicePaymentStatus : invoicePaymentStatuses) {
-            webhookAdditionalFilters.add(WebhookAdditionalFilter.builder()
-                    .eventType(type)
-                    .shopId(shopId)
-                    .invoiceStatus(invoiceStatus)
-                    .invoicePaymentStatus(invoicePaymentStatus)
-                    .invoicePaymentRefundStatus(invoicePaymentRefundStatus)
-                    .build());
+            webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(type).build());
         }
         hook.setFilters(webhookAdditionalFilters);
         return hook;
