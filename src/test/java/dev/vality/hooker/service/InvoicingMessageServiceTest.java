@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 public class InvoicingMessageServiceTest {
 
     @Autowired
-    private InvoiceMessageService invoicingService;
+    private MessageService<InvoicingMessage> invoicingService;
 
     @Autowired
     private HookDao hookDao;

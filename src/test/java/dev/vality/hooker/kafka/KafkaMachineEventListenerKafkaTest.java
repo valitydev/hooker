@@ -6,6 +6,7 @@ import dev.vality.hooker.listener.CustomerEventKafkaListener;
 import dev.vality.hooker.listener.CustomerMachineEventHandler;
 import dev.vality.hooker.listener.InvoicingEventKafkaListener;
 import dev.vality.hooker.listener.InvoicingMachineEventHandler;
+import dev.vality.hooker.service.HandlerManager;
 import dev.vality.kafka.common.serialization.ThriftSerializer;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.machinegun.eventsink.SinkEvent;

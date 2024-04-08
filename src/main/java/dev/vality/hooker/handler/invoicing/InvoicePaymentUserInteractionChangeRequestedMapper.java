@@ -7,10 +7,7 @@ import dev.vality.geck.filter.condition.IsNullCondition;
 import dev.vality.geck.filter.rule.PathConditionRule;
 import dev.vality.hooker.converter.InvoiceChangeToUserInteractionConverter;
 import dev.vality.hooker.dao.InvoicingMessageDao;
-import dev.vality.hooker.model.EventType;
-import dev.vality.hooker.model.InvoicingMessage;
-import dev.vality.hooker.model.InvoicingMessageEnum;
-import dev.vality.hooker.model.InvoicingMessageKey;
+import dev.vality.hooker.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

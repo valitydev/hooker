@@ -7,7 +7,4 @@ import dev.vality.hooker.model.InvoicingMessageKey;
 
 public interface InvoicingMessageDao extends MessageDao<InvoicingMessage> {
     InvoicingMessage getInvoicingMessage(InvoicingMessageKey key) throws NotFoundException, DaoException;
-
-    Boolean hasWebhooks(InvoicingMessage invoicingMessage) throws NotFoundException, DaoException;
-
 }
