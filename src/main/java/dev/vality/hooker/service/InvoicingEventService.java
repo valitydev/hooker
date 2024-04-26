@@ -136,25 +136,30 @@ public class InvoicingEventService
     private InvoicePaymentAdjustment extractAdjustment(InvoicingMessage message,
                                                        dev.vality.damsel.payment_processing.Invoice invoiceInfo,
                                                        String adjustmentId) {
-        return invoiceInfo.getPayments().stream()
+        InvoicePayment invoicePayment = invoiceInfo.getPayments().stream()
                 .filter(p -> p.getPayment().getId().equals(message.getPaymentId()))
                 .findFirst()
-                .map(invoicePayment -> invoicePayment.getAdjustments().stream()
-                        .filter(invoicePaymentAdjustment -> invoicePaymentAdjustment.isSetId()
-                                && invoicePaymentAdjustment.getId().equals(adjustmentId))
-                        .findFirst()
-                        .orElseThrow(
-                                () -> new NotFoundException(
-                                        String.format("Adjustment not found, invoiceId=%s, paymentId=%s",
-                                                message.getSourceId(),
-                                                message.getPaymentId())
-                                )))
-                .orElseThrow(
-                        () -> new NotFoundException(
-                                String.format("Adjustment not found, invoiceId=%s, paymentId=%s", message.getSourceId(),
-                                        adjustmentId)
-                        )
-                );
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Payment not found, invoiceId=%s, paymentId=%s", message.getSourceId(),
+                                adjustmentId)));
+        if (invoicePayment.getAdjustments() == null || invoicePayment.getAdjustments().isEmpty()) {
+            throw new NotFoundException(
+                    String.format("Adjustment not found, invoiceId=%s, paymentId=%s, adjustmentId=%s",
+                            message.getSourceId(),
+                            message.getPaymentId(),
+                            adjustmentId)
+            );
+        }
+        return invoicePayment.getAdjustments().stream()
+                .filter(invoicePaymentAdjustment -> invoicePaymentAdjustment.isSetId()
+                        && invoicePaymentAdjustment.getId().equals(adjustmentId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Adjustment not found, invoiceId=%s, paymentId=%s, adjustmentId=%s",
+                                message.getSourceId(),
+                                message.getPaymentId(),
+                                adjustmentId)
+                ));
     }
 
     private Event resolvePaymentStatusChanged(InvoicingMessage message,
