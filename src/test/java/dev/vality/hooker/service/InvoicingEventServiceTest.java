@@ -16,11 +16,9 @@ import dev.vality.swag_webhook_events.model.PaymentInteractionRequested;
 import dev.vality.swag_webhook_events.model.RefundSucceeded;
 import org.apache.thrift.TException;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -28,11 +26,10 @@ import java.io.IOException;
 import java.util.List;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @PostgresqlSpringBootITest
 class InvoicingEventServiceTest {
@@ -92,9 +89,9 @@ class InvoicingEventServiceTest {
     @RepeatedTest(1)
     void testAdjustment() throws IOException, TException {
         String adjustmentId = "1";
-        createInvoiceWithStatusChangeAdjustmnt result = createInvoiceWithStatusChangeAdjustment(adjustmentId);
+        var invoice = createInvoiceWithStatusChangeAdjustment(adjustmentId);
         InvoicePaymentAdjustment invoicePaymentAdjustment;
-        when(invoicingClient.get(any(), any())).thenReturn(result.invoice());
+        when(invoicingClient.get(any(), any())).thenReturn(invoice);
 
         InvoicingMessage message = createInvloiceMessage(adjustmentId);
         InvoicePaymentAdjustment adjustmentByMessage = service.getAdjustmentByMessage(message, adjustmentId);
@@ -103,15 +100,22 @@ class InvoicingEventServiceTest {
         assertTrue(adjustmentByMessage.getState().isSetStatusChange());
         assertTrue(adjustmentByMessage.getState().getStatusChange().getScenario().getTargetStatus().isSetCaptured());
 
-        result.invoicePaymentAdjustmentState().setCashFlow(new InvoicePaymentAdjustmentCashFlowState());
-        invoicePaymentAdjustment = new InvoicePaymentAdjustment()
-                .setId(adjustmentId)
-                .setState(result.invoicePaymentAdjustmentState());
-        result.invoice().getPayments().get(0).setAdjustments(List.of(invoicePaymentAdjustment));
-        when(invoicingClient.get(any(), any())).thenReturn(result.invoice());
+        when(invoicingClient.get(any(), any())).thenReturn(initCashFlowChangeAdjustment(adjustmentId));
 
         adjustmentByMessage = service.getAdjustmentByMessage(message, adjustmentId);
         assertTrue(adjustmentByMessage.getState().isSetCashFlow());
+    }
+
+    private Invoice initCashFlowChangeAdjustment(String adjustmentId) throws IOException {
+        var invoice = createInvoiceWithStatusChangeAdjustment(adjustmentId);
+        InvoicePaymentAdjustment invoicePaymentAdjustment;
+        InvoicePaymentAdjustmentState invoicePaymentAdjustmentState = new InvoicePaymentAdjustmentState();
+        invoicePaymentAdjustmentState.setCashFlow(new InvoicePaymentAdjustmentCashFlowState());
+        invoicePaymentAdjustment = new InvoicePaymentAdjustment()
+                .setId(adjustmentId)
+                .setState(invoicePaymentAdjustmentState);
+        invoice.getPayments().get(0).setAdjustments(List.of(invoicePaymentAdjustment));
+        return invoice;
     }
 
     @NotNull
@@ -126,7 +130,7 @@ class InvoicingEventServiceTest {
     }
 
     @NotNull
-    private static createInvoiceWithStatusChangeAdjustmnt createInvoiceWithStatusChangeAdjustment(String adjustmentId)
+    private Invoice createInvoiceWithStatusChangeAdjustment(String adjustmentId)
             throws IOException {
         Invoice invoice = BuildUtils.buildInvoice("partyId", "invoiceId", "1", "1",
                 InvoiceStatus.paid(new InvoicePaid()),
@@ -140,11 +144,7 @@ class InvoicingEventServiceTest {
                 .setId(adjustmentId)
                 .setState(invoicePaymentAdjustmentState);
         invoice.getPayments().get(0).setAdjustments(List.of(invoicePaymentAdjustment));
-        createInvoiceWithStatusChangeAdjustmnt result = new createInvoiceWithStatusChangeAdjustmnt(invoice, invoicePaymentAdjustmentState);
-        return result;
-    }
-
-    private record createInvoiceWithStatusChangeAdjustmnt(Invoice invoice, InvoicePaymentAdjustmentState invoicePaymentAdjustmentState) {
+        return invoice;
     }
 
     @Test
