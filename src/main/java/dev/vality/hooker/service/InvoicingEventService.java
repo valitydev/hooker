@@ -142,6 +142,11 @@ public class InvoicingEventService
                 .orElseThrow(() -> new NotFoundException(
                         String.format("Payment not found, invoiceId=%s, paymentId=%s", message.getSourceId(),
                                 adjustmentId)));
+        return findAdjustmentInPayment(message, adjustmentId, invoicePayment);
+    }
+
+    private static InvoicePaymentAdjustment findAdjustmentInPayment(InvoicingMessage message, String adjustmentId,
+                                                                    InvoicePayment invoicePayment) {
         if (invoicePayment.getAdjustments() == null || invoicePayment.getAdjustments().isEmpty()) {
             throw new NotFoundException(
                     String.format("Adjustment not found, invoiceId=%s, paymentId=%s, adjustmentId=%s",
