@@ -1,5 +1,6 @@
 package dev.vality.hooker.handler.invoicing;
 
+import dev.vality.damsel.domain.InvoicePaymentAdjustment;
 import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.damsel.payment_processing.InvoicePayment;
 import dev.vality.geck.filter.Filter;
@@ -55,9 +56,13 @@ public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        InvoicePayment invoicePayment = invoicingEventService.getPaymentByMessage(message);
-        message.setPaymentStatus(
-                PaymentStatusEnum.lookup(invoicePayment.getPayment().getStatus().getSetField().getFieldName())
-        );
+        InvoicePaymentAdjustment adjustmentByMessage = invoicingEventService.getAdjustmentByMessage(message);
+        if (adjustmentByMessage.isSetState() && adjustmentByMessage.getState().isSetStatusChange()) {
+            InvoicePayment invoicePayment = invoicingEventService.getPaymentByMessage(message);
+            message.setPaymentStatus(
+                    PaymentStatusEnum.lookup(invoicePayment.getPayment().getStatus().getSetField().getFieldName())
+            );
+        }
     }
+
 }
