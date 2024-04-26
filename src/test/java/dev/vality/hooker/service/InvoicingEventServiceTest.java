@@ -28,9 +28,11 @@ import java.io.IOException;
 import java.util.List;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @PostgresqlSpringBootITest
 class InvoicingEventServiceTest {
@@ -46,7 +48,7 @@ class InvoicingEventServiceTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        Mockito.when(invoicingClient.get(any(), any()))
+        when(invoicingClient.get(any(), any()))
                 .thenReturn(BuildUtils.buildInvoice("partyId", "invoiceId", "1", "1",
                         InvoiceStatus.paid(new InvoicePaid()),
                         InvoicePaymentStatus.pending(new InvoicePaymentPending())));
@@ -90,6 +92,42 @@ class InvoicingEventServiceTest {
     @RepeatedTest(1)
     void testAdjustment() throws IOException, TException {
         String adjustmentId = "1";
+        createInvoiceWithStatusChangeAdjustmnt result = createInvoiceWithStatusChangeAdjustment(adjustmentId);
+        InvoicePaymentAdjustment invoicePaymentAdjustment;
+        when(invoicingClient.get(any(), any())).thenReturn(result.invoice());
+
+        InvoicingMessage message = createInvloiceMessage(adjustmentId);
+        InvoicePaymentAdjustment adjustmentByMessage = service.getAdjustmentByMessage(message, adjustmentId);
+        assertEquals(adjustmentId, adjustmentByMessage.id);
+        assertTrue(adjustmentByMessage.isSetState());
+        assertTrue(adjustmentByMessage.getState().isSetStatusChange());
+        assertTrue(adjustmentByMessage.getState().getStatusChange().getScenario().getTargetStatus().isSetCaptured());
+
+        result.invoicePaymentAdjustmentState().setCashFlow(new InvoicePaymentAdjustmentCashFlowState());
+        invoicePaymentAdjustment = new InvoicePaymentAdjustment()
+                .setId(adjustmentId)
+                .setState(result.invoicePaymentAdjustmentState());
+        result.invoice().getPayments().get(0).setAdjustments(List.of(invoicePaymentAdjustment));
+        when(invoicingClient.get(any(), any())).thenReturn(result.invoice());
+
+        adjustmentByMessage = service.getAdjustmentByMessage(message, adjustmentId);
+        assertTrue(adjustmentByMessage.getState().isSetCashFlow());
+    }
+
+    @NotNull
+    private static InvoicingMessage createInvloiceMessage(String adjustmentId) {
+        InvoicingMessage message = random(InvoicingMessage.class, "userInteraction");
+        message.setPaymentId(adjustmentId);
+        message.setType(InvoicingMessageEnum.PAYMENT);
+        message.setEventTime("2016-03-22T06:12:27Z");
+        message.setEventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
+        message.setPaymentStatus(PaymentStatusEnum.CAPTURED);
+        return message;
+    }
+
+    @NotNull
+    private static createInvoiceWithStatusChangeAdjustmnt createInvoiceWithStatusChangeAdjustment(String adjustmentId)
+            throws IOException {
         Invoice invoice = BuildUtils.buildInvoice("partyId", "invoiceId", "1", "1",
                 InvoiceStatus.paid(new InvoicePaid()),
                 InvoicePaymentStatus.pending(new InvoicePaymentPending()));
@@ -102,32 +140,11 @@ class InvoicingEventServiceTest {
                 .setId(adjustmentId)
                 .setState(invoicePaymentAdjustmentState);
         invoice.getPayments().get(0).setAdjustments(List.of(invoicePaymentAdjustment));
-        Mockito.when(invoicingClient.get(any(), any())).thenReturn(invoice);
+        createInvoiceWithStatusChangeAdjustmnt result = new createInvoiceWithStatusChangeAdjustmnt(invoice, invoicePaymentAdjustmentState);
+        return result;
+    }
 
-        InvoicingMessage message = random(InvoicingMessage.class, "userInteraction");
-        message.setPaymentId(adjustmentId);
-        message.setType(InvoicingMessageEnum.PAYMENT);
-        message.setEventTime("2016-03-22T06:12:27Z");
-        message.setEventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
-        message.setPaymentStatus(PaymentStatusEnum.CAPTURED);
-
-        InvoicePaymentAdjustment adjustmentByMessage = service.getAdjustmentByMessage(message, adjustmentId);
-        Assertions.assertEquals(adjustmentId, adjustmentByMessage.id);
-        Assertions.assertTrue(adjustmentByMessage.isSetState());
-        Assertions.assertTrue(adjustmentByMessage.getState().isSetStatusChange());
-        Assertions.assertTrue(
-                adjustmentByMessage.getState().getStatusChange().getScenario().getTargetStatus().isSetCaptured());
-
-        invoicePaymentAdjustmentState.setCashFlow(new InvoicePaymentAdjustmentCashFlowState());
-        invoicePaymentAdjustment = new InvoicePaymentAdjustment()
-                .setId(adjustmentId)
-                .setState(invoicePaymentAdjustmentState);
-        invoice.getPayments().get(0).setAdjustments(List.of(invoicePaymentAdjustment));
-        Mockito.when(invoicingClient.get(any(), any())).thenReturn(invoice);
-
-        adjustmentByMessage = service.getAdjustmentByMessage(message, adjustmentId);
-
-        Assertions.assertTrue(adjustmentByMessage.getState().isSetCashFlow());
+    private record createInvoiceWithStatusChangeAdjustmnt(Invoice invoice, InvoicePaymentAdjustmentState invoicePaymentAdjustmentState) {
     }
 
     @Test

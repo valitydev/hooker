@@ -138,6 +138,7 @@ public class InvoicingEventService
                                                        String adjustmentId) {
         return invoiceInfo.getPayments().stream()
                 .filter(p -> p.getPayment().getId().equals(message.getPaymentId()))
+                .findFirst()
                 .map(invoicePayment -> invoicePayment.getAdjustments().stream()
                         .filter(invoicePaymentAdjustment -> invoicePaymentAdjustment.isSetId()
                                 && invoicePaymentAdjustment.getId().equals(adjustmentId))
@@ -148,7 +149,6 @@ public class InvoicingEventService
                                                 message.getSourceId(),
                                                 message.getPaymentId())
                                 )))
-                .findFirst()
                 .orElseThrow(
                         () -> new NotFoundException(
                                 String.format("Adjustment not found, invoiceId=%s, paymentId=%s", message.getSourceId(),
