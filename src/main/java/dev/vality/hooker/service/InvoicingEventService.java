@@ -44,8 +44,8 @@ public class InvoicingEventService
     }
 
     @Override
-    public InvoicePaymentAdjustment getAdjustmentByMessage(InvoicingMessage message) {
-        return extractAdjustment(message, getInvoiceByMessage(message));
+    public InvoicePaymentAdjustment getAdjustmentByMessage(InvoicingMessage message, String adjustmentId) {
+        return extractAdjustment(message, getInvoiceByMessage(message), adjustmentId);
     }
 
     @Override
@@ -134,13 +134,13 @@ public class InvoicingEventService
     }
 
     private InvoicePaymentAdjustment extractAdjustment(InvoicingMessage message,
-                                                       dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
+                                                       dev.vality.damsel.payment_processing.Invoice invoiceInfo,
+                                                       String adjustmentId) {
         return invoiceInfo.getPayments().stream()
                 .filter(p -> p.getPayment().getId().equals(message.getPaymentId()))
-
                 .map(invoicePayment -> invoicePayment.getAdjustments().stream()
                         .filter(invoicePaymentAdjustment -> invoicePaymentAdjustment.isSetId()
-                                && invoicePaymentAdjustment.getId().equals(message.getAdjustmentId()))
+                                && invoicePaymentAdjustment.getId().equals(adjustmentId))
                         .findFirst()
                         .orElseThrow(
                                 () -> new NotFoundException(
@@ -152,7 +152,7 @@ public class InvoicingEventService
                 .orElseThrow(
                         () -> new NotFoundException(
                                 String.format("Adjustment not found, invoiceId=%s, paymentId=%s", message.getSourceId(),
-                                        message.getAdjustmentId())
+                                        adjustmentId)
                         )
                 );
     }

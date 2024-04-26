@@ -56,7 +56,8 @@ public class AdjustmentStatusChangedMapper extends NeedReadInvoiceEventMapper {
 
     @Override
     protected void modifyMessage(InvoiceChange ic, InvoicingMessage message) {
-        InvoicePaymentAdjustment adjustmentByMessage = invoicingEventService.getAdjustmentByMessage(message);
+        String id = ic.getInvoicePaymentChange().getPayload().getInvoicePaymentAdjustmentChange().getId();
+        InvoicePaymentAdjustment adjustmentByMessage = invoicingEventService.getAdjustmentByMessage(message, id);
         if (adjustmentByMessage.isSetState() && adjustmentByMessage.getState().isSetStatusChange()) {
             InvoicePayment invoicePayment = invoicingEventService.getPaymentByMessage(message);
             message.setPaymentStatus(

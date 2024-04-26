@@ -16,7 +16,6 @@ public class InvoicingMessage extends Message {
     private String paymentId;
     private PaymentStatusEnum paymentStatus;
     private String refundId;
-    private String adjustmentId;
     private RefundStatusEnum refundStatus;
     private UserInteraction userInteraction;
 

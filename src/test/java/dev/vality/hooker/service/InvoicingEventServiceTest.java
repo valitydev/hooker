@@ -110,9 +110,8 @@ class InvoicingEventServiceTest {
         message.setEventTime("2016-03-22T06:12:27Z");
         message.setEventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
         message.setPaymentStatus(PaymentStatusEnum.CAPTURED);
-        message.setAdjustmentId(adjustmentId);
 
-        InvoicePaymentAdjustment adjustmentByMessage = service.getAdjustmentByMessage(message);
+        InvoicePaymentAdjustment adjustmentByMessage = service.getAdjustmentByMessage(message, adjustmentId);
         Assertions.assertEquals(adjustmentId, adjustmentByMessage.id);
         Assertions.assertTrue(adjustmentByMessage.isSetState());
         Assertions.assertTrue(adjustmentByMessage.getState().isSetStatusChange());
@@ -126,7 +125,7 @@ class InvoicingEventServiceTest {
         invoice.getPayments().get(0).setAdjustments(List.of(invoicePaymentAdjustment));
         Mockito.when(invoicingClient.get(any(), any())).thenReturn(invoice);
 
-        adjustmentByMessage = service.getAdjustmentByMessage(message);
+        adjustmentByMessage = service.getAdjustmentByMessage(message, adjustmentId);
 
         Assertions.assertTrue(adjustmentByMessage.getState().isSetCashFlow());
     }

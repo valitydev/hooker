@@ -11,6 +11,6 @@ public interface HellgateInvoicingService<M extends Message> {
 
     InvoicePayment getPaymentByMessage(M message);
 
-    InvoicePaymentAdjustment getAdjustmentByMessage(M message);
+    InvoicePaymentAdjustment getAdjustmentByMessage(M message, String adjustmentId);
 
 }
