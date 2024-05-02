@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hooker</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>hooker</name>
@@ -127,7 +127,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>swag-webhook-events</artifactId>
-            <version>1.126-46e732a-client</version>
+            <version>1.126-46e732a-server</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
