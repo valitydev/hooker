@@ -12,6 +12,7 @@ import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
 import dev.vality.hooker.dao.WebhookAdditionalFilter;
 import dev.vality.hooker.model.*;
 import dev.vality.swag_webhook_events.model.Event;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -20,6 +21,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@Slf4j
 public class BuildUtils {
     private static int messageId = 1;
 
@@ -51,6 +53,7 @@ public class BuildUtils {
         }
         message.setSequenceId(sequenceId);
         message.setChangeId(changeId);
+        log.info("Create message: {}", message);
         return message;
     }
 
