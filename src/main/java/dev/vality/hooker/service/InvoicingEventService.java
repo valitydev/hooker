@@ -1,5 +1,6 @@
 package dev.vality.hooker.service;
 
+import dev.vality.damsel.domain.InvoicePaymentAdjustment;
 import dev.vality.damsel.payment_processing.EventRange;
 import dev.vality.damsel.payment_processing.InvoiceNotFound;
 import dev.vality.damsel.payment_processing.InvoicePayment;
@@ -40,6 +41,11 @@ public class InvoicingEventService
     @Override
     public InvoicePayment getPaymentByMessage(InvoicingMessage message) {
         return extractPayment(message, getInvoiceByMessage(message));
+    }
+
+    @Override
+    public InvoicePaymentAdjustment getAdjustmentByMessage(InvoicingMessage message, String adjustmentId) {
+        return extractAdjustment(message, getInvoiceByMessage(message), adjustmentId);
     }
 
     @Override
@@ -125,6 +131,40 @@ public class InvoicingEventService
                                         message.getPaymentId())
                         )
                 );
+    }
+
+    private InvoicePaymentAdjustment extractAdjustment(InvoicingMessage message,
+                                                       dev.vality.damsel.payment_processing.Invoice invoiceInfo,
+                                                       String adjustmentId) {
+        InvoicePayment invoicePayment = invoiceInfo.getPayments().stream()
+                .filter(p -> p.getPayment().getId().equals(message.getPaymentId()))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Payment not found, invoiceId=%s, paymentId=%s", message.getSourceId(),
+                                adjustmentId)));
+        return findAdjustmentInPayment(message, adjustmentId, invoicePayment);
+    }
+
+    private static InvoicePaymentAdjustment findAdjustmentInPayment(InvoicingMessage message, String adjustmentId,
+                                                                    InvoicePayment invoicePayment) {
+        if (invoicePayment.getAdjustments() == null || invoicePayment.getAdjustments().isEmpty()) {
+            throw new NotFoundException(
+                    String.format("Adjustment not found, invoiceId=%s, paymentId=%s, adjustmentId=%s",
+                            message.getSourceId(),
+                            message.getPaymentId(),
+                            adjustmentId)
+            );
+        }
+        return invoicePayment.getAdjustments().stream()
+                .filter(invoicePaymentAdjustment -> invoicePaymentAdjustment.isSetId()
+                        && invoicePaymentAdjustment.getId().equals(adjustmentId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Adjustment not found, invoiceId=%s, paymentId=%s, adjustmentId=%s",
+                                message.getSourceId(),
+                                message.getPaymentId(),
+                                adjustmentId)
+                ));
     }
 
     private Event resolvePaymentStatusChanged(InvoicingMessage message,
@@ -231,7 +271,7 @@ public class InvoicingEventService
     }
 
     private Event resolvePaymentInteractionCompleted(InvoicingMessage message,
-                                                dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
+                                                     dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
         return new PaymentInteractionCompleted()
                 .userInteractionDetails(userInteractionConverter.convert(message))
                 .invoiceId(invoiceInfo.getInvoice().getId())
