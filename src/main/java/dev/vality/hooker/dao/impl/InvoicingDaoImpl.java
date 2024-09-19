@@ -116,7 +116,7 @@ public class InvoicingDaoImpl implements InvoicingMessageDao {
                 " join hook.webhook w on w.id=:hook_id" +
                 " join hook.webhook_to_events wte on wte.hook_id = w.id" +
                 " where m.invoice_id =:invoice_id" +
-                " and m.id <:id and m.event_time > w.webhook_to_events" +
+                " and m.id <:id and m.event_time > wte.created_at" +
                 " and m.event_type = wte.event_type " +
                 " and (m.shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) " +
                 " and (m.invoice_status = wte.invoice_status or wte.invoice_status is null) " +
