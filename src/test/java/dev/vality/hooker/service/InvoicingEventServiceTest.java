@@ -3,10 +3,8 @@ package dev.vality.hooker.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.vality.damsel.base.Rational;
-import dev.vality.damsel.domain.InvoicePaid;
-import dev.vality.damsel.domain.InvoicePaymentPending;
-import dev.vality.damsel.domain.InvoicePaymentStatus;
-import dev.vality.damsel.domain.InvoiceStatus;
+import dev.vality.damsel.domain.*;
+import dev.vality.damsel.payment_processing.Invoice;
 import dev.vality.damsel.payment_processing.InvoicingSrv;
 import dev.vality.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.hooker.model.*;
@@ -16,18 +14,22 @@ import dev.vality.swag_webhook_events.model.Event;
 import dev.vality.swag_webhook_events.model.PaymentInteractionCompleted;
 import dev.vality.swag_webhook_events.model.PaymentInteractionRequested;
 import dev.vality.swag_webhook_events.model.RefundSucceeded;
+import org.apache.thrift.TException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+
+import java.io.IOException;
+import java.util.List;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @PostgresqlSpringBootITest
 class InvoicingEventServiceTest {
@@ -43,7 +45,7 @@ class InvoicingEventServiceTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        Mockito.when(invoicingClient.get(any(), any()))
+        when(invoicingClient.get(any(), any()))
                 .thenReturn(BuildUtils.buildInvoice("partyId", "invoiceId", "1", "1",
                         InvoiceStatus.paid(new InvoicePaid()),
                         InvoicePaymentStatus.pending(new InvoicePaymentPending())));
@@ -82,6 +84,67 @@ class InvoicingEventServiceTest {
         assertTrue(json.contains("\"extraPaymentInfo\":{\"c2c_commission\":\"100\"}"));
         assertTrue(json.contains("\"externalId\":\"payment-external-id\""));
         assertTrue(json.contains("\"externalId\":\"invoice-external-id\""));
+    }
+
+    @RepeatedTest(1)
+    void testAdjustment() throws IOException, TException {
+        String adjustmentId = "1";
+        var invoice = createInvoiceWithStatusChangeAdjustment(adjustmentId);
+        InvoicePaymentAdjustment invoicePaymentAdjustment;
+        when(invoicingClient.get(any(), any())).thenReturn(invoice);
+
+        InvoicingMessage message = createInvloiceMessage(adjustmentId);
+        InvoicePaymentAdjustment adjustmentByMessage = service.getAdjustmentByMessage(message, adjustmentId);
+        assertEquals(adjustmentId, adjustmentByMessage.id);
+        assertTrue(adjustmentByMessage.isSetState());
+        assertTrue(adjustmentByMessage.getState().isSetStatusChange());
+        assertTrue(adjustmentByMessage.getState().getStatusChange().getScenario().getTargetStatus().isSetCaptured());
+
+        when(invoicingClient.get(any(), any())).thenReturn(initCashFlowChangeAdjustment(adjustmentId));
+
+        adjustmentByMessage = service.getAdjustmentByMessage(message, adjustmentId);
+        assertTrue(adjustmentByMessage.getState().isSetCashFlow());
+    }
+
+    private Invoice initCashFlowChangeAdjustment(String adjustmentId) throws IOException {
+        var invoice = createInvoiceWithStatusChangeAdjustment(adjustmentId);
+        InvoicePaymentAdjustment invoicePaymentAdjustment;
+        InvoicePaymentAdjustmentState invoicePaymentAdjustmentState = new InvoicePaymentAdjustmentState();
+        invoicePaymentAdjustmentState.setCashFlow(new InvoicePaymentAdjustmentCashFlowState());
+        invoicePaymentAdjustment = new InvoicePaymentAdjustment()
+                .setId(adjustmentId)
+                .setState(invoicePaymentAdjustmentState);
+        invoice.getPayments().get(0).setAdjustments(List.of(invoicePaymentAdjustment));
+        return invoice;
+    }
+
+    @NotNull
+    private static InvoicingMessage createInvloiceMessage(String adjustmentId) {
+        InvoicingMessage message = random(InvoicingMessage.class, "userInteraction");
+        message.setPaymentId(adjustmentId);
+        message.setType(InvoicingMessageEnum.PAYMENT);
+        message.setEventTime("2016-03-22T06:12:27Z");
+        message.setEventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
+        message.setPaymentStatus(PaymentStatusEnum.CAPTURED);
+        return message;
+    }
+
+    @NotNull
+    private Invoice createInvoiceWithStatusChangeAdjustment(String adjustmentId)
+            throws IOException {
+        Invoice invoice = BuildUtils.buildInvoice("partyId", "invoiceId", "1", "1",
+                InvoiceStatus.paid(new InvoicePaid()),
+                InvoicePaymentStatus.pending(new InvoicePaymentPending()));
+        InvoicePaymentAdjustmentState invoicePaymentAdjustmentState = new InvoicePaymentAdjustmentState();
+        invoicePaymentAdjustmentState.setStatusChange(new InvoicePaymentAdjustmentStatusChangeState()
+                .setScenario(new InvoicePaymentAdjustmentStatusChange()
+                        .setTargetStatus(new InvoicePaymentStatus(InvoicePaymentStatus.captured(
+                                new InvoicePaymentCaptured())))));
+        InvoicePaymentAdjustment invoicePaymentAdjustment = new InvoicePaymentAdjustment()
+                .setId(adjustmentId)
+                .setState(invoicePaymentAdjustmentState);
+        invoice.getPayments().get(0).setAdjustments(List.of(invoicePaymentAdjustment));
+        return invoice;
     }
 
     @Test
