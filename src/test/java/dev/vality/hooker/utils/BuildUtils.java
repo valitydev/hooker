@@ -15,6 +15,8 @@ import dev.vality.swag_webhook_events.model.Event;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class BuildUtils {
@@ -29,7 +31,7 @@ public class BuildUtils {
                                                 InvoiceStatusEnum invoiceStatus, PaymentStatusEnum paymentStatus,
                                                 Long sequenceId, Integer changeId) {
         InvoicingMessage message = new InvoicingMessage();
-        message.setEventTime("2016-03-22T06:12:27Z");
+        message.setEventTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss")));
         message.setType(InvoicingMessageEnum.lookup(type));
         message.setPartyId(partyId);
         message.setEventType(eventType);
