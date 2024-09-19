@@ -8,7 +8,7 @@ import org.springframework.beans.BeanUtils;
 
 @NoArgsConstructor
 @Data
-@ToString
+@ToString(callSuper = true)
 public class InvoicingMessage extends Message {
 
     private InvoicingMessageEnum type;
