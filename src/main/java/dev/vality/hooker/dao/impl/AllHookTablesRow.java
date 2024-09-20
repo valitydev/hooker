@@ -16,6 +16,7 @@ public class AllHookTablesRow {
     private String pubKey;
     private boolean enabled;
     private double availability;
+    private String createdAt;
     private WebhookAdditionalFilter webhookAdditionalFilter;
 
 }

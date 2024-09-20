@@ -5,6 +5,7 @@ import dev.vality.hooker.dao.impl.InvoicingDaoImpl;
 import dev.vality.hooker.model.*;
 import dev.vality.hooker.utils.BuildUtils;
 import dev.vality.swag_webhook_events.model.Event;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+@Slf4j
 @PostgresqlSpringBootITest
 public class InvoicingDaoImplTest {
 
@@ -37,27 +39,14 @@ public class InvoicingDaoImplTest {
     private Hook hook;
 
     @BeforeEach
-    public void setUp() {
-        hook = Hook.builder()
-                .partyId(partyId)
-                .topic(Event.TopicEnum.INVOICESTOPIC.getValue())
-                .url("zzz")
-                .filters(Set.of(
-                        WebhookAdditionalFilter.builder()
-                                .eventType(EventType.INVOICE_CREATED)
-                                .build(),
-                        WebhookAdditionalFilter.builder()
-                                .eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED)
-                                .invoicePaymentStatus("processed")
-                                .build(),
-                        WebhookAdditionalFilter.builder()
-                                .eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED)
-                                .invoicePaymentStatus("captured")
-                                .build()
-                        ))
-                .build();
+    public void setUp() throws InterruptedException {
+        hook = createHookModel();
 
-        hookDao.create(hook);
+        hook = hookDao.create(hook);
+        log.info("hookOld: {}", hookDao.getHookById(hook.getId()));
+
+        Thread.sleep(1000L); // Sleep for lag between create hook and events
+
         messageIdOne = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
                 invoiceOne, partyId, EventType.INVOICE_CREATED,
                 InvoiceStatusEnum.UNPAID, null));
@@ -73,6 +62,27 @@ public class InvoicingDaoImplTest {
         messageIdThree = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
                 invoiceThree, partyId, EventType.INVOICE_STATUS_CHANGED,
                 InvoiceStatusEnum.PAID, null));
+    }
+
+    private Hook createHookModel() {
+        return Hook.builder()
+                .partyId(partyId)
+                .topic(Event.TopicEnum.INVOICESTOPIC.getValue())
+                .url("zzz")
+                .filters(Set.of(
+                        WebhookAdditionalFilter.builder()
+                                .eventType(EventType.INVOICE_CREATED)
+                                .build(),
+                        WebhookAdditionalFilter.builder()
+                                .eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED)
+                                .invoicePaymentStatus("processed")
+                                .build(),
+                        WebhookAdditionalFilter.builder()
+                                .eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED)
+                                .invoicePaymentStatus("captured")
+                                .build()
+                ))
+                .build();
     }
 
     @Test
@@ -152,5 +162,40 @@ public class InvoicingDaoImplTest {
 
         Long parentEventIdThree = messageDao.getParentId(hook.getId(), invoiceThree, messageIdThree);
         assertEquals(-1, parentEventIdThree);
+    }
+
+    @Test
+    public void testGetParentEventIdWithOldHook() throws InterruptedException {
+        Hook hookOld = hookDao.create(createHookModel());
+        log.info("hookOld: {}", hookDao.getHookById(hookOld.getId()));
+
+        Thread.sleep(1000L); // Sleep for lag between create hook and events
+
+        String newInvoiceId = "new_invoice";
+        var oldMessageId = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
+                newInvoiceId, partyId, EventType.INVOICE_CREATED,
+                InvoiceStatusEnum.UNPAID, null, 1L, 1));
+
+        Long parentEventId = messageDao.getParentId(hookOld.getId(), newInvoiceId, oldMessageId);
+        assertEquals(-1, parentEventId);
+
+        hookDao.delete(hookOld.getId());
+        log.info("hookOld: {}", hookDao.getHookById(hookOld.getId()));
+
+        Thread.sleep(2000L);
+
+        Hook hookModel = createHookModel();
+        hookModel.setCreatedAt(null);
+        Hook hookNew = hookDao.create(hookModel);
+        log.info("hookNew: {}", hookDao.getHookById(hookNew.getId()));
+
+        Thread.sleep(1000L);
+
+        var newMessageId = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.PAYMENT.getValue(),
+                newInvoiceId, partyId, EventType.INVOICE_PAYMENT_STATUS_CHANGED,
+                InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED, 1L, 2));
+
+        parentEventId = messageDao.getParentId(hookNew.getId(), newInvoiceId, newMessageId);
+        assertEquals(-1, parentEventId);
     }
 }

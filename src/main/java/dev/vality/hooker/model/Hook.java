@@ -23,4 +23,5 @@ public class Hook {
     private String privKey;
     private boolean enabled;
     private double availability;
+    private String createdAt;
 }
