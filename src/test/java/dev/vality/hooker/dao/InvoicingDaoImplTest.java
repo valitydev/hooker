@@ -43,6 +43,7 @@ public class InvoicingDaoImplTest {
         hook = createHookModel();
 
         hook = hookDao.create(hook);
+        log.info("hookOld: {}", hookDao.getHookById(hook.getId()));
 
         Thread.sleep(1000L); // Sleep for lag between create hook and events
 
