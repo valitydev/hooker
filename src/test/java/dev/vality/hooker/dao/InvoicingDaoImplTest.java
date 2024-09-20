@@ -183,7 +183,9 @@ public class InvoicingDaoImplTest {
 
         Thread.sleep(2000L);
 
-        Hook hookNew = hookDao.create(createHookModel());
+        Hook hookModel = createHookModel();
+        hookModel.setCreatedAt(null);
+        Hook hookNew = hookDao.create(hookModel);
         log.info("hookNew: {}", hookDao.getHookById(hookNew.getId()));
 
         Thread.sleep(1000L);
