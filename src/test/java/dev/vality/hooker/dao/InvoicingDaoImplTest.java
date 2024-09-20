@@ -181,6 +181,8 @@ public class InvoicingDaoImplTest {
         hookDao.delete(hookOld.getId());
         log.info("hookOld: {}", hookDao.getHookById(hookOld.getId()));
 
+        Thread.sleep(2000L);
+
         Hook hookNew = hookDao.create(createHookModel());
         log.info("hookNew: {}", hookDao.getHookById(hookNew.getId()));
 
