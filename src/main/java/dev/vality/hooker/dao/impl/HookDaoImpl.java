@@ -235,15 +235,16 @@ public class HookDaoImpl implements HookDao {
         String pubKey = createOrGetPubKey(hook.getPartyId());
         hook.setPubKey(pubKey);
         hook.setEnabled(true);
-        final String sql = "INSERT INTO hook.webhook(party_id, url, topic, created_at) " +
-                "VALUES (:party_id, :url, CAST(:topic as hook.message_topic), :created_at) RETURNING ID";
+        final String sql = "INSERT INTO hook.webhook(party_id, url, topic) " +
+                "VALUES (:party_id, :url, CAST(:topic as hook.message_topic)) RETURNING ID";
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("party_id", hook.getPartyId())
                 .addValue("url", hook.getUrl())
                 .addValue("topic", hook.getTopic())
-                .addValue("created_at", new Timestamp(LocalDateTime.now()
-                        .toInstant(ZoneOffset.UTC).toEpochMilli()));
+//                .addValue("created_at", new Timestamp(LocalDateTime.now()
+//                        .toInstant(ZoneOffset.UTC).toEpochMilli()))
+                ;
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             int updateCount = jdbcTemplate.update(sql, params, keyHolder);
