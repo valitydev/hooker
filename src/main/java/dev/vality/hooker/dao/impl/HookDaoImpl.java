@@ -37,6 +37,7 @@ public class HookDaoImpl implements HookDao {
                     rs.getString("pub_key"),
                     rs.getBoolean("enabled"),
                     rs.getDouble("availability"),
+                    rs.getString("created_at"),
                     new WebhookAdditionalFilter(EventType.valueOf(rs.getString("event_type")),
                             rs.getString("invoice_shop_id"),
                             rs.getString("invoice_status"),
@@ -57,6 +58,7 @@ public class HookDaoImpl implements HookDao {
                         " w.enabled, " +
                         " w.topic, " +
                         " w.availability, " +
+                        " w.created_at, " +
                         " k.pub_key, " +
                         " wte.hook_id, " +
                         " wte.event_type, " +
@@ -174,6 +176,7 @@ public class HookDaoImpl implements HookDao {
             hook.setPubKey(allHookTablesRow.getPubKey());
             hook.setEnabled(allHookTablesRow.isEnabled());
             hook.setAvailability(allHookTablesRow.getAvailability());
+            hook.setCreatedAt(allHookTablesRow.getCreatedAt());
             hook.setFilters(rows.stream()
                     .map(AllHookTablesRow::getWebhookAdditionalFilter)
                     .collect(Collectors.toSet()));
@@ -192,6 +195,7 @@ public class HookDaoImpl implements HookDao {
                 " w.enabled, " +
                 " w.topic, " +
                 " w.availability, " +
+                " w.created_at, " +
                 " k.pub_key, " +
                 " wte.hook_id, " +
                 " wte.event_type, " +
