@@ -21,6 +21,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -233,12 +236,14 @@ public class HookDaoImpl implements HookDao {
         hook.setPubKey(pubKey);
         hook.setEnabled(true);
         final String sql = "INSERT INTO hook.webhook(party_id, url, topic, created_at) " +
-                "VALUES (:party_id, :url, CAST(:topic as hook.message_topic), null) RETURNING ID";
+                "VALUES (:party_id, :url, CAST(:topic as hook.message_topic), :created_at) RETURNING ID";
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("party_id", hook.getPartyId())
                 .addValue("url", hook.getUrl())
-                .addValue("topic", hook.getTopic());
+                .addValue("topic", hook.getTopic())
+                .addValue("created_at", new Timestamp(LocalDateTime.now()
+                        .toInstant(ZoneOffset.UTC).toEpochMilli()));
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             int updateCount = jdbcTemplate.update(sql, params, keyHolder);
