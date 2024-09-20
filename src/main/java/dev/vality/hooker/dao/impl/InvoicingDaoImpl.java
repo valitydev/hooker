@@ -47,21 +47,21 @@ public class InvoicingDaoImpl implements InvoicingMessageDao {
                     "RETURNING id";
 
             MapSqlParameterSource sqlParameterSources = new MapSqlParameterSource()
-                            .addValue(InvoicingRowMapper.EVENT_TIME, message.getEventTime())
-                            .addValue(InvoicingRowMapper.SEQUENCE_ID, message.getSequenceId())
-                            .addValue(InvoicingRowMapper.CHANGE_ID, message.getChangeId())
-                            .addValue(InvoicingRowMapper.TYPE, message.getType().getValue())
-                            .addValue(InvoicingRowMapper.PARTY_ID, message.getPartyId())
-                            .addValue(InvoicingRowMapper.EVENT_TYPE, message.getEventType().toString())
-                            .addValue(InvoicingRowMapper.INVOICE_ID, message.getSourceId())
-                            .addValue(InvoicingRowMapper.SHOP_ID, message.getShopId())
-                            .addValue(InvoicingRowMapper.INVOICE_STATUS, message.getInvoiceStatus().getValue())
-                            .addValue(InvoicingRowMapper.PAYMENT_ID, message.getPaymentId())
-                            .addValue(InvoicingRowMapper.PAYMENT_STATUS,
-                                    message.getPaymentStatus() != null ? message.getPaymentStatus().getValue() : null)
-                            .addValue(InvoicingRowMapper.REFUND_ID, message.getRefundId())
-                            .addValue(InvoicingRowMapper.REFUND_STATUS,
-                                    message.getRefundStatus() != null ? message.getRefundStatus().getValue() : null);
+                    .addValue(InvoicingRowMapper.EVENT_TIME, message.getEventTime())
+                    .addValue(InvoicingRowMapper.SEQUENCE_ID, message.getSequenceId())
+                    .addValue(InvoicingRowMapper.CHANGE_ID, message.getChangeId())
+                    .addValue(InvoicingRowMapper.TYPE, message.getType().getValue())
+                    .addValue(InvoicingRowMapper.PARTY_ID, message.getPartyId())
+                    .addValue(InvoicingRowMapper.EVENT_TYPE, message.getEventType().toString())
+                    .addValue(InvoicingRowMapper.INVOICE_ID, message.getSourceId())
+                    .addValue(InvoicingRowMapper.SHOP_ID, message.getShopId())
+                    .addValue(InvoicingRowMapper.INVOICE_STATUS, message.getInvoiceStatus().getValue())
+                    .addValue(InvoicingRowMapper.PAYMENT_ID, message.getPaymentId())
+                    .addValue(InvoicingRowMapper.PAYMENT_STATUS,
+                            message.getPaymentStatus() != null ? message.getPaymentStatus().getValue() : null)
+                    .addValue(InvoicingRowMapper.REFUND_ID, message.getRefundId())
+                    .addValue(InvoicingRowMapper.REFUND_STATUS,
+                            message.getRefundStatus() != null ? message.getRefundStatus().getValue() : null);
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(sql, sqlParameterSources, keyHolder);
             return keyHolder.getKey() == null ? null : keyHolder.getKey().longValue();
@@ -91,7 +91,7 @@ public class InvoicingDaoImpl implements InvoicingMessageDao {
 
     @Override
     public List<WebhookMessageModel<InvoicingMessage>> getWebhookModels(Long messageId) {
-        final String sql = "select m.*, w.id as hook_id, w.url, pk.priv_key"  +
+        final String sql = "select m.*, w.id as hook_id, w.url, pk.priv_key" +
                 " from hook.message m" +
                 " join hook.webhook w on m.party_id = w.party_id " +
                 " and w.enabled and w.topic=CAST(:message_type as hook.message_topic)" +
@@ -111,6 +111,7 @@ public class InvoicingDaoImpl implements InvoicingMessageDao {
 
     @Override
     public Long getParentId(Long hookId, String invoiceId, Long messageId) {
+        log.info("hookId: {}, invoiceId: {}, messageId: {}", hookId, invoiceId, messageId);
         final String sql = "select m.id" +
                 " from hook.message m " +
                 " join hook.webhook w on w.id=:hook_id" +
