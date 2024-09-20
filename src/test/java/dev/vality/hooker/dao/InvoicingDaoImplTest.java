@@ -166,7 +166,7 @@ public class InvoicingDaoImplTest {
     @Test
     public void testGetParentEventIdWithOldHook() throws InterruptedException {
         Hook hookOld = hookDao.create(createHookModel());
-        log.info("hookOld: {}", hookOld);
+        log.info("hookOld: {}", hookDao.getHookById(hookOld.getId()));
 
         Thread.sleep(1000L); // Sleep for lag between create hook and events
 
@@ -180,7 +180,7 @@ public class InvoicingDaoImplTest {
 
         hookDao.delete(hookOld.getId());
         Hook hookNew = hookDao.create(createHookModel());
-        log.info("hookNew: {}", hookNew);
+        log.info("hookNew: {}", hookDao.getHookById(hookNew.getId()));
         Thread.sleep(1000L);
 
         var newMessageId = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.PAYMENT.getValue(),
