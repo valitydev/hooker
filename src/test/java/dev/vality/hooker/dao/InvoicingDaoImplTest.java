@@ -39,7 +39,7 @@ public class InvoicingDaoImplTest {
     private Hook hook;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws InterruptedException {
         hook = Hook.builder()
                 .partyId(partyId)
                 .topic(Event.TopicEnum.INVOICESTOPIC.getValue())
@@ -62,6 +62,7 @@ public class InvoicingDaoImplTest {
         Hook hookDb = hookDao.create(hook);
         Hook hookById = hookDao.getHookById(hookDb.getId());
         log.info("Hook create date: {}", hookById);
+        Thread.sleep(2000L);
         messageIdOne = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
                 invoiceOne, partyId, EventType.INVOICE_CREATED,
                 InvoiceStatusEnum.UNPAID, null));
