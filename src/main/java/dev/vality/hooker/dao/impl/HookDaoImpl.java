@@ -232,8 +232,8 @@ public class HookDaoImpl implements HookDao {
         String pubKey = createOrGetPubKey(hook.getPartyId());
         hook.setPubKey(pubKey);
         hook.setEnabled(true);
-        final String sql = "INSERT INTO hook.webhook(party_id, url, topic) " +
-                "VALUES (:party_id, :url, CAST(:topic as hook.message_topic)) RETURNING ID";
+        final String sql = "INSERT INTO hook.webhook(party_id, url, topic, created_at) " +
+                "VALUES (:party_id, :url, CAST(:topic as hook.message_topic), null) RETURNING ID";
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("party_id", hook.getPartyId())
