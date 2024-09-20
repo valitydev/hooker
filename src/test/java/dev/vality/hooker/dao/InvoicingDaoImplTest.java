@@ -59,7 +59,7 @@ public class InvoicingDaoImplTest {
                         ))
                 .build();
 
-        Hook hookDb = hookDao.create(hook);
+        hookDao.create(hook);
 
         Thread.sleep(1000L); // Sleep for lag between create hook and events
 
