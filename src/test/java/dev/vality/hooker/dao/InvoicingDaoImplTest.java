@@ -5,6 +5,7 @@ import dev.vality.hooker.dao.impl.InvoicingDaoImpl;
 import dev.vality.hooker.model.*;
 import dev.vality.hooker.utils.BuildUtils;
 import dev.vality.swag_webhook_events.model.Event;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+@Slf4j
 @PostgresqlSpringBootITest
 public class InvoicingDaoImplTest {
 
@@ -57,7 +59,9 @@ public class InvoicingDaoImplTest {
                         ))
                 .build();
 
-        hookDao.create(hook);
+        Hook hookDb = hookDao.create(hook);
+        Hook hookById = hookDao.getHookById(hookDb.getId());
+        log.info("Hook create date: {}", hookById);
         messageIdOne = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
                 invoiceOne, partyId, EventType.INVOICE_CREATED,
                 InvoiceStatusEnum.UNPAID, null));
