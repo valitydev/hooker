@@ -60,9 +60,9 @@ public class InvoicingDaoImplTest {
                 .build();
 
         Hook hookDb = hookDao.create(hook);
-        Hook hookById = hookDao.getHookById(hookDb.getId());
-        log.info("Hook create date: {}", hookById);
-        Thread.sleep(2000L);
+
+        Thread.sleep(1000L); // Sleep for lag between create hook and events
+
         messageIdOne = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
                 invoiceOne, partyId, EventType.INVOICE_CREATED,
                 InvoiceStatusEnum.UNPAID, null));
