@@ -179,8 +179,11 @@ public class InvoicingDaoImplTest {
         assertEquals(-1, parentEventId);
 
         hookDao.delete(hookOld.getId());
+        log.info("hookOld: {}", hookDao.getHookById(hookOld.getId()));
+
         Hook hookNew = hookDao.create(createHookModel());
         log.info("hookNew: {}", hookDao.getHookById(hookNew.getId()));
+
         Thread.sleep(1000L);
 
         var newMessageId = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.PAYMENT.getValue(),
