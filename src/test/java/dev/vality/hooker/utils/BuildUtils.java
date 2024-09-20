@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
@@ -34,8 +33,7 @@ public class BuildUtils {
                                                 InvoiceStatusEnum invoiceStatus, PaymentStatusEnum paymentStatus,
                                                 Long sequenceId, Integer changeId) {
         InvoicingMessage message = new InvoicingMessage();
-        message.setEventTime(LocalDateTime.now(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss")));
+        message.setEventTime(LocalDateTime.now().toInstant(ZoneOffset.UTC).toString());
         message.setType(InvoicingMessageEnum.lookup(type));
         message.setPartyId(partyId);
         message.setEventType(eventType);
