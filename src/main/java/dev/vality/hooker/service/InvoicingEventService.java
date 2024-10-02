@@ -117,7 +117,7 @@ public class InvoicingEventService
                                            dev.vality.damsel.payment_processing.Invoice invoiceInfo) {
         var damselPayment = extractPayment(m, invoiceInfo);
 
-        return paymentConverter.convert(damselPayment);
+        return paymentConverter.convert(damselPayment, invoiceInfo);
     }
 
     private InvoicePayment extractPayment(InvoicingMessage message,

@@ -10,7 +10,6 @@ import dev.vality.swag_webhook_events.model.Payment;
 import dev.vality.swag_webhook_events.model.PaymentResourcePayer;
 import dev.vality.swag_webhook_events.model.RecurrentPayer;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -27,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         ObjectMapper.class
 })
 @SpringBootTest
-public class PaymentConverterTest  {
+public class PaymentConverterTest {
 
     @Autowired
     private PaymentConverter converter;
@@ -49,7 +48,8 @@ public class PaymentConverterTest  {
         source.setStatus(InvoicePaymentStatus.pending(new InvoicePaymentPending()));
         Payment target = converter
                 .convert(new dev.vality.damsel.payment_processing.InvoicePayment(source,
-                        List.of(), List.of(), List.of(), List.of()));
+                                List.of(), List.of(), List.of(), List.of()),
+                        new dev.vality.damsel.payment_processing.Invoice());
         assertEquals(source.getId(), target.getId());
         assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
         if (source.getStatus().isSetCaptured() && source.getStatus().getCaptured().isSetCost()) {
