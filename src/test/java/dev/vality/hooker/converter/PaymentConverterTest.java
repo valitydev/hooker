@@ -10,7 +10,6 @@ import dev.vality.swag_webhook_events.model.Payment;
 import dev.vality.swag_webhook_events.model.PaymentResourcePayer;
 import dev.vality.swag_webhook_events.model.RecurrentPayer;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -27,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         ObjectMapper.class
 })
 @SpringBootTest
-public class PaymentConverterTest  {
+public class PaymentConverterTest {
 
     @Autowired
     private PaymentConverter converter;
@@ -49,7 +48,11 @@ public class PaymentConverterTest  {
         source.setStatus(InvoicePaymentStatus.pending(new InvoicePaymentPending()));
         Payment target = converter
                 .convert(new dev.vality.damsel.payment_processing.InvoicePayment(source,
-                        List.of(), List.of(), List.of(), List.of()));
+                                List.of(), List.of(), List.of(), List.of()),
+                        createMockInvoice(
+                                source.getStatus().isSetCaptured()
+                                        ? source.getStatus().getCaptured().getCost().getAmount()
+                                        : source.getCost().getAmount()));
         assertEquals(source.getId(), target.getId());
         assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
         if (source.getStatus().isSetCaptured() && source.getStatus().getCaptured().isSetCost()) {
@@ -78,5 +81,15 @@ public class PaymentConverterTest  {
             assertEquals(source.getPayer().getRecurrent().getRecurrentParent().getInvoiceId(),
                     ((RecurrentPayer) target.getPayer()).getRecurrentParentPayment().getInvoiceID());
         }
+    }
+
+    private static dev.vality.damsel.payment_processing.Invoice createMockInvoice(Long amount) {
+        return new dev.vality.damsel.payment_processing.Invoice().setInvoice(
+                new Invoice()
+                        .setCost(new Cash()
+                                .setAmount(amount)
+                                .setCurrency(new CurrencyRef()
+                                        .setSymbolicCode("RUB"))
+                        ));
     }
 }
