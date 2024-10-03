@@ -48,7 +48,8 @@ public class PaymentConverterTest {
         source.setStatus(InvoicePaymentStatus.pending(new InvoicePaymentPending()));
         Payment target = converter
                 .convert(new dev.vality.damsel.payment_processing.InvoicePayment(source,
-                        List.of(), List.of(), List.of(), List.of()), createMockInvoice(source.getChangedCost().amount));
+                                List.of(), List.of(), List.of(), List.of()),
+                        createMockInvoice(source.getStatus().getCaptured().getCost().getAmount()));
         assertEquals(source.getId(), target.getId());
         assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
         if (source.getStatus().isSetCaptured() && source.getStatus().getCaptured().isSetCost()) {
