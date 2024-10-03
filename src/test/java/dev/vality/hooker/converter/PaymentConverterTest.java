@@ -48,8 +48,7 @@ public class PaymentConverterTest {
         source.setStatus(InvoicePaymentStatus.pending(new InvoicePaymentPending()));
         Payment target = converter
                 .convert(new dev.vality.damsel.payment_processing.InvoicePayment(source,
-                                List.of(), List.of(), List.of(), List.of()),
-                        new dev.vality.damsel.payment_processing.Invoice());
+                                List.of(), List.of(), List.of(), List.of()), createMockInvoice());
         assertEquals(source.getId(), target.getId());
         assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
         if (source.getStatus().isSetCaptured() && source.getStatus().getCaptured().isSetCost()) {
@@ -78,5 +77,15 @@ public class PaymentConverterTest {
             assertEquals(source.getPayer().getRecurrent().getRecurrentParent().getInvoiceId(),
                     ((RecurrentPayer) target.getPayer()).getRecurrentParentPayment().getInvoiceID());
         }
+    }
+
+    private static dev.vality.damsel.payment_processing.Invoice createMockInvoice() {
+        return new dev.vality.damsel.payment_processing.Invoice().setInvoice(
+                new Invoice()
+                        .setCost(new Cash()
+                                .setAmount(1000L)
+                                .setCurrency(new CurrencyRef()
+                                        .setSymbolicCode("RUB"))
+                        ));
     }
 }
