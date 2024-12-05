@@ -30,11 +30,10 @@ public class PaymentConverter {
         target.setId(source.getId());
         target.setCreatedAt(TimeUtils.toOffsetDateTime(source.getCreatedAt()));
         target.setStatus(Payment.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()));
+
+        target.setAmount(invoice.getInvoice().getCost().getAmount());
         if (source.isSetChangedCost()) {
             target.setChangedAmount(source.getChangedCost().getAmount());
-            target.setAmount(invoice.getInvoice().getCost().getAmount());
-        } else {
-            target.setAmount(source.getCost().getAmount());
         }
         target.setCurrency(source.getCost().getCurrency().getSymbolicCode());
         target.setMetadata(getMetadata(source));
