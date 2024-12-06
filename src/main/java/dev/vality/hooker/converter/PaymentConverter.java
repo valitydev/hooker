@@ -30,10 +30,11 @@ public class PaymentConverter {
         target.setId(source.getId());
         target.setCreatedAt(TimeUtils.toOffsetDateTime(source.getCreatedAt()));
         target.setStatus(Payment.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()));
-
-        target.setAmount(invoice.getInvoice().getCost().getAmount());
         if (source.isSetChangedCost()) {
             target.setChangedAmount(source.getChangedCost().getAmount());
+            target.setAmount(invoice.getInvoice().getCost().getAmount());
+        } else {
+            target.setAmount(source.getCost().getAmount());
         }
         target.setCurrency(source.getCost().getCurrency().getSymbolicCode());
         target.setMetadata(getMetadata(source));
@@ -83,7 +84,6 @@ public class PaymentConverter {
     private void setCapturedParams(dev.vality.damsel.domain.InvoicePayment source, Payment target) {
         InvoicePaymentCaptured invoicePaymentCaptured = source.getStatus().getCaptured();
         if (invoicePaymentCaptured.isSetCost()) {
-            target.setAmount(invoicePaymentCaptured.getCost().getAmount());
             target.setCurrency(invoicePaymentCaptured.getCost().getCurrency().getSymbolicCode());
         }
     }
