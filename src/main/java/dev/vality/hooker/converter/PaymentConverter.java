@@ -84,7 +84,6 @@ public class PaymentConverter {
     private void setCapturedParams(dev.vality.damsel.domain.InvoicePayment source, Payment target) {
         InvoicePaymentCaptured invoicePaymentCaptured = source.getStatus().getCaptured();
         if (invoicePaymentCaptured.isSetCost()) {
-            target.setAmount(invoicePaymentCaptured.getCost().getAmount());
             target.setCurrency(invoicePaymentCaptured.getCost().getCurrency().getSymbolicCode());
         }
     }
