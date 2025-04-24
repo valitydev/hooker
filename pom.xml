@@ -13,7 +13,7 @@
     <parent>
         <groupId>dev.vality</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>2.0.3</version>
+        <version>2.0.4</version>
     </parent>
 
     <properties>
@@ -21,7 +21,8 @@
         <server.port>8022</server.port>
         <management.port>8023</management.port>
         <exposed.ports>${server.port} ${management.port}</exposed.ports>
-
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <db.host.name>localhost</db.host.name>
         <db.host.port>5432</db.host.port>
         <db.name>hook</db.name>
