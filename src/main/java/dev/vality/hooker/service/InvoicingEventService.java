@@ -196,6 +196,10 @@ public class InvoicingEventService
                     .invoice(swagInvoice)
                     .payment(swagPayment)
                     .eventType(Event.EventTypeEnum.PAYMENTFAILED);
+            case CHARGED_BACK -> new PaymentChargedBack()
+                    .invoice(swagInvoice)
+                    .payment(swagPayment)
+                    .eventType(Event.EventTypeEnum.PAYMENTCHARGEDBACK);
             default -> throw new UnsupportedOperationException("Unknown payment status " + message.getPaymentStatus());
         };
     }

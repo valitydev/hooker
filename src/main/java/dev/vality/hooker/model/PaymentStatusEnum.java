@@ -13,6 +13,7 @@ public enum PaymentStatusEnum {
     CAPTURED("captured"),
     CANCELLED("cancelled"),
     REFUNDED("refunded"),
+    CHARGED_BACK("charged_back"),
     FAILED("failed");
 
     private String value;
