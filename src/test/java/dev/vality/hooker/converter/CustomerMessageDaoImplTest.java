@@ -9,14 +9,17 @@ import dev.vality.hooker.utils.BuildUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @PostgresqlSpringBootITest
-public class CustomerMessageDaoImplTest {
+@SpringBootTest
+class CustomerMessageDaoImplTest {
 
     @Autowired
     private CustomerDaoImpl messageDao;
@@ -25,7 +28,7 @@ public class CustomerMessageDaoImplTest {
     private NamedParameterJdbcTemplate jdbcTemplate;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() {
         CustomerMessage message =
                 BuildUtils.buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED,
                         CustomerMessageEnum.CUSTOMER, "124",
@@ -36,7 +39,7 @@ public class CustomerMessageDaoImplTest {
     }
 
     @Test
-    public void testDuplication() {
+    void testDuplication() {
         CustomerMessage message =
                 BuildUtils.buildCustomerMessage(1L, "1234", EventType.CUSTOMER_CREATED,
                         CustomerMessageEnum.CUSTOMER, "124",
@@ -49,9 +52,9 @@ public class CustomerMessageDaoImplTest {
     }
 
     @Test
-    public void get() throws Exception {
+    void get() throws Exception {
         CustomerMessage message = messageDao.getAny("124", CustomerMessageEnum.CUSTOMER);
-        assertEquals(message.getShopId(), "4356");
+        assertEquals("4356", message.getShopId());
     }
 
 }

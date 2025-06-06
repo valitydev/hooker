@@ -22,17 +22,18 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
 @PostgresqlSpringBootITest
+@SpringBootTest
 class InvoicingEventServiceTest {
 
-    @MockBean
+    @MockitoBean
     private InvoicingSrv.Iface invoicingClient;
 
     @Autowired
@@ -42,7 +43,7 @@ class InvoicingEventServiceTest {
     private ObjectMapper objectMapper;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Mockito.when(invoicingClient.get(any(), any()))
                 .thenReturn(BuildUtils.buildInvoice("partyId", "invoiceId", "1", "1",
                         InvoiceStatus.paid(new InvoicePaid()),
@@ -96,7 +97,7 @@ class InvoicingEventServiceTest {
         assertTrue(json.contains("\"userInteractionType\":\"BrowserHTTPRequest\""));
         assertTrue(json.contains("\"invoiceId\":\"invoiceId\""));
         assertTrue(json.contains("\"paymentId\":\"%s\"".formatted(message.getPaymentId())));
-        assertTrue(event instanceof PaymentInteractionRequested);
+        assertInstanceOf(PaymentInteractionRequested.class, event);
     }
 
     @Test
@@ -110,7 +111,7 @@ class InvoicingEventServiceTest {
         assertTrue(json.contains("\"userInteractionType\":\"QrCodeDisplayRequest\""));
         assertTrue(json.contains("\"invoiceId\":\"invoiceId\""));
         assertTrue(json.contains("\"paymentId\":\"%s\"".formatted(message.getPaymentId())));
-        assertTrue(event instanceof PaymentInteractionCompleted);
+        assertInstanceOf(PaymentInteractionCompleted.class, event);
     }
 
     @Test
@@ -124,7 +125,7 @@ class InvoicingEventServiceTest {
         assertTrue(json.contains("\"userInteractionType\":\"ApiExtensionRequest\""));
         assertTrue(json.contains("\"invoiceId\":\"invoiceId\""));
         assertTrue(json.contains("\"paymentId\":\"%s\"".formatted(message.getPaymentId())));
-        assertTrue(event instanceof PaymentInteractionCompleted);
+        assertInstanceOf(PaymentInteractionCompleted.class, event);
     }
 
     @Test
@@ -138,7 +139,7 @@ class InvoicingEventServiceTest {
         assertTrue(json.contains("\"userInteractionType\":\"PaymentTerminalReceipt\""));
         assertTrue(json.contains("\"invoiceId\":\"invoiceId\""));
         assertTrue(json.contains("\"paymentId\":\"%s\"".formatted(message.getPaymentId())));
-        assertTrue(event instanceof PaymentInteractionCompleted);
+        assertInstanceOf(PaymentInteractionCompleted.class, event);
     }
 
     @Test
@@ -155,7 +156,7 @@ class InvoicingEventServiceTest {
         assertTrue(json.contains("\"denominator\":1"));
         assertTrue(json.contains("\"invoiceId\":\"invoiceId\""));
         assertTrue(json.contains("\"paymentId\":\"%s\"".formatted(message.getPaymentId())));
-        assertTrue(event instanceof PaymentInteractionCompleted);
+        assertInstanceOf(PaymentInteractionCompleted.class, event);
     }
 
     @NotNull

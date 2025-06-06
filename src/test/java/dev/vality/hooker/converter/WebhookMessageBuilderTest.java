@@ -1,46 +1,43 @@
 package dev.vality.hooker.converter;
 
-import dev.vality.hooker.configuration.AppConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dev.vality.hooker.model.WebhookMessageModel;
 import dev.vality.hooker.service.AdditionalHeadersGenerator;
-import dev.vality.hooker.service.crypt.AsymSigner;
+import dev.vality.hooker.service.crypt.Signer;
 import dev.vality.swag_webhook_events.model.Event;
 import dev.vality.webhook.dispatcher.WebhookMessage;
 import org.apache.http.entity.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 
-@ContextConfiguration(classes = {
-        WebhookMessageBuilder.class,
-        AdditionalHeadersGenerator.class,
-        AppConfig.class
-})
-@SpringBootTest
-public class WebhookMessageBuilderTest {
+@ExtendWith(MockitoExtension.class)
+class WebhookMessageBuilderTest {
 
-    @MockBean
-    private AsymSigner signer;
+    @Mock
+    private Signer signer;
 
-    @Autowired
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+
     private WebhookMessageBuilder builder;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
+        builder = new WebhookMessageBuilder(new AdditionalHeadersGenerator(), objectMapper, signer);
         Mockito.when(signer.sign(any(), any())).thenReturn("signature");
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
         var webhookMessageModel = new WebhookMessageModel<>();
         webhookMessageModel.setHookId(1245L);
         webhookMessageModel.setUrl("kek.url");

@@ -7,6 +7,7 @@ import dev.vality.hooker.utils.HookConverter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -17,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @PostgresqlSpringBootITest
-public class HooksLimitServiceTest {
+@SpringBootTest
+class HooksLimitServiceTest {
 
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
@@ -29,7 +31,7 @@ public class HooksLimitServiceTest {
     private HookDao hookDao;
 
     @Test
-    public void isLimitExceededFalseTest() {
+    void isLimitExceededFalseTest() {
         WebhookParams webhookParams = buildWebhookParams();
 
         hookDao.create(HookConverter.convert(webhookParams));
@@ -37,7 +39,7 @@ public class HooksLimitServiceTest {
     }
 
     @Test
-    public void isShopLimitExceededTrueTest() {
+    void isShopLimitExceededTrueTest() {
         WebhookParams webhookParams = buildWebhookParams();
 
         IntStream.range(1, 11).forEach(x -> hookDao.create(HookConverter.convert(webhookParams)));
@@ -45,7 +47,7 @@ public class HooksLimitServiceTest {
     }
 
     @Test
-    public void isShopLimitExceededFalseTest() {
+    void isShopLimitExceededFalseTest() {
         WebhookParams webhookParams = buildWebhookParams();
 
         IntStream.range(1, 11).forEach(x -> hookDao.create(HookConverter.convert(webhookParams)));
@@ -56,7 +58,7 @@ public class HooksLimitServiceTest {
     }
 
     @Test
-    public void isPartyLimitExceededTrueTest() {
+    void isPartyLimitExceededTrueTest() {
         WebhookParams webhookParams = buildWebhookParams();
         webhookParams.getEventFilter().getInvoice().setShopId(null);
 
@@ -66,7 +68,7 @@ public class HooksLimitServiceTest {
 
 
     @AfterEach
-    public void after() {
+    void after() {
         jdbcTemplate.update("truncate hook.webhook cascade", new MapSqlParameterSource());
         jdbcTemplate.update("truncate hook.party_data cascade", new MapSqlParameterSource());
     }

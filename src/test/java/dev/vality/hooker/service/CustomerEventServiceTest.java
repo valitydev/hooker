@@ -14,17 +14,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
 @PostgresqlSpringBootITest
-public class CustomerEventServiceTest {
+@SpringBootTest
+class CustomerEventServiceTest {
 
-    @MockBean
+    @MockitoBean
     private CustomerManagementSrv.Iface customerClient;
 
     @Autowired
@@ -34,27 +35,27 @@ public class CustomerEventServiceTest {
     private ObjectMapper objectMapper;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Mockito.when(customerClient.get(any(), any()))
                 .thenReturn(BuildUtils.buildCustomer("customerId", "bindingId"));
     }
 
     @Test
-    public void testCustomerSucceded() {
+    void testCustomerSucceeded() {
         CustomerMessage message = random(CustomerMessage.class);
         message.setType(CustomerMessageEnum.BINDING);
         message.setEventTime("2016-03-22T06:12:27Z");
         message.setEventType(EventType.CUSTOMER_BINDING_SUCCEEDED);
         message.setBindingId("bindingId");
         Event event = service.getEventByMessage(message);
-        assertTrue(event instanceof CustomerBindingSucceeded);
+        assertInstanceOf(CustomerBindingSucceeded.class, event);
         CustomerBindingSucceeded bindingSucceeded = (CustomerBindingSucceeded) event;
         assertEquals("customerId", bindingSucceeded.getCustomer().getId());
         assertEquals("bindingId", bindingSucceeded.getBinding().getId());
     }
 
     @Test
-    public void testJson() throws JsonProcessingException {
+    void testJson() throws JsonProcessingException {
         CustomerMessage message = random(CustomerMessage.class);
         message.setType(CustomerMessageEnum.BINDING);
         message.setEventTime("2016-03-22T06:12:27Z");

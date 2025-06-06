@@ -1,16 +1,18 @@
 package dev.vality.hooker.model;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class InvoicingMessageKeyTest {
+
+class InvoicingMessageKeyTest {
 
     @Test
-    public void testEqualHashCode() {
+    void testEqualHashCode() {
         InvoicingMessageKey key = InvoicingMessageKey.builder()
                 .invoiceId("inv")
                 .type(InvoicingMessageEnum.INVOICE)

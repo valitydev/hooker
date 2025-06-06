@@ -5,28 +5,30 @@ import dev.vality.damsel.payment_processing.CustomerChange;
 import dev.vality.damsel.payment_processing.CustomerCreated;
 import dev.vality.damsel.payment_processing.EventPayload;
 import dev.vality.geck.common.util.TypeUtil;
-import dev.vality.hooker.AbstractIntegrationTest;
+import dev.vality.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.hooker.dao.CustomerDao;
 import dev.vality.hooker.model.CustomerMessage;
 import dev.vality.hooker.model.CustomerMessageEnum;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.machinegun.msgpack.Value;
 import dev.vality.sink.common.parser.impl.MachineEventParser;
-import org.junit.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
-public class CustomerMachineEventHandlerTest extends AbstractIntegrationTest {
+@PostgresqlSpringBootITest
+@SpringBootTest
+class CustomerMachineEventHandlerTest {
 
     @Autowired
     private MachineEventHandler customerMachineEventHandler;
@@ -34,7 +36,7 @@ public class CustomerMachineEventHandlerTest extends AbstractIntegrationTest {
     @Autowired
     private CustomerDao customerDao;
 
-    @MockBean
+    @MockitoBean
     private MachineEventParser<EventPayload> paymentEventPayloadMachineEventParser;
 
     private static MachineEvent createTestMachineEvent() {
@@ -78,15 +80,15 @@ public class CustomerMachineEventHandlerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void saveEventTest() {
+    void saveEventTest() {
         String customerId = "CID";
         MachineEvent machineEvent = createTestMachineEvent();
-        Mockito.when(paymentEventPayloadMachineEventParser.parse(any(MachineEvent.class)))
+        when(paymentEventPayloadMachineEventParser.parse(any()))
                 .thenReturn(createTestCusomerEventPayload(customerId));
 
-        customerMachineEventHandler.handle(Arrays.asList(machineEvent), new TestAcknowledgment());
+        customerMachineEventHandler.handle(List.of(machineEvent), new TestAcknowledgment());
         CustomerMessage message = customerDao.getAny(customerId, CustomerMessageEnum.CUSTOMER);
-        assertTrue("The message should not be empty", message != null);
+        assertNotNull("The message should not be empty", message);
     }
 
     private static class TestAcknowledgment implements Acknowledgment {

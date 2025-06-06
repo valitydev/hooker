@@ -14,12 +14,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.mockito.ArgumentMatchers.any;
 
 @PostgresqlSpringBootITest
-public class InvoicingMessageServiceTest {
+@SpringBootTest
+class InvoicingMessageServiceTest {
 
     @Autowired
     private MessageService<InvoicingMessage> invoicingService;
@@ -27,26 +29,26 @@ public class InvoicingMessageServiceTest {
     @Autowired
     private HookDao hookDao;
 
-    @MockBean
+    @MockitoBean
     private InvoicingEventService invoicingMessageEventService;
 
-    @MockBean
+    @MockitoBean
     private WebhookMessageBuilder webhookMessageBuilder;
 
-    @MockBean
+    @MockitoBean
     private WebhookKafkaProducerService webhookKafkaProducerService;
 
     private static final String PARTY_ID = "partyId";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Mockito.when(invoicingMessageEventService.getEventByMessage(any())).thenReturn(new Event());
         Mockito.when(webhookMessageBuilder.build(any(), any(), any(), any())).thenReturn(new WebhookMessage());
         Mockito.doNothing().when(webhookKafkaProducerService).send(any());
     }
 
     @Test
-    public void testProcess() {
+    void testProcess() {
         hookDao.create(BuildUtils.buildHook(PARTY_ID, "www.kek.ru", EventType.INVOICE_CREATED));
         hookDao.create(BuildUtils.buildHook(PARTY_ID, "www.lol.ru", EventType.INVOICE_CREATED));
         InvoicingMessage invoicingMessage = buildMessage(PARTY_ID, "invoice_id",
@@ -58,7 +60,7 @@ public class InvoicingMessageServiceTest {
     }
 
     @Test
-    public void testInvoiceCashChange() {
+    void testInvoiceCashChange() {
         hookDao.create(BuildUtils.buildHook(PARTY_ID, "www.kek.ru", EventType.INVOICE_PAYMENT_CASH_CHANGED));
         hookDao.create(BuildUtils.buildHook(PARTY_ID, "www.lol.ru", EventType.INVOICE_PAYMENT_CASH_CHANGED));
         InvoicingMessage invoicingMessage = buildMessage(PARTY_ID, "invoice_id",

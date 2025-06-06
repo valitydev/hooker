@@ -18,7 +18,6 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 public class BuildUtils {
-    private static int messageId = 1;
 
     public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType,
                                                 InvoiceStatusEnum invoiceStatus, PaymentStatusEnum paymentStatus) {

@@ -2,8 +2,8 @@ package dev.vality.hooker.configuration;
 
 import dev.vality.damsel.payment_processing.EventPayload;
 import dev.vality.hooker.serde.SinkEventDeserializer;
-import dev.vality.kafka.common.exception.handler.SeekToCurrentWithSleepBatchErrorHandler;
 import dev.vality.kafka.common.serialization.ThriftSerializer;
+import dev.vality.kafka.common.util.ExponentialBackOffDefaultErrorHandlerFactory;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.sink.common.parser.impl.MachineEventParser;
 import dev.vality.sink.common.parser.impl.PaymentEventPayloadMachineEventParser;
@@ -23,12 +23,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
-import org.springframework.kafka.listener.BatchErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -66,7 +63,7 @@ public class KafkaConfig {
         factory.setConsumerFactory(consumerFactory);
         factory.setBatchListener(true);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
-        factory.setBatchErrorHandler(kafkaErrorHandler());
+        factory.setCommonErrorHandler(ExponentialBackOffDefaultErrorHandlerFactory.create());
         factory.setConcurrency(invoicingConcurrency);
         return factory;
     }
@@ -81,13 +78,9 @@ public class KafkaConfig {
         factory.setConsumerFactory(consumerFactory);
         factory.setBatchListener(false);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
-        factory.setErrorHandler(new SeekToCurrentErrorHandler());
+        factory.setCommonErrorHandler(ExponentialBackOffDefaultErrorHandlerFactory.create());
         factory.setConcurrency(customerConcurrency);
         return factory;
-    }
-
-    private BatchErrorHandler kafkaErrorHandler() {
-        return new SeekToCurrentWithSleepBatchErrorHandler();
     }
 
     @Bean

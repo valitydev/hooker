@@ -17,13 +17,13 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PaymentToolUtilsTest {
+class PaymentToolUtilsTest {
 
     @Test
-    public void testGetPaymentToolDetailsCryptoWallet() {
+    void testGetPaymentToolDetailsCryptoWallet() {
         PaymentTool paymentTool = PaymentTool.crypto_currency(new CryptoCurrencyRef("bitcoin"));
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
-        assertTrue(paymentToolDetails instanceof PaymentToolDetailsCryptoWallet);
+        assertInstanceOf(PaymentToolDetailsCryptoWallet.class, paymentToolDetails);
         assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET,
                 paymentToolDetails.getDetailsType());
         assertEquals(dev.vality.swag_webhook_events.model.CryptoCurrency.BITCOIN.getValue(),
@@ -31,7 +31,7 @@ public class PaymentToolUtilsTest {
     }
 
     @Test
-    public void testDigitalWalletJson() throws JsonProcessingException {
+    void testDigitalWalletJson() throws JsonProcessingException {
         PaymentTool paymentTool =
                 PaymentTool.digital_wallet(new DigitalWallet("kke"));
         paymentTool.getDigitalWallet().setPaymentService(new PaymentServiceRef("qiwi"));
@@ -44,12 +44,12 @@ public class PaymentToolUtilsTest {
     }
 
     @Test
-    public void testGetPaymentToolDetailsPaymentTerminal() {
+    void testGetPaymentToolDetailsPaymentTerminal() {
         PaymentTool paymentTool = PaymentTool.payment_terminal(new PaymentTerminal()
                 .setPaymentService(new PaymentServiceRef("alipay"))
         );
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
-        assertTrue(paymentToolDetails instanceof PaymentToolDetailsPaymentTerminal);
+        assertInstanceOf(PaymentToolDetailsPaymentTerminal.class, paymentToolDetails);
         assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL,
                 paymentToolDetails.getDetailsType());
         assertEquals(PaymentToolDetailsPaymentTerminal.ProviderEnum.ALIPAY.getValue(),
@@ -59,7 +59,7 @@ public class PaymentToolUtilsTest {
                 .setPaymentService(new PaymentServiceRef("wechat"))
         );
         paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
-        assertTrue(paymentToolDetails instanceof PaymentToolDetailsPaymentTerminal);
+        assertInstanceOf(PaymentToolDetailsPaymentTerminal.class, paymentToolDetails);
         assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL,
                 paymentToolDetails.getDetailsType());
         assertEquals(PaymentToolDetailsPaymentTerminal.ProviderEnum.WECHAT.getValue(),
@@ -67,11 +67,11 @@ public class PaymentToolUtilsTest {
     }
 
     @Test
-    public void testGetPaymentToolDetailsBankCard() throws IOException {
+    void testGetPaymentToolDetailsBankCard() throws IOException {
         PaymentTool paymentTool = PaymentTool.bank_card(new MockTBaseProcessor(MockMode.RANDOM, 15, 2)
                 .process(new BankCard(), new TBaseHandler<>(BankCard.class)));
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
-        assertTrue(paymentToolDetails instanceof PaymentToolDetailsBankCard);
+        assertInstanceOf(PaymentToolDetailsBankCard.class, paymentToolDetails);
         assertNotNull(paymentToolDetails.getDetailsType());
         assertEquals(paymentTool.getBankCard().getBin(), ((PaymentToolDetailsBankCard) paymentToolDetails).getBin());
     }

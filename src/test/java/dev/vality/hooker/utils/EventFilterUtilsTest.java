@@ -3,20 +3,22 @@ package dev.vality.hooker.utils;
 import dev.vality.damsel.webhooker.EventFilter;
 import dev.vality.hooker.dao.WebhookAdditionalFilter;
 import dev.vality.hooker.model.EventType;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.HashSet;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Created by inalarsanukaev on 10.04.17.
  */
-public class EventFilterUtilsTest {
+class EventFilterUtilsTest {
+
     @Test
-    public void getEventFilterByCode() throws Exception {
-        Assert.assertEquals(getEventFilter().getInvoice().getTypes().size(), 8);
-        Assert.assertEquals(getCustomerEventFilter().getCustomer().getTypes().size(), 6);
+    void getEventFilterByCode() {
+        assertEquals(8, getEventFilter().getInvoice().getTypes().size());
+        assertEquals(6, getCustomerEventFilter().getCustomer().getTypes().size());
     }
 
     private EventFilter getEventFilter() {
@@ -56,9 +58,9 @@ public class EventFilterUtilsTest {
     }
 
     @Test
-    public void getWebhookAdditionalFilter() throws Exception {
-        Assert.assertEquals(EventFilterUtils.getWebhookAdditionalFilter(getEventFilter()).size(), 8);
-        Assert.assertEquals(EventFilterUtils.getWebhookAdditionalFilter(getCustomerEventFilter()).size(), 6);
+    void getWebhookAdditionalFilter() {
+        assertEquals(8, EventFilterUtils.getWebhookAdditionalFilter(getEventFilter()).size());
+        assertEquals(6, EventFilterUtils.getWebhookAdditionalFilter(getCustomerEventFilter()).size());
     }
 
 }

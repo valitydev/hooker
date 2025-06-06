@@ -1,14 +1,15 @@
 package dev.vality.hooker.model;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class InvoicingMessageTest {
+class InvoicingMessageTest {
 
     @Test
-    public void testCopy() {
+    void testCopy() {
         InvoicingMessage invoicingMessage = random(InvoicingMessage.class, "userInteraction");
         InvoicingMessage copy = invoicingMessage.copy();
         invoicingMessage.setRefundId("asd");

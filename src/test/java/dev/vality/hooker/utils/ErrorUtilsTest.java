@@ -6,15 +6,15 @@ import dev.vality.damsel.domain.OperationTimeout;
 import dev.vality.damsel.domain.SubFailure;
 import dev.vality.swag_webhook_events.model.PaymentError;
 import dev.vality.swag_webhook_events.model.SubError;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class ErrorUtilsTest {
+class ErrorUtilsTest {
 
     @Test
-    public void getPaymentError() {
+    void getPaymentError() {
         OperationFailure operationFailure = new OperationFailure();
         operationFailure.setOperationTimeout(new OperationTimeout());
         assertEquals("408", ErrorUtils.getPaymentError(operationFailure).getCode());
@@ -31,7 +31,7 @@ public class ErrorUtilsTest {
     }
 
     @Test
-    public void toStringFailure() {
+    void toStringFailure() {
         PaymentError paymentError = new PaymentError();
         paymentError.setCode("code");
         paymentError.setMessage("mess");
@@ -42,7 +42,7 @@ public class ErrorUtilsTest {
     }
 
     @Test
-    public void toPaymentError() {
+    void toPaymentError() {
         assertEquals("test",
                 ErrorUtils.toPaymentError("code:sub_code:test", "message").getSubError().getSubError().getCode());
         assertEquals("sub_code", ErrorUtils.toPaymentError("code:sub_code", "message").getSubError().getCode());

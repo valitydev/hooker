@@ -1,8 +1,7 @@
 package dev.vality.hooker.config;
 
 
-import dev.vality.testcontainers.annotations.DefaultSpringBootTest;
-import dev.vality.testcontainers.annotations.postgresql.PostgresqlTestcontainerSingleton;
+import dev.vality.testcontainers.annotations.postgresql.PostgresqlTestcontainer;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,7 +10,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@PostgresqlTestcontainerSingleton
-@DefaultSpringBootTest
+@PostgresqlTestcontainer
 public @interface PostgresqlSpringBootITest {
 }

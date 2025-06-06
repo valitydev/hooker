@@ -7,25 +7,17 @@ import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
 import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ContextConfiguration(classes = {
-        CustomerBindingConverter.class
-})
-@SpringBootTest
-public class CustomerBindingConverterTest {
+class CustomerBindingConverterTest {
 
-    @Autowired
-    private CustomerBindingConverter converter;
+    private CustomerBindingConverter converter = new CustomerBindingConverter();
 
     @Test
-    public void testConvert() throws IOException {
+    void testConvert() throws IOException {
         MockTBaseProcessor mockTBaseProcessor = new MockTBaseProcessor(MockMode.RANDOM, 15, 1);
         CustomerBinding source = mockTBaseProcessor
                 .process(new CustomerBinding(), new TBaseHandler<>(CustomerBinding.class));

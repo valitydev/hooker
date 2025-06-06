@@ -2,11 +2,10 @@ package dev.vality.hooker.converter;
 
 import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.damsel.user_interaction.*;
+import dev.vality.hooker.model.interaction.*;
 import dev.vality.hooker.model.interaction.PaymentTerminalReceipt;
 import dev.vality.hooker.model.interaction.UserInteraction;
-import dev.vality.hooker.model.interaction.*;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +20,6 @@ public class InvoiceChangeToUserInteractionConverter implements Converter<Invoic
         return createUserInteraction(interaction);
     }
 
-    @Nullable
     private static UserInteraction createUserInteraction(
             dev.vality.damsel.user_interaction.UserInteraction interaction) {
         UserInteraction userInteraction = null;
