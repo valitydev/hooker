@@ -12,11 +12,15 @@ import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
 import dev.vality.hooker.dao.WebhookAdditionalFilter;
 import dev.vality.hooker.model.*;
 import dev.vality.swag_webhook_events.model.Event;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
+@Slf4j
 public class BuildUtils {
 
     public static InvoicingMessage buildMessage(String type, String invoiceId, String partyId, EventType eventType,
@@ -28,7 +32,7 @@ public class BuildUtils {
                                                 InvoiceStatusEnum invoiceStatus, PaymentStatusEnum paymentStatus,
                                                 Long sequenceId, Integer changeId) {
         InvoicingMessage message = new InvoicingMessage();
-        message.setEventTime("2016-03-22T06:12:27Z");
+        message.setEventTime(LocalDateTime.now().toInstant(ZoneOffset.UTC).toString());
         message.setType(InvoicingMessageEnum.lookup(type));
         message.setPartyId(partyId);
         message.setEventType(eventType);
@@ -46,6 +50,7 @@ public class BuildUtils {
         }
         message.setSequenceId(sequenceId);
         message.setChangeId(changeId);
+        log.info("Create message: {}", message);
         return message;
     }
 

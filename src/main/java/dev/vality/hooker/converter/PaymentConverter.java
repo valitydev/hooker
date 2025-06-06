@@ -4,6 +4,7 @@ import dev.vality.damsel.domain.AdditionalTransactionInfo;
 import dev.vality.damsel.domain.DisposablePaymentResource;
 import dev.vality.damsel.domain.InvoicePaymentCaptured;
 import dev.vality.damsel.domain.PaymentTool;
+import dev.vality.damsel.payment_processing.Invoice;
 import dev.vality.damsel.payment_processing.InvoicePayment;
 import dev.vality.hooker.model.ExpandedPayment;
 import dev.vality.hooker.model.FeeType;
@@ -13,27 +14,27 @@ import dev.vality.hooker.utils.PaymentToolUtils;
 import dev.vality.hooker.utils.TimeUtils;
 import dev.vality.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class PaymentConverter implements Converter<InvoicePayment, Payment> {
+public class PaymentConverter {
 
     private final MetadataDeserializer deserializer;
 
-    @Override
-    public ExpandedPayment convert(InvoicePayment sourceWrapper) {
+    public ExpandedPayment convert(InvoicePayment sourceWrapper, Invoice invoice) {
         var source = sourceWrapper.getPayment();
         ExpandedPayment target = new ExpandedPayment();
         target.setId(source.getId());
         target.setCreatedAt(TimeUtils.toOffsetDateTime(source.getCreatedAt()));
         target.setStatus(Payment.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()));
-        target.setAmount(source.getCost().getAmount());
         if (source.isSetChangedCost()) {
             target.setChangedAmount(source.getChangedCost().getAmount());
+            target.setAmount(invoice.getInvoice().getCost().getAmount());
+        } else {
+            target.setAmount(source.getCost().getAmount());
         }
         target.setCurrency(source.getCost().getCurrency().getSymbolicCode());
         target.setMetadata(getMetadata(source));
@@ -83,7 +84,6 @@ public class PaymentConverter implements Converter<InvoicePayment, Payment> {
     private void setCapturedParams(dev.vality.damsel.domain.InvoicePayment source, Payment target) {
         InvoicePaymentCaptured invoicePaymentCaptured = source.getStatus().getCaptured();
         if (invoicePaymentCaptured.isSetCost()) {
-            target.setAmount(invoicePaymentCaptured.getCost().getAmount());
             target.setCurrency(invoicePaymentCaptured.getCost().getCurrency().getSymbolicCode());
         }
     }

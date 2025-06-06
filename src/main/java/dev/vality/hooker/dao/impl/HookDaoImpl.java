@@ -21,6 +21,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,6 +40,7 @@ public class HookDaoImpl implements HookDao {
                     rs.getString("pub_key"),
                     rs.getBoolean("enabled"),
                     rs.getDouble("availability"),
+                    rs.getString("created_at"),
                     new WebhookAdditionalFilter(EventType.valueOf(rs.getString("event_type")),
                             rs.getString("invoice_shop_id"),
                             rs.getString("invoice_status"),
@@ -57,6 +61,7 @@ public class HookDaoImpl implements HookDao {
                         " w.enabled, " +
                         " w.topic, " +
                         " w.availability, " +
+                        " w.created_at, " +
                         " k.pub_key, " +
                         " wte.hook_id, " +
                         " wte.event_type, " +
@@ -174,6 +179,7 @@ public class HookDaoImpl implements HookDao {
             hook.setPubKey(allHookTablesRow.getPubKey());
             hook.setEnabled(allHookTablesRow.isEnabled());
             hook.setAvailability(allHookTablesRow.getAvailability());
+            hook.setCreatedAt(allHookTablesRow.getCreatedAt());
             hook.setFilters(rows.stream()
                     .map(AllHookTablesRow::getWebhookAdditionalFilter)
                     .collect(Collectors.toSet()));
@@ -192,6 +198,7 @@ public class HookDaoImpl implements HookDao {
                 " w.enabled, " +
                 " w.topic, " +
                 " w.availability, " +
+                " w.created_at, " +
                 " k.pub_key, " +
                 " wte.hook_id, " +
                 " wte.event_type, " +
@@ -228,14 +235,16 @@ public class HookDaoImpl implements HookDao {
         String pubKey = createOrGetPubKey(hook.getPartyId());
         hook.setPubKey(pubKey);
         hook.setEnabled(true);
-
-        final String sql = "INSERT INTO hook.webhook(party_id, url, topic) " +
-                "VALUES (:party_id, :url, CAST(:topic as hook.message_topic)) RETURNING ID";
+        final String sql = "INSERT INTO hook.webhook(party_id, url, topic, created_at) " +
+                "VALUES (:party_id, :url, CAST(:topic as hook.message_topic), :created_at) RETURNING ID";
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("party_id", hook.getPartyId())
                 .addValue("url", hook.getUrl())
-                .addValue("topic", hook.getTopic());
+                .addValue("topic", hook.getTopic())
+                .addValue("created_at", new Timestamp(LocalDateTime.now()
+                        .toInstant(ZoneOffset.UTC).toEpochMilli()))
+                ;
         try {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
             int updateCount = jdbcTemplate.update(sql, params, keyHolder);

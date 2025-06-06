@@ -40,26 +40,10 @@ class InvoicingDaoImplTest {
 
     @BeforeEach
     void setUp() {
-        hook = Hook.builder()
-                .partyId(partyId)
-                .topic(Event.TopicEnum.INVOICESTOPIC.getValue())
-                .url("zzz")
-                .filters(Set.of(
-                        WebhookAdditionalFilter.builder()
-                                .eventType(EventType.INVOICE_CREATED)
-                                .build(),
-                        WebhookAdditionalFilter.builder()
-                                .eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED)
-                                .invoicePaymentStatus("processed")
-                                .build(),
-                        WebhookAdditionalFilter.builder()
-                                .eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED)
-                                .invoicePaymentStatus("captured")
-                                .build()
-                        ))
-                .build();
+        hook = createHookModel();
 
-        hookDao.create(hook);
+        hook = hookDao.create(hook);
+
         messageIdOne = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
                 invoiceOne, partyId, EventType.INVOICE_CREATED,
                 InvoiceStatusEnum.UNPAID, null));
@@ -75,6 +59,27 @@ class InvoicingDaoImplTest {
         messageIdThree = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
                 invoiceThree, partyId, EventType.INVOICE_STATUS_CHANGED,
                 InvoiceStatusEnum.PAID, null));
+    }
+
+    private Hook createHookModel() {
+        return Hook.builder()
+                .partyId(partyId)
+                .topic(Event.TopicEnum.INVOICESTOPIC.getValue())
+                .url("zzz")
+                .filters(Set.of(
+                        WebhookAdditionalFilter.builder()
+                                .eventType(EventType.INVOICE_CREATED)
+                                .build(),
+                        WebhookAdditionalFilter.builder()
+                                .eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED)
+                                .invoicePaymentStatus("processed")
+                                .build(),
+                        WebhookAdditionalFilter.builder()
+                                .eventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED)
+                                .invoicePaymentStatus("captured")
+                                .build()
+                ))
+                .build();
     }
 
     @Test
@@ -154,5 +159,37 @@ class InvoicingDaoImplTest {
 
         Long parentEventIdThree = messageDao.getParentId(hook.getId(), invoiceThree, messageIdThree);
         assertEquals(-1, parentEventIdThree);
+    }
+
+    @Test
+    public void testGetParentEventIdWithOldHook() throws InterruptedException {
+        Hook hookOld = hookDao.create(createHookModel());
+
+        Thread.sleep(1000L); // Sleep for lag between create hook and events
+
+        String newInvoiceId = "new_invoice";
+        var oldMessageId = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
+                newInvoiceId, partyId, EventType.INVOICE_CREATED,
+                InvoiceStatusEnum.UNPAID, null, 1L, 1));
+
+        Long parentEventId = messageDao.getParentId(hookOld.getId(), newInvoiceId, oldMessageId);
+        assertEquals(-1, parentEventId);
+
+        hookDao.delete(hookOld.getId());
+
+        Thread.sleep(2000L);
+
+        Hook hookModel = createHookModel();
+        hookModel.setCreatedAt(null);
+        Hook hookNew = hookDao.create(hookModel);
+
+        Thread.sleep(1000L);
+
+        var newMessageId = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.PAYMENT.getValue(),
+                newInvoiceId, partyId, EventType.INVOICE_PAYMENT_STATUS_CHANGED,
+                InvoiceStatusEnum.PAID, PaymentStatusEnum.CAPTURED, 1L, 2));
+
+        parentEventId = messageDao.getParentId(hookNew.getId(), newInvoiceId, newMessageId);
+        assertEquals(-1, parentEventId);
     }
 }
