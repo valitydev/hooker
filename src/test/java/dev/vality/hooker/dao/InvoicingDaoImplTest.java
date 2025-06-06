@@ -39,10 +39,12 @@ class InvoicingDaoImplTest {
     private Hook hook;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws InterruptedException {
         hook = createHookModel();
 
         hook = hookDao.create(hook);
+
+        Thread.sleep(1000L); // Sleep for lag between create hook and events
 
         messageIdOne = messageDao.save(BuildUtils.buildMessage(InvoicingMessageEnum.INVOICE.getValue(),
                 invoiceOne, partyId, EventType.INVOICE_CREATED,

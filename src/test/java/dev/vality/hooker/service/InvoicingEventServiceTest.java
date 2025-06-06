@@ -62,7 +62,7 @@ class InvoicingEventServiceTest {
         message.setEventType(EventType.INVOICE_PAYMENT_REFUND_STATUS_CHANGED);
         message.setRefundStatus(RefundStatusEnum.SUCCEEDED);
         Event event = service.getEventByMessage(message);
-        assertTrue(event instanceof RefundSucceeded);
+        assertInstanceOf(RefundSucceeded.class, event);
         RefundSucceeded refundSucceded = (RefundSucceeded) event;
         assertEquals("invoiceId", refundSucceded.getInvoice().getId());
         assertEquals("1", refundSucceded.getPayment().getId());
