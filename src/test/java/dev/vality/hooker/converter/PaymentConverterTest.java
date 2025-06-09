@@ -1,6 +1,7 @@
 package dev.vality.hooker.converter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dev.vality.damsel.domain.*;
 import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
@@ -10,29 +11,21 @@ import dev.vality.swag_webhook_events.model.Payment;
 import dev.vality.swag_webhook_events.model.PaymentResourcePayer;
 import dev.vality.swag_webhook_events.model.RecurrentPayer;
 import org.junit.jupiter.api.RepeatedTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
-@ContextConfiguration(classes = {
-        PaymentConverter.class,
-        MetadataDeserializer.class,
-        ObjectMapper.class
-})
-@SpringBootTest
-public class PaymentConverterTest {
+class PaymentConverterTest  {
 
-    @Autowired
-    private PaymentConverter converter;
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+
+    private final PaymentConverter converter = new PaymentConverter(new MetadataDeserializer(objectMapper));
 
     @RepeatedTest(7)
-    public void testConvert() throws IOException {
+    void testConvert() throws IOException {
         MockTBaseProcessor mockTBaseProcessor = new MockTBaseProcessor(MockMode.RANDOM, 15, 1);
         InvoicePayment source = mockTBaseProcessor
                 .process(new InvoicePayment(), new TBaseHandler<>(InvoicePayment.class));
@@ -64,12 +57,12 @@ public class PaymentConverterTest {
             assertEquals(source.getCost().getCurrency().getSymbolicCode(), target.getCurrency());
         }
         if (source.getPayer().isSetCustomer()) {
-            assertTrue(target.getPayer() instanceof CustomerPayer);
+            assertInstanceOf(CustomerPayer.class, target.getPayer());
             assertEquals(source.getPayer().getCustomer().getCustomerId(),
                     ((CustomerPayer) target.getPayer()).getCustomerID());
         }
         if (source.getPayer().isSetPaymentResource()) {
-            assertTrue(target.getPayer() instanceof PaymentResourcePayer);
+            assertInstanceOf(PaymentResourcePayer.class, target.getPayer());
             assertEquals(source.getPayer().getPaymentResource().getContactInfo().getEmail(),
                     ((PaymentResourcePayer) target.getPayer()).getContactInfo().getEmail());
             assertEquals(source.getPayer().getPaymentResource().getContactInfo().getPhoneNumber(),
@@ -77,7 +70,7 @@ public class PaymentConverterTest {
             assertEquals(source.getPayer().getPaymentResource().getResource().getPaymentSessionId(),
                     ((PaymentResourcePayer) target.getPayer()).getPaymentSession());
         } else if (source.getPayer().isSetRecurrent()) {
-            assertTrue(target.getPayer() instanceof RecurrentPayer);
+            assertInstanceOf(RecurrentPayer.class, target.getPayer());
             assertEquals(source.getPayer().getRecurrent().getRecurrentParent().getInvoiceId(),
                     ((RecurrentPayer) target.getPayer()).getRecurrentParentPayment().getInvoiceID());
         }

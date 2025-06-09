@@ -13,6 +13,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Created by inalarsanukaev on 08.04.17.
  */
 @PostgresqlSpringBootITest
+@SpringBootTest
 public class HookDaoImplTest {
 
     private List<Long> ids = new ArrayList<>();
@@ -66,7 +68,7 @@ public class HookDaoImplTest {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
         webhookAdditionalFilters
                 .add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "cancelled",
@@ -107,7 +109,7 @@ public class HookDaoImplTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         List<Hook> list = hookDao.getPartyHooks("123");
         for (Hook w : list) {
             hookDao.delete(w.getId());
@@ -119,7 +121,7 @@ public class HookDaoImplTest {
     }
 
     @Test
-    public void testConstraint() {
+    void testConstraint() {
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
         webhookAdditionalFilters
                 .add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "failed",
@@ -134,7 +136,7 @@ public class HookDaoImplTest {
     }
 
     @Test
-    public void getPartyWebhooks() throws Exception {
+    void getPartyWebhooks() throws Exception {
         List<Hook> partyHooks = hookDao.getPartyHooks("123").stream()
                 .filter(Hook::isEnabled)
                 .collect(Collectors.toList());
@@ -146,7 +148,7 @@ public class HookDaoImplTest {
     }
 
     @Test
-    public void getWebhookById() throws Exception {
+    void getWebhookById() throws Exception {
         List<Hook> list = hookDao.getPartyHooks("123");
         for (Hook w : list) {
             assertNotNull(hookDao.getHookById(w.getId()));
@@ -154,7 +156,7 @@ public class HookDaoImplTest {
     }
 
     @Test
-    public void getPartyMetadataTest() {
+    void getPartyMetadataTest() {
         assertNull(hookDao.getPartyMetadata("123"));
         jdbcTemplate.update("update hook.party_data set metadata =:metadata where party_id=:party_id",
                 new MapSqlParameterSource("party_id", "123")
@@ -167,19 +169,19 @@ public class HookDaoImplTest {
     }
 
     @Test
-    public void getShopHooksCountTest() {
+    void getShopHooksCountTest() {
         assertEquals(1, hookDao.getShopHooksCount("123", "1"));
         assertEquals(0, hookDao.getShopHooksCount("kekekekekeke", "1"));
     }
 
     @Test
-    public void getPartyHooksCountTest() {
+    void getPartyHooksCountTest() {
         assertEquals(2, hookDao.getPartyHooksCount("123"));
         assertEquals(0, hookDao.getPartyHooksCount("keke"));
     }
 
     @Test
-    public void updateAvailabilityTest() {
+    void updateAvailabilityTest() {
         double availability = 0.1;
         hookDao.getPartyHooks("123").forEach(h -> hookDao.updateAvailability(h.getId(), availability));
         hookDao.getPartyHooks("123").forEach(h -> assertEquals(availability, h.getAvailability(), 0.000000000001));

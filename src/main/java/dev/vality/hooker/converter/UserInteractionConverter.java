@@ -1,12 +1,11 @@
 package dev.vality.hooker.converter;
 
 import dev.vality.hooker.model.InvoicingMessage;
-import dev.vality.hooker.model.interaction.PaymentTerminalReceipt;
 import dev.vality.hooker.model.interaction.*;
+import dev.vality.hooker.model.interaction.PaymentTerminalReceipt;
 import dev.vality.hooker.utils.TimeUtils;
 import dev.vality.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +31,6 @@ public class UserInteractionConverter implements Converter<InvoicingMessage, Use
         return userInteractionDetails;
     }
 
-    @NotNull
     private static QrCodeDisplayRequest createQrCodeDisplayRequest(QrCodeDisplay qrCodeDisplay) {
         QrCodeDisplayRequest qrCodeDisplayRequest = new QrCodeDisplayRequest();
         QrCodeDisplayInfo qrCodeDisplayInfo = new QrCodeDisplayInfo();
@@ -43,7 +41,6 @@ public class UserInteractionConverter implements Converter<InvoicingMessage, Use
         return qrCodeDisplayRequest;
     }
 
-    @NotNull
     private static dev.vality.swag_webhook_events.model.PaymentTerminalReceipt createPaymentTerminalReceipt(
             PaymentTerminalReceipt paymentTerminalReceipt) {
         var paymentTerminalReceiptRequest = new dev.vality.swag_webhook_events.model.PaymentTerminalReceipt();
@@ -56,7 +53,6 @@ public class UserInteractionConverter implements Converter<InvoicingMessage, Use
         return paymentTerminalReceiptRequest;
     }
 
-    @NotNull
     private static CryptoCurrencyTransferRequest createCryptoCurrencyTransferRequest(
             CryptoCurrencyTransfer cryptoCurrencyTransfer) {
         CryptoCurrencyTransferInfo cryptoCurrencyTransferInfo = new CryptoCurrencyTransferInfo();
@@ -73,7 +69,6 @@ public class UserInteractionConverter implements Converter<InvoicingMessage, Use
         return cryptoCurrencyTransferRequest;
     }
 
-    @NotNull
     private static ApiExtensionRequest createApiExtensionRequest(ApiExtension apiExtension) {
         ApiExtensionRequest apiExtensionRequest = new ApiExtensionRequest();
         ApiExtensionInfo apiExtensionInfo = new ApiExtensionInfo();
@@ -83,7 +78,6 @@ public class UserInteractionConverter implements Converter<InvoicingMessage, Use
         return apiExtensionRequest;
     }
 
-    @NotNull
     private static BrowserHTTPRequest createBrowserHttpRequest(BrowserHttpInteraction browserHttpInteraction) {
         BrowserHTTPInfo browserHttpInfo = new BrowserHTTPInfo();
         browserHttpInfo.setUrl(browserHttpInteraction.getUrl());

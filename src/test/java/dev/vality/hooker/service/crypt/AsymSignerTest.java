@@ -1,6 +1,7 @@
 package dev.vality.hooker.service.crypt;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.security.KeyFactory;
 import java.security.PublicKey;
@@ -8,16 +9,17 @@ import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Created by inalarsanukaev on 14.12.16.
  */
 
-public class AsymSignerTest {
+class AsymSignerTest {
+
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         AsymSigner asymSigner = new AsymSigner();
         KeyPair keyPair = asymSigner.generateKeys();
         String data = "{\"eventID\":27,\"occuredAt\":\"2017-05-16T13:49:34.935099Z\",\"topic\":\"InvoicesTopic\"," +

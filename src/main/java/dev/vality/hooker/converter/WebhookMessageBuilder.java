@@ -9,7 +9,7 @@ import dev.vality.swag_webhook_events.model.Event;
 import dev.vality.webhook.dispatcher.WebhookMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.apache.http.entity.ContentType;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -34,7 +34,7 @@ public class WebhookMessageBuilder {
                 .setParentEventId(parentId)
                 .setCreatedAt(TypeUtil.temporalToString(Instant.now()))
                 .setUrl(webhookMessageModel.getUrl())
-                .setContentType(ContentType.APPLICATION_JSON.getMimeType())
+                .setContentType(MediaType.APPLICATION_JSON_VALUE)
                 .setAdditionalHeaders(additionalHeadersGenerator.generate(signature))
                 .setRequestBody(messageJson.getBytes(StandardCharsets.UTF_8));
     }

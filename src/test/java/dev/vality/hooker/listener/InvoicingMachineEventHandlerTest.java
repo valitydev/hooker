@@ -6,24 +6,26 @@ import dev.vality.damsel.payment_processing.InvoiceChange;
 import dev.vality.hooker.exception.ParseException;
 import dev.vality.hooker.handler.Mapper;
 import dev.vality.hooker.model.InvoicingMessage;
-import dev.vality.hooker.service.HandlerManager;
 import dev.vality.hooker.service.MessageService;
 import dev.vality.machinegun.eventsink.MachineEvent;
 import dev.vality.sink.common.parser.impl.MachineEventParser;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.support.Acknowledgment;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 
-public class InvoicingMachineEventHandlerTest {
+@ExtendWith(MockitoExtension.class)
+class InvoicingMachineEventHandlerTest {
 
     @Mock
     private Mapper<InvoiceChange, InvoicingMessage> handler;
@@ -36,14 +38,13 @@ public class InvoicingMachineEventHandlerTest {
 
     private MessageService<InvoicingMessage> invoicingService;
 
-    @Before
-    public void init() {
-        MockitoAnnotations.initMocks(this);
+    @BeforeEach
+    void init() {
         machineEventHandler = new InvoicingMachineEventHandler(List.of(handler), eventParser, invoicingService);
     }
 
     @Test
-    public void listenEmptyChanges() {
+    void listenEmptyChanges() {
         MachineEvent message = new MachineEvent();
         Event event = new Event();
         EventPayload payload = new EventPayload();
@@ -57,17 +58,17 @@ public class InvoicingMachineEventHandlerTest {
         Mockito.verify(ack, Mockito.times(1)).acknowledge();
     }
 
-    @Test(expected = ParseException.class)
-    public void listenEmptyException() {
+    @Test
+    void listenEmptyException() {
         MachineEvent message = new MachineEvent();
         Mockito.when(eventParser.parse(message)).thenThrow(new ParseException());
-        machineEventHandler.handle(Collections.singletonList(message), ack);
+        assertThrows(ParseException.class, () -> machineEventHandler.handle(Collections.singletonList(message), ack));
 
         Mockito.verify(ack, Mockito.times(0)).acknowledge();
     }
 
     @Test
-    public void listenChanges() {
+    void listenChanges() {
         ArrayList<InvoiceChange> invoiceChanges = new ArrayList<>();
         invoiceChanges.add(new InvoiceChange());
         EventPayload payload = new EventPayload();

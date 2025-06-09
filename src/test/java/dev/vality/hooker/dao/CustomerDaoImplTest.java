@@ -11,13 +11,15 @@ import dev.vality.swag_webhook_events.model.Event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @PostgresqlSpringBootITest
-public class CustomerDaoImplTest {
+@SpringBootTest
+class CustomerDaoImplTest {
 
     @Autowired
     private CustomerDaoImpl messageDao;
@@ -38,7 +40,7 @@ public class CustomerDaoImplTest {
     private Hook hook;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         hook = Hook.builder()
                 .partyId(partyId)
                 .topic(Event.TopicEnum.CUSTOMERSTOPIC.getValue())
@@ -65,7 +67,7 @@ public class CustomerDaoImplTest {
     }
 
     @Test
-    public void testGetInvoicingMessage() {
+    void testGetInvoicingMessage() {
         CustomerMessage messageOne = messageDao.getAny(customerIdOne, CustomerMessageEnum.CUSTOMER);
         assertEquals(customerIdOne, messageOne.getSourceId());
         assertEquals(EventType.CUSTOMER_CREATED, messageOne.getEventType());
@@ -78,7 +80,7 @@ public class CustomerDaoImplTest {
     }
 
     @Test
-    public void testGetWebhookModels() {
+    void testGetWebhookModels() {
         var webhookModelsOne = messageDao.getWebhookModels(messageIdOne);
         assertEquals(1, webhookModelsOne.size());
         assertEquals(hook.getId(), webhookModelsOne.get(0).getHookId());
@@ -101,7 +103,7 @@ public class CustomerDaoImplTest {
     }
 
     @Test
-    public void testGetParentEventId() {
+    void testGetParentEventId() {
         Long parentEventIdOne = messageDao.getParentId(hook.getId(), customerIdOne, messageIdOne);
         assertEquals(-1, parentEventIdOne);
 

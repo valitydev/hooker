@@ -1,17 +1,19 @@
 package dev.vality.hooker.utils;
 
 import dev.vality.damsel.domain.*;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-public class CashFlowUtilsTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CashFlowUtilsTest {
+
     @Test
-    public void testFeeAmount() {
+    void testFeeAmount() {
         List<FinalCashFlowPosting> finalCashFlowPosting = buildFinalCashFlowPostingList();
         Long feeAmount = CashFlowUtils.getFeeAmount(finalCashFlowPosting);
-        Assert.assertEquals(feeAmount.longValue(), 20L);
+        assertEquals(20L, feeAmount.longValue());
     }
 
     private List<FinalCashFlowPosting> buildFinalCashFlowPostingList() {

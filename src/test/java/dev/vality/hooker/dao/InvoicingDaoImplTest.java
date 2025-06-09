@@ -5,19 +5,19 @@ import dev.vality.hooker.dao.impl.InvoicingDaoImpl;
 import dev.vality.hooker.model.*;
 import dev.vality.hooker.utils.BuildUtils;
 import dev.vality.swag_webhook_events.model.Event;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-@Slf4j
 @PostgresqlSpringBootITest
-public class InvoicingDaoImplTest {
+@SpringBootTest
+class InvoicingDaoImplTest {
 
     @Autowired
     private InvoicingDaoImpl messageDao;
@@ -39,11 +39,10 @@ public class InvoicingDaoImplTest {
     private Hook hook;
 
     @BeforeEach
-    public void setUp() throws InterruptedException {
+    void setUp() throws InterruptedException {
         hook = createHookModel();
 
         hook = hookDao.create(hook);
-        log.info("hookOld: {}", hookDao.getHookById(hook.getId()));
 
         Thread.sleep(1000L); // Sleep for lag between create hook and events
 
@@ -86,7 +85,7 @@ public class InvoicingDaoImplTest {
     }
 
     @Test
-    public void testGetInvoicingMessage() {
+    void testGetInvoicingMessage() {
         InvoicingMessage messageOne = messageDao.getInvoicingMessage(
                 InvoicingMessageKey.builder()
                         .invoiceId(invoiceOne)
@@ -120,7 +119,7 @@ public class InvoicingDaoImplTest {
     }
 
     @Test
-    public void testGetWebhookModels() {
+    void testGetWebhookModels() {
         var webhookModelsOne = messageDao.getWebhookModels(messageIdOne);
         assertEquals(1, webhookModelsOne.size());
         assertEquals(hook.getId(), webhookModelsOne.get(0).getHookId());
@@ -143,7 +142,7 @@ public class InvoicingDaoImplTest {
     }
 
     @Test
-    public void testGetParentEventId() {
+    void testGetParentEventId() {
         Long parentEventIdOne = messageDao.getParentId(hook.getId(), invoiceOne, messageIdOne);
         assertEquals(-1, parentEventIdOne);
 
@@ -167,7 +166,6 @@ public class InvoicingDaoImplTest {
     @Test
     public void testGetParentEventIdWithOldHook() throws InterruptedException {
         Hook hookOld = hookDao.create(createHookModel());
-        log.info("hookOld: {}", hookDao.getHookById(hookOld.getId()));
 
         Thread.sleep(1000L); // Sleep for lag between create hook and events
 
@@ -180,14 +178,12 @@ public class InvoicingDaoImplTest {
         assertEquals(-1, parentEventId);
 
         hookDao.delete(hookOld.getId());
-        log.info("hookOld: {}", hookDao.getHookById(hookOld.getId()));
 
         Thread.sleep(2000L);
 
         Hook hookModel = createHookModel();
         hookModel.setCreatedAt(null);
         Hook hookNew = hookDao.create(hookModel);
-        log.info("hookNew: {}", hookDao.getHookById(hookNew.getId()));
 
         Thread.sleep(1000L);
 
