@@ -43,7 +43,7 @@ class CustomerDaoImplTest {
     void setUp() {
         hook = Hook.builder()
                 .partyId(partyId)
-                .topic(Event.TopicEnum.CUSTOMERSTOPIC.getValue())
+                .topic(Event.TopicEnum.CUSTOMERS_TOPIC.getValue())
                 .url("zzz")
                 .filters(Set.of(
                         WebhookAdditionalFilter.builder()

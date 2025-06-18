@@ -42,7 +42,7 @@ public class HookDaoImplTest {
         Hook hook = new Hook();
         hook.setPartyId(partyId);
         hook.setUrl(url);
-        hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
+        hook.setTopic(Event.TopicEnum.INVOICES_TOPIC.getValue());
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
         webhookAdditionalFilters
@@ -58,7 +58,7 @@ public class HookDaoImplTest {
         Hook hook = new Hook();
         hook.setPartyId(partyId);
         hook.setUrl(url);
-        hook.setTopic(Event.TopicEnum.CUSTOMERSTOPIC.getValue());
+        hook.setTopic(Event.TopicEnum.CUSTOMERS_TOPIC.getValue());
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
         webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_CREATED).build());

@@ -256,10 +256,10 @@ public class EventFilterUtils {
 
     public static String getTopic(EventFilter eventFilter) {
         if (eventFilter.isSetInvoice()) {
-            return Event.TopicEnum.INVOICESTOPIC.getValue();
+            return Event.TopicEnum.INVOICES_TOPIC.getValue();
         }
         if (eventFilter.isSetCustomer()) {
-            return Event.TopicEnum.CUSTOMERSTOPIC.getValue();
+            return Event.TopicEnum.CUSTOMERS_TOPIC.getValue();
         }
         throw new UnsupportedOperationException(
                 "Unknown topic; must be one of these: " + Arrays.toString(Event.TopicEnum.values()));

@@ -39,7 +39,7 @@ public class CustomerEventService implements EventService<CustomerMessage> {
             return resolveEvent(message, customer)
                     .eventID(message.getId().intValue())
                     .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
-                    .topic(Event.TopicEnum.CUSTOMERSTOPIC);
+                    .topic(Event.TopicEnum.CUSTOMERS_TOPIC);
         } catch (CustomerNotFound e) {
             throw new NotFoundException("Customer not found, invoiceId=" + message.getSourceId());
         } catch (Exception e) {
@@ -60,25 +60,25 @@ public class CustomerEventService implements EventService<CustomerMessage> {
         return switch (message.getEventType()) {
             case CUSTOMER_CREATED -> new CustomerCreated()
                     .customer(customerConverter.convert(customer))
-                    .eventType(Event.EventTypeEnum.CUSTOMERCREATED);
+                    .eventType(Event.EventTypeEnum.CUSTOMER_CREATED);
             case CUSTOMER_DELETED -> new CustomerDeleted()
                     .customer(customerConverter.convert(customer))
-                    .eventType(Event.EventTypeEnum.CUSTOMERDELETED);
+                    .eventType(Event.EventTypeEnum.CUSTOMER_DELETED);
             case CUSTOMER_READY -> new CustomerReady()
                     .customer(customerConverter.convert(customer))
-                    .eventType(Event.EventTypeEnum.CUSTOMERREADY);
+                    .eventType(Event.EventTypeEnum.CUSTOMER_READY);
             case CUSTOMER_BINDING_STARTED -> new CustomerBindingStarted()
                     .customer(customerConverter.convert(customer))
                     .binding(customerBindingConverter.convert(extractBinding(message, customer)))
-                    .eventType(Event.EventTypeEnum.CUSTOMERBINDINGSTARTED);
+                    .eventType(Event.EventTypeEnum.CUSTOMER_BINDING_STARTED);
             case CUSTOMER_BINDING_SUCCEEDED -> new CustomerBindingSucceeded()
                     .customer(customerConverter.convert(customer))
                     .binding(customerBindingConverter.convert(extractBinding(message, customer)))
-                    .eventType(Event.EventTypeEnum.CUSTOMERBINDINGSUCCEEDED);
+                    .eventType(Event.EventTypeEnum.CUSTOMER_BINDING_SUCCEEDED);
             case CUSTOMER_BINDING_FAILED -> new CustomerBindingFailed()
                     .customer(customerConverter.convert(customer))
                     .binding(customerBindingConverter.convert(extractBinding(message, customer)))
-                    .eventType(Event.EventTypeEnum.CUSTOMERBINDINGFAILED);
+                    .eventType(Event.EventTypeEnum.CUSTOMER_BINDING_FAILED);
             default -> throw new UnsupportedOperationException("Unknown event type " + message.getEventType());
         };
     }

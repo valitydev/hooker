@@ -66,7 +66,7 @@ class InvoicingDaoImplTest {
     private Hook createHookModel() {
         return Hook.builder()
                 .partyId(partyId)
-                .topic(Event.TopicEnum.INVOICESTOPIC.getValue())
+                .topic(Event.TopicEnum.INVOICES_TOPIC.getValue())
                 .url("zzz")
                 .filters(Set.of(
                         WebhookAdditionalFilter.builder()

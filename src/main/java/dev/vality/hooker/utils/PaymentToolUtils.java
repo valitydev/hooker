@@ -3,14 +3,16 @@ package dev.vality.hooker.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.vality.damsel.domain.*;
-import dev.vality.swag_webhook_events.model.CryptoCurrency;
 import dev.vality.swag_webhook_events.model.*;
+import dev.vality.swag_webhook_events.model.CryptoCurrency;
+import lombok.experimental.UtilityClass;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
 
+@UtilityClass
 public class PaymentToolUtils {
 
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -45,7 +47,7 @@ public class PaymentToolUtils {
                             ? paymentTool.getBankCard().getIssuerCountry().name()
                             : null)
                     .bankName(paymentTool.getBankCard().getBankName())
-                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSBANKCARD);
+                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENT_TOOL_DETAILS_BANK_CARD);
         } else if (paymentTool.isSetPaymentTerminal()) {
             PaymentToolDetailsPaymentTerminal.ProviderEnum provider =
                     Arrays.stream(PaymentToolDetailsPaymentTerminal.ProviderEnum.values())
@@ -58,14 +60,16 @@ public class PaymentToolUtils {
             return new PaymentToolDetailsPaymentTerminal()
                     .provider(provider)
                     .providerName(paymentTool.getPaymentTerminal().getPaymentService().getId())
-                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL);
+                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENT_TOOL_DETAILS_PAYMENT_TERMINAL);
         } else if (paymentTool.isSetDigitalWallet()) {
             if ("qiwi".equals(Optional.ofNullable(paymentTool.getDigitalWallet().getPaymentService())
                     .map(PaymentServiceRef::getId).orElse(null))) {
                 return new PaymentToolDetailsDigitalWallet()
                         .digitalWalletDetailsType(
-                                PaymentToolDetailsDigitalWallet.DigitalWalletDetailsTypeEnum.DIGITALWALLETDETAILSQIWI)
-                        .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSDIGITALWALLET);
+                                PaymentToolDetailsDigitalWallet
+                                        .DigitalWalletDetailsTypeEnum
+                                        .DIGITAL_WALLET_DETAILS_QIWI)
+                        .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENT_TOOL_DETAILS_DIGITAL_WALLET);
             } else {
                 throw new UnsupportedOperationException("Unknown digital wallet type");
             }
@@ -76,12 +80,12 @@ public class PaymentToolUtils {
             return new PaymentToolDetailsCryptoWallet()
                     .cryptoCurrency(cryptoCurrency)
                     .cryptoCurrencyType(paymentTool.getCryptoCurrency().getId())
-                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET);
+                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENT_TOOL_DETAILS_CRYPTO_WALLET);
         } else if (paymentTool.isSetMobileCommerce()) {
             return new PaymentToolDetailsMobileCommerce()
                     .phoneNumber(paymentTool.getMobileCommerce().getPhone().getCc() +
                             paymentTool.getMobileCommerce().getPhone().getCtn())
-                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSMOBILECOMMERCE);
+                    .detailsType(PaymentToolDetails.DetailsTypeEnum.PAYMENT_TOOL_DETAILS_MOBILE_COMMERCE);
         } else {
             throw new UnsupportedOperationException(
                     "Unknown payment tool type " + paymentTool);

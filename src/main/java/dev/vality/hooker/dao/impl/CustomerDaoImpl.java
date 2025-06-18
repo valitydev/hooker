@@ -98,7 +98,7 @@ public class CustomerDaoImpl implements CustomerDao {
                 " and (m.customer_shop_id = wte.invoice_shop_id or wte.invoice_shop_id is null) ";
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
                 .addValue("id", messageId)
-                .addValue("message_type", Event.TopicEnum.CUSTOMERSTOPIC.getValue());
+                .addValue("message_type", Event.TopicEnum.CUSTOMERS_TOPIC.getValue());
         return jdbcTemplate.query(sql, mapSqlParameterSource, webhookMessageModelRowMapper);
     }
 
