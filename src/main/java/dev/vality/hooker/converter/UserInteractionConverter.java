@@ -37,7 +37,7 @@ public class UserInteractionConverter implements Converter<InvoicingMessage, Use
         qrCodeDisplayInfo.setQrCode(new String(qrCodeDisplay.getQrCode()));
         qrCodeDisplayRequest.setQrCodeDisplayInfo(qrCodeDisplayInfo);
         qrCodeDisplayRequest.setUserInteractionType(
-                UserInteractionDetails.UserInteractionTypeEnum.QRCODEDISPLAYREQUEST);
+                UserInteractionDetails.UserInteractionTypeEnum.QR_CODE_DISPLAY_REQUEST);
         return qrCodeDisplayRequest;
     }
 
@@ -49,7 +49,7 @@ public class UserInteractionConverter implements Converter<InvoicingMessage, Use
         paymentTerminalReceiptInfo.setDue(TimeUtils.toOffsetDateTime(paymentTerminalReceipt.getDue()));
         paymentTerminalReceiptRequest.setPaymentTerminalReceiptInfo(paymentTerminalReceiptInfo);
         paymentTerminalReceiptRequest.setUserInteractionType(
-                UserInteractionDetails.UserInteractionTypeEnum.PAYMENTTERMINALRECEIPT);
+                UserInteractionDetails.UserInteractionTypeEnum.PAYMENT_TERMINAL_RECEIPT);
         return paymentTerminalReceiptRequest;
     }
 
@@ -65,7 +65,7 @@ public class UserInteractionConverter implements Converter<InvoicingMessage, Use
         CryptoCurrencyTransferRequest cryptoCurrencyTransferRequest = new CryptoCurrencyTransferRequest();
         cryptoCurrencyTransferRequest.setCryptoCurrencyTransferInfo(cryptoCurrencyTransferInfo);
         cryptoCurrencyTransferRequest.setUserInteractionType(
-                UserInteractionDetails.UserInteractionTypeEnum.CRYPTOCURRENCYTRANSFERREQUEST);
+                UserInteractionDetails.UserInteractionTypeEnum.CRYPTO_CURRENCY_TRANSFER_REQUEST);
         return cryptoCurrencyTransferRequest;
     }
 
@@ -74,7 +74,8 @@ public class UserInteractionConverter implements Converter<InvoicingMessage, Use
         ApiExtensionInfo apiExtensionInfo = new ApiExtensionInfo();
         apiExtensionInfo.setApiType(apiExtension.getApiType());
         apiExtensionRequest.setApiExtensionInfo(apiExtensionInfo);
-        apiExtensionRequest.setUserInteractionType(UserInteractionDetails.UserInteractionTypeEnum.APIEXTENSIONREQUEST);
+        apiExtensionRequest.setUserInteractionType(
+                UserInteractionDetails.UserInteractionTypeEnum.API_EXTENSION_REQUEST);
         return apiExtensionRequest;
     }
 
@@ -86,7 +87,7 @@ public class UserInteractionConverter implements Converter<InvoicingMessage, Use
         browserHttpInfo.setForm(browserHttpInteraction.getForm());
         BrowserHTTPRequest browserHttpRequest = new BrowserHTTPRequest();
         browserHttpRequest.setBrowserHTTPInfo(browserHttpInfo);
-        browserHttpRequest.setUserInteractionType(UserInteractionDetails.UserInteractionTypeEnum.BROWSERHTTPREQUEST);
+        browserHttpRequest.setUserInteractionType(UserInteractionDetails.UserInteractionTypeEnum.BROWSER_HTTP_REQUEST);
         return browserHttpRequest;
     }
 }

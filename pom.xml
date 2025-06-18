@@ -106,7 +106,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>swag-webhook-events</artifactId>
-            <version>1.135-3fd8162-client</version>
+            <version>1.144-b02d9b2-client</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -261,6 +261,22 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.38</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
             </plugin>
         </plugins>
     </build>

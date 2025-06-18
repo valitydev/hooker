@@ -200,7 +200,7 @@ public class BuildUtils {
     public static Hook buildHook(String partyId, String url, EventType... types) {
         Hook hook = new Hook();
         hook.setPartyId(partyId);
-        hook.setTopic(Event.TopicEnum.INVOICESTOPIC.getValue());
+        hook.setTopic(Event.TopicEnum.INVOICES_TOPIC.getValue());
         hook.setUrl(url);
 
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();

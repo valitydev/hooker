@@ -7,14 +7,12 @@ import dev.vality.damsel.domain.*;
 import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
 import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
-import dev.vality.swag_webhook_events.model.PaymentToolDetails;
-import dev.vality.swag_webhook_events.model.PaymentToolDetailsBankCard;
-import dev.vality.swag_webhook_events.model.PaymentToolDetailsCryptoWallet;
-import dev.vality.swag_webhook_events.model.PaymentToolDetailsPaymentTerminal;
+import dev.vality.swag_webhook_events.model.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static dev.vality.swag_webhook_events.model.PaymentToolDetails.DetailsTypeEnum.PAYMENT_TOOL_DETAILS_DIGITAL_WALLET;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PaymentToolUtilsTest {
@@ -24,7 +22,7 @@ class PaymentToolUtilsTest {
         PaymentTool paymentTool = PaymentTool.crypto_currency(new CryptoCurrencyRef("bitcoin"));
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertInstanceOf(PaymentToolDetailsCryptoWallet.class, paymentToolDetails);
-        assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSCRYPTOWALLET,
+        assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENT_TOOL_DETAILS_CRYPTO_WALLET,
                 paymentToolDetails.getDetailsType());
         assertEquals(dev.vality.swag_webhook_events.model.CryptoCurrency.BITCOIN.getValue(),
                 ((PaymentToolDetailsCryptoWallet) paymentToolDetails).getCryptoCurrencyType());
@@ -38,9 +36,9 @@ class PaymentToolUtilsTest {
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         String json = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .writeValueAsString(paymentToolDetails);
-        assertEquals("{\"digitalWalletDetailsType\":\"DigitalWalletDetailsQIWI\"," +
-                        "\"detailsType\":\"PaymentToolDetailsDigitalWallet\"}",
-                json);
+        assertEquals(PAYMENT_TOOL_DETAILS_DIGITAL_WALLET, paymentToolDetails.getDetailsType());
+        assertEquals(PaymentToolDetailsDigitalWallet.DigitalWalletDetailsTypeEnum.DIGITAL_WALLET_DETAILS_QIWI,
+                ((PaymentToolDetailsDigitalWallet) paymentToolDetails).getDigitalWalletDetailsType());
     }
 
     @Test
@@ -50,7 +48,7 @@ class PaymentToolUtilsTest {
         );
         PaymentToolDetails paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertInstanceOf(PaymentToolDetailsPaymentTerminal.class, paymentToolDetails);
-        assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL,
+        assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENT_TOOL_DETAILS_PAYMENT_TERMINAL,
                 paymentToolDetails.getDetailsType());
         assertEquals(PaymentToolDetailsPaymentTerminal.ProviderEnum.ALIPAY.getValue(),
                 ((PaymentToolDetailsPaymentTerminal) paymentToolDetails).getProvider().getValue());
@@ -60,7 +58,7 @@ class PaymentToolUtilsTest {
         );
         paymentToolDetails = PaymentToolUtils.getPaymentToolDetails(paymentTool);
         assertInstanceOf(PaymentToolDetailsPaymentTerminal.class, paymentToolDetails);
-        assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENTTOOLDETAILSPAYMENTTERMINAL,
+        assertEquals(PaymentToolDetails.DetailsTypeEnum.PAYMENT_TOOL_DETAILS_PAYMENT_TERMINAL,
                 paymentToolDetails.getDetailsType());
         assertEquals(PaymentToolDetailsPaymentTerminal.ProviderEnum.WECHAT.getValue(),
                 ((PaymentToolDetailsPaymentTerminal) paymentToolDetails).getProvider().getValue());

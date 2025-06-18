@@ -105,7 +105,7 @@ public class InvoicingDaoImpl implements InvoicingMessageDao {
                 " and (m.refund_status = wte.invoice_payment_refund_status " +
                 "      or wte.invoice_payment_refund_status is null)";
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource().addValue("id", messageId)
-                .addValue("message_type", Event.TopicEnum.INVOICESTOPIC.getValue());
+                .addValue("message_type", Event.TopicEnum.INVOICES_TOPIC.getValue());
         return jdbcTemplate.query(sql, mapSqlParameterSource, webhookMessageModelRowMapper);
     }
 

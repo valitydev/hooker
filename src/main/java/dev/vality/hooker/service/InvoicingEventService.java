@@ -35,7 +35,7 @@ public class InvoicingEventService
         return resolveEvent(message, getInvoiceByMessage(message))
                 .eventID(message.getId().intValue())
                 .occuredAt(TimeUtils.toOffsetDateTime(message.getEventTime()))
-                .topic(Event.TopicEnum.INVOICESTOPIC);
+                .topic(Event.TopicEnum.INVOICES_TOPIC);
     }
 
     @Override
@@ -67,24 +67,24 @@ public class InvoicingEventService
         return switch (m.getEventType()) {
             case INVOICE_CREATED -> new InvoiceCreated()
                     .invoice(getSwagInvoice(invoiceInfo))
-                    .eventType(Event.EventTypeEnum.INVOICECREATED);
+                    .eventType(Event.EventTypeEnum.INVOICE_CREATED);
             case INVOICE_STATUS_CHANGED -> resolveInvoiceStatusChanged(m, invoiceInfo);
             case INVOICE_PAYMENT_STARTED -> new PaymentStarted()
                     .invoice(getSwagInvoice(invoiceInfo))
                     .payment(getSwagPayment(m, invoiceInfo))
-                    .eventType(Event.EventTypeEnum.PAYMENTSTARTED);
+                    .eventType(Event.EventTypeEnum.PAYMENT_STARTED);
             case INVOICE_PAYMENT_STATUS_CHANGED -> resolvePaymentStatusChanged(m, invoiceInfo);
             case INVOICE_PAYMENT_REFUND_STARTED -> new RefundCreated()
                     .invoice(getSwagInvoice(invoiceInfo))
                     .payment(getSwagPayment(m, invoiceInfo))
                     .refund(getSwagRefund(m, invoiceInfo))
-                    .eventType(Event.EventTypeEnum.REFUNDCREATED);
+                    .eventType(Event.EventTypeEnum.REFUND_CREATED);
             case INVOICE_PAYMENT_REFUND_STATUS_CHANGED -> resolveRefundStatusChanged(m, invoiceInfo);
             case INVOICE_PAYMENT_CASH_CHANGED -> resolvePaymentCashChange(m, invoiceInfo);
             case INVOICE_PAYMENT_USER_INTERACTION_CHANGE_REQUESTED -> resolvePaymentInteractionRequested(m, invoiceInfo)
-                    .eventType(Event.EventTypeEnum.PAYMENTINTERACTIONREQUESTED);
+                    .eventType(Event.EventTypeEnum.PAYMENT_INTERACTION_REQUESTED);
             case INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED -> resolvePaymentInteractionCompleted(m, invoiceInfo)
-                    .eventType(Event.EventTypeEnum.PAYMENTINTERACTIONCOMPLETED);
+                    .eventType(Event.EventTypeEnum.PAYMENT_INTERACTION_COMPLETED);
             default -> throw new UnsupportedOperationException("Unknown event type " + m.getEventType());
         };
     }
@@ -99,16 +99,16 @@ public class InvoicingEventService
         return switch (message.getInvoiceStatus()) {
             case UNPAID -> new InvoiceCreated()
                     .invoice(swagInvoice)
-                    .eventType(Event.EventTypeEnum.INVOICECREATED);
+                    .eventType(Event.EventTypeEnum.INVOICE_CREATED);
             case PAID -> new InvoicePaid()
                     .invoice(swagInvoice)
-                    .eventType(Event.EventTypeEnum.INVOICEPAID);
+                    .eventType(Event.EventTypeEnum.INVOICE_PAID);
             case CANCELLED -> new InvoiceCancelled()
                     .invoice(swagInvoice)
-                    .eventType(Event.EventTypeEnum.INVOICECANCELLED);
+                    .eventType(Event.EventTypeEnum.INVOICE_CANCELLED);
             case FULFILLED -> new InvoiceFulfilled()
                     .invoice(swagInvoice)
-                    .eventType(Event.EventTypeEnum.INVOICEFULFILLED);
+                    .eventType(Event.EventTypeEnum.INVOICE_FULFILLED);
             default -> throw new UnsupportedOperationException("Unknown invoice status " + message.getInvoiceStatus());
         };
     }
@@ -175,31 +175,31 @@ public class InvoicingEventService
             case PENDING -> new PaymentStarted()
                     .invoice(swagInvoice)
                     .payment(swagPayment)
-                    .eventType(Event.EventTypeEnum.PAYMENTSTARTED);
+                    .eventType(Event.EventTypeEnum.PAYMENT_STARTED);
             case PROCESSED -> new PaymentProcessed()
                     .invoice(swagInvoice)
                     .payment(swagPayment)
-                    .eventType(Event.EventTypeEnum.PAYMENTPROCESSED);
+                    .eventType(Event.EventTypeEnum.PAYMENT_PROCESSED);
             case CAPTURED -> new PaymentCaptured()
                     .invoice(swagInvoice)
                     .payment(swagPayment)
-                    .eventType(Event.EventTypeEnum.PAYMENTCAPTURED);
+                    .eventType(Event.EventTypeEnum.PAYMENT_CAPTURED);
             case CANCELLED -> new PaymentCancelled()
                     .invoice(swagInvoice)
                     .payment(swagPayment)
-                    .eventType(Event.EventTypeEnum.PAYMENTCANCELLED);
+                    .eventType(Event.EventTypeEnum.PAYMENT_CANCELLED);
             case REFUNDED -> new PaymentRefunded()
                     .invoice(swagInvoice)
                     .payment(swagPayment)
-                    .eventType(Event.EventTypeEnum.PAYMENTREFUNDED);
+                    .eventType(Event.EventTypeEnum.PAYMENT_REFUNDED);
             case FAILED -> new PaymentFailed()
                     .invoice(swagInvoice)
                     .payment(swagPayment)
-                    .eventType(Event.EventTypeEnum.PAYMENTFAILED);
+                    .eventType(Event.EventTypeEnum.PAYMENT_FAILED);
             case CHARGED_BACK -> new PaymentChargedBack()
                     .invoice(swagInvoice)
                     .payment(swagPayment)
-                    .eventType(Event.EventTypeEnum.PAYMENTCHARGEDBACK);
+                    .eventType(Event.EventTypeEnum.PAYMENT_CHARGED_BACK);
             default -> throw new UnsupportedOperationException("Unknown payment status " + message.getPaymentStatus());
         };
     }
@@ -241,17 +241,17 @@ public class InvoicingEventService
                     .invoice(swagInvoice)
                     .payment(swagPayment)
                     .refund(swagRefund)
-                    .eventType(Event.EventTypeEnum.REFUNDPENDING);
+                    .eventType(Event.EventTypeEnum.REFUND_PENDING);
             case SUCCEEDED -> new RefundSucceeded()
                     .invoice(swagInvoice)
                     .payment(swagPayment)
                     .refund(swagRefund)
-                    .eventType(Event.EventTypeEnum.REFUNDSUCCEEDED);
+                    .eventType(Event.EventTypeEnum.REFUND_SUCCEEDED);
             case FAILED -> new RefundFailed()
                     .invoice(swagInvoice)
                     .payment(swagPayment)
                     .refund(swagRefund)
-                    .eventType(Event.EventTypeEnum.REFUNDFAILED);
+                    .eventType(Event.EventTypeEnum.REFUND_FAILED);
             default -> throw new UnsupportedOperationException("Unknown refund status " + message.getRefundStatus());
         };
     }
@@ -263,7 +263,7 @@ public class InvoicingEventService
         return new PaymentCashChanged()
                 .invoice(swagInvoice)
                 .payment(swagPayment)
-                .eventType(Event.EventTypeEnum.PAYMENTCASHCHANGED);
+                .eventType(Event.EventTypeEnum.PAYMENT_CASH_CHANGED);
     }
 
     private Event resolvePaymentInteractionRequested(InvoicingMessage message,
