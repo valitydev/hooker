@@ -105,8 +105,8 @@
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
-            <artifactId>swag-webhook-events</artifactId>
-            <version>1.144-b02d9b2-client</version>
+            <artifactId>swag-webhook-events-client</artifactId>
+            <version>1.148-ea21f6a</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
