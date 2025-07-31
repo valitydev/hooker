@@ -40,10 +40,6 @@ kafka:
       id: mg-invoice-100-2
       enabled: false
       concurrency: 8
-    customer:
-      id: mg-events-customer
-      enabled: false
-      concurrency: 1
   topic:
     webhook-dispatcher:
       name: webhook-dispatcher-topic

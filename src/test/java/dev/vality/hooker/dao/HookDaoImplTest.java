@@ -54,19 +54,6 @@ public class HookDaoImplTest {
         return hook;
     }
 
-    public static Hook buildCustomerHook(String partyId, String url) {
-        Hook hook = new Hook();
-        hook.setPartyId(partyId);
-        hook.setUrl(url);
-        hook.setTopic(Event.TopicEnum.CUSTOMERS_TOPIC.getValue());
-
-        Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
-        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_CREATED).build());
-        hook.setFilters(webhookAdditionalFilters);
-
-        return hook;
-    }
-
     @BeforeEach
     void setUp() throws Exception {
         Set<WebhookAdditionalFilter> webhookAdditionalFilters = new HashSet<>();
@@ -99,13 +86,6 @@ public class HookDaoImplTest {
         String pubKey1 = hook.getPubKey();
         String pubKey2 = hook.getPubKey();
         assertEquals(pubKey1, pubKey2);
-        webhookAdditionalFilters.clear();
-        webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_CREATED).build());
-        webhookAdditionalFilters
-                .add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_BINDING_SUCCEEDED).build());
-        webhookParams =
-                new WebhookParams("123", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://2ch.hk/b");
-        hook = hookDao.create(HookConverter.convert(webhookParams));
     }
 
     @AfterEach
@@ -140,7 +120,7 @@ public class HookDaoImplTest {
         List<Hook> partyHooks = hookDao.getPartyHooks("123").stream()
                 .filter(Hook::isEnabled)
                 .collect(Collectors.toList());
-        assertEquals(3, partyHooks.size());
+        assertEquals(2, partyHooks.size());
         List<Hook> notExistsPartyHooks = hookDao.getPartyHooks("88888").stream()
                 .filter(Hook::isEnabled)
                 .collect(Collectors.toList());
@@ -176,7 +156,7 @@ public class HookDaoImplTest {
 
     @Test
     void getPartyHooksCountTest() {
-        assertEquals(2, hookDao.getPartyHooksCount("123"));
+        assertEquals(1, hookDao.getPartyHooksCount("123"));
         assertEquals(0, hookDao.getPartyHooksCount("keke"));
     }
 

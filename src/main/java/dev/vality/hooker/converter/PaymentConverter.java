@@ -50,8 +50,6 @@ public class PaymentConverter {
 
         if (source.getPayer().isSetPaymentResource()) {
             setResourcePaymentTool(source, target);
-        } else if (source.getPayer().isSetCustomer()) {
-            setCustomerPaymentTool(source, target);
         } else if (source.getPayer().isSetRecurrent()) {
             setRecurrentPaymentTool(source, target);
         }
@@ -130,17 +128,6 @@ public class PaymentConverter {
                 .contactInfo(new PaymentContactInfo()
                         .email(recurrentParentOrigin.getContactInfo().getEmail())
                         .phoneNumber(recurrentParentOrigin.getContactInfo().getPhoneNumber()));
-    }
-
-    private void setCustomerPaymentTool(dev.vality.damsel.domain.InvoicePayment source, Payment target) {
-        dev.vality.damsel.domain.CustomerPayer customerPayerOrigin = source.getPayer().getCustomer();
-        target.paymentToolToken(PaymentToolUtils.getPaymentToolToken(customerPayerOrigin.getPaymentTool()))
-                .contactInfo(new PaymentContactInfo()
-                        .email(customerPayerOrigin.getContactInfo().getEmail())
-                        .phoneNumber(customerPayerOrigin.getContactInfo().getPhoneNumber()))
-                .payer(new CustomerPayer()
-                        .customerID(source.getPayer().getCustomer().getCustomerId())
-                        .payerType(Payer.PayerTypeEnum.CUSTOMER_PAYER));
     }
 
     private boolean isSetAdditionalInfo(InvoicePayment sourceWrapper) {

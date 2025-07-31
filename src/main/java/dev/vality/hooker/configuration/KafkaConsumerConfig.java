@@ -1,6 +1,5 @@
 package dev.vality.hooker.configuration;
 
-import dev.vality.hooker.listener.CustomerEventKafkaListener;
 import dev.vality.hooker.listener.InvoicingEventKafkaListener;
 import dev.vality.hooker.listener.MachineEventHandler;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,11 +15,5 @@ public class KafkaConsumerConfig {
     @ConditionalOnProperty(value = "kafka.topics.invoice.enabled", havingValue = "true")
     public InvoicingEventKafkaListener paymentEventsKafkaListener(MachineEventHandler invoicingMachineEventHandler) {
         return new InvoicingEventKafkaListener(invoicingMachineEventHandler);
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "kafka.topics.customer.enabled", havingValue = "true")
-    public CustomerEventKafkaListener customerEventsKafkaListener(MachineEventHandler customerMachineEventHandler) {
-        return new CustomerEventKafkaListener(customerMachineEventHandler);
     }
 }

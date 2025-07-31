@@ -54,28 +54,6 @@ public class BuildUtils {
         return message;
     }
 
-    public static dev.vality.damsel.payment_processing.Customer buildCustomer(String customerId, String bindingId)
-            throws IOException {
-        MockTBaseProcessor thriftBaseProcessor = new MockTBaseProcessor(MockMode.RANDOM, 15, 1);
-        dev.vality.damsel.payment_processing.Customer customer = thriftBaseProcessor.process(
-                new dev.vality.damsel.payment_processing.Customer(),
-                new TBaseHandler<>(dev.vality.damsel.payment_processing.Customer.class)
-        );
-        dev.vality.damsel.payment_processing.CustomerBinding customerBinding = thriftBaseProcessor.process(
-                new dev.vality.damsel.payment_processing.CustomerBinding(),
-                new TBaseHandler<>(dev.vality.damsel.payment_processing.CustomerBinding.class)
-        ).setId(bindingId);
-
-        customer.setId(customerId)
-                .setCreatedAt("2016-03-22T06:12:27Z")
-                .setMetadata(Value.obj(new HashMap<>()))
-                .setBindings(Collections.singletonList(customerBinding));
-
-        customer.getBindings().get(0).getPaymentResource().setPaymentTool(
-                PaymentTool.bank_card(thriftBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))));
-        return customer;
-    }
-
     public static dev.vality.damsel.payment_processing.Invoice buildInvoice(String partyId, String invoiceId,
                                                                             String paymentId, String refundId,
                                                                             InvoiceStatus invoiceStatus,
@@ -92,11 +70,6 @@ public class BuildUtils {
             );
             payer.getPaymentResource().getResource()
                     .setPaymentTool(paymentTool);
-        } else if (payer.isSetCustomer()) {
-            PaymentTool paymentTool = PaymentTool.bank_card(
-                    thriftBaseProcessor.process(new BankCard(), new TBaseHandler<>(BankCard.class))
-            );
-            payer.getCustomer().setPaymentTool(paymentTool);
         }
         return invoice;
     }
@@ -179,22 +152,6 @@ public class BuildUtils {
         return new AdditionalTransactionInfo()
                 .setRrn("chicken-teriyaki")
                 .setExtraPaymentInfo(Map.of("c2c_commission", "100"));
-    }
-
-    public static CustomerMessage buildCustomerMessage(Long eventId, String partyId, EventType eventType,
-                                                       CustomerMessageEnum type, String custId, String shopId) {
-        CustomerMessage customerMessage = new CustomerMessage();
-        customerMessage.setPartyId(partyId);
-        customerMessage.setEventTime("2018-03-22T06:12:27Z");
-        customerMessage.setEventType(eventType);
-        customerMessage.setType(type);
-        customerMessage.setSourceId(custId);
-        customerMessage.setShopId(shopId);
-
-        if (customerMessage.isBinding()) {
-            customerMessage.setBindingId("12456");
-        }
-        return customerMessage;
     }
 
     public static Hook buildHook(String partyId, String url, EventType... types) {

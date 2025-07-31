@@ -127,45 +127,6 @@ public class EventFilterUtils {
                                         Arrays.toString(EventType.values()));
                 }
             }
-        } else if (firstEventType.isCustomerEvent()) {
-            CustomerEventFilter customerEventFilter = new CustomerEventFilter();
-            Set<CustomerEventType> customerEventTypes = new HashSet<>();
-            customerEventFilter.setTypes(customerEventTypes);
-            eventFilter.setCustomer(customerEventFilter);
-            for (WebhookAdditionalFilter webhookAdditionalFilter : webhookAdditionalFilters) {
-                String shopId = webhookAdditionalFilter.getShopId();
-                if (shopId != null) {
-                    eventFilter.getCustomer().setShopId(shopId);
-                }
-                EventType eventTypeCode = webhookAdditionalFilter.getEventType();
-                switch (eventTypeCode) {
-                    case CUSTOMER_CREATED:
-                        customerEventTypes.add(CustomerEventType.created(new CustomerCreated()));
-                        break;
-                    case CUSTOMER_DELETED:
-                        customerEventTypes.add(CustomerEventType.deleted(new CustomerDeleted()));
-                        break;
-                    case CUSTOMER_READY:
-                        customerEventTypes.add(CustomerEventType.ready(new CustomerStatusReady()));
-                        break;
-                    case CUSTOMER_BINDING_STARTED:
-                        customerEventTypes.add(CustomerEventType
-                                .binding(CustomerBindingEvent.started(new CustomerBindingStarted())));
-                        break;
-                    case CUSTOMER_BINDING_SUCCEEDED:
-                        customerEventTypes.add(CustomerEventType
-                                .binding(CustomerBindingEvent.succeeded(new CustomerBindingSucceeded())));
-                        break;
-                    case CUSTOMER_BINDING_FAILED:
-                        customerEventTypes.add(CustomerEventType
-                                .binding(CustomerBindingEvent.failed(new CustomerBindingFailed())));
-                        break;
-                    default:
-                        throw new UnsupportedOperationException(
-                                "Unknown event code " + eventTypeCode + "; must be one of these: " +
-                                        Arrays.toString(EventType.values()));
-                }
-            }
         } else {
             throw new UnsupportedOperationException(
                     "Unknown event code " + firstEventType + "; must be one of these: " +
@@ -225,31 +186,6 @@ public class EventFilterUtils {
                     }
                 }
             }
-        } else if (eventFilter.isSetCustomer()) {
-            Set<CustomerEventType> customerEventTypes = eventFilter.getCustomer().getTypes();
-            for (CustomerEventType customerEventType : customerEventTypes) {
-                WebhookAdditionalFilter webhookAdditionalFilter = new WebhookAdditionalFilter();
-                eventTypeCodeSet.add(webhookAdditionalFilter);
-                if (eventFilter.getCustomer().isSetShopId()) {
-                    webhookAdditionalFilter.setShopId(eventFilter.getCustomer().getShopId());
-                }
-                if (customerEventType.isSetCreated()) {
-                    webhookAdditionalFilter.setEventType(EventType.CUSTOMER_CREATED);
-                } else if (customerEventType.isSetDeleted()) {
-                    webhookAdditionalFilter.setEventType(EventType.CUSTOMER_DELETED);
-                } else if (customerEventType.isSetReady()) {
-                    webhookAdditionalFilter.setEventType(EventType.CUSTOMER_READY);
-                } else if (customerEventType.isSetBinding()) {
-                    CustomerBindingEvent binding = customerEventType.getBinding();
-                    if (binding.isSetStarted()) {
-                        webhookAdditionalFilter.setEventType(EventType.CUSTOMER_BINDING_STARTED);
-                    } else if (binding.isSetSucceeded()) {
-                        webhookAdditionalFilter.setEventType(EventType.CUSTOMER_BINDING_SUCCEEDED);
-                    } else if (binding.isSetFailed()) {
-                        webhookAdditionalFilter.setEventType(EventType.CUSTOMER_BINDING_FAILED);
-                    }
-                }
-            }
         }
         return eventTypeCodeSet;
     }
@@ -257,9 +193,6 @@ public class EventFilterUtils {
     public static String getTopic(EventFilter eventFilter) {
         if (eventFilter.isSetInvoice()) {
             return Event.TopicEnum.INVOICES_TOPIC.getValue();
-        }
-        if (eventFilter.isSetCustomer()) {
-            return Event.TopicEnum.CUSTOMERS_TOPIC.getValue();
         }
         throw new UnsupportedOperationException(
                 "Unknown topic; must be one of these: " + Arrays.toString(Event.TopicEnum.values()));

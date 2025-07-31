@@ -21,22 +21,11 @@ public enum EventType {
     INVOICE_PAYMENT_USER_INTERACTION_CHANGE_REQUESTED(
             "invoice_payment_change.payload.invoice_payment_session_change.payload.session_interaction_changed.status.requested"),
     INVOICE_PAYMENT_USER_INTERACTION_CHANGE_COMPLETED(
-            "invoice_payment_change.payload.invoice_payment_session_change.payload.session_interaction_changed.status.completed"),
-
-    CUSTOMER_CREATED("customer_created"),
-    CUSTOMER_DELETED("customer_deleted"),
-    CUSTOMER_READY("customer_status_changed.status.ready"),
-    CUSTOMER_BINDING_STARTED("customer_binding_changed.payload.started"),
-    CUSTOMER_BINDING_SUCCEEDED("customer_binding_changed.payload.status_changed.status.succeeded"),
-    CUSTOMER_BINDING_FAILED("customer_binding_changed.payload.status_changed.status.failed");
+            "invoice_payment_change.payload.invoice_payment_session_change.payload.session_interaction_changed.status.completed");
 
     private String thriftPath;
 
     public boolean isInvoiceEvent() {
         return this.name().startsWith("INVOICE");
-    }
-
-    public boolean isCustomerEvent() {
-        return this.name().startsWith("CUSTOMER");
     }
 }

@@ -12,8 +12,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @KafkaTestcontainerSingleton(
-        properties = {"kafka.topics.invoice.enabled=true", "kafka.topics.customer.enabled=true"},
-        topicsKeys = {"kafka.topics.invoice.id", "kafka.topics.customer.id"})
+        properties = {"kafka.topics.invoice.enabled=true"},
+        topicsKeys = {"kafka.topics.invoice.id"})
 @KafkaConfig
 public @interface KafkaTest {
 }
