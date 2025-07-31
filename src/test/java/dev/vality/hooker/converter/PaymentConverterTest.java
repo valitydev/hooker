@@ -6,7 +6,6 @@ import dev.vality.damsel.domain.*;
 import dev.vality.geck.serializer.kit.mock.MockMode;
 import dev.vality.geck.serializer.kit.mock.MockTBaseProcessor;
 import dev.vality.geck.serializer.kit.tbase.TBaseHandler;
-import dev.vality.swag_webhook_events.model.CustomerPayer;
 import dev.vality.swag_webhook_events.model.Payment;
 import dev.vality.swag_webhook_events.model.PaymentResourcePayer;
 import dev.vality.swag_webhook_events.model.RecurrentPayer;
@@ -35,8 +34,6 @@ class PaymentConverterTest  {
         if (source.getPayer().isSetPaymentResource()) {
             source.getPayer().getPaymentResource().getResource()
                     .setPaymentTool(paymentTool);
-        } else if (source.getPayer().isSetCustomer()) {
-            source.getPayer().getCustomer().setPaymentTool(paymentTool);
         }
         source.setStatus(InvoicePaymentStatus.pending(new InvoicePaymentPending()));
         Payment target = converter
@@ -55,11 +52,6 @@ class PaymentConverterTest  {
         } else {
             assertEquals(source.getCost().getAmount(), target.getAmount().longValue());
             assertEquals(source.getCost().getCurrency().getSymbolicCode(), target.getCurrency());
-        }
-        if (source.getPayer().isSetCustomer()) {
-            assertInstanceOf(CustomerPayer.class, target.getPayer());
-            assertEquals(source.getPayer().getCustomer().getCustomerId(),
-                    ((CustomerPayer) target.getPayer()).getCustomerID());
         }
         if (source.getPayer().isSetPaymentResource()) {
             assertInstanceOf(PaymentResourcePayer.class, target.getPayer());

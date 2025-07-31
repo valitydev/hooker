@@ -2,7 +2,6 @@ package dev.vality.hooker.configuration;
 
 import dev.vality.hooker.converter.WebhookMessageBuilder;
 import dev.vality.hooker.dao.MessageDao;
-import dev.vality.hooker.model.CustomerMessage;
 import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.hooker.service.EventService;
 import dev.vality.hooker.service.MessageService;
@@ -19,13 +18,4 @@ public class ServiceConfig {
                                                              WebhookKafkaProducerService webhookKafkaProducerService) {
         return new MessageService<>(messageDao, eventService, webhookMessageBuilder, webhookKafkaProducerService);
     }
-
-    @Bean
-    public MessageService<CustomerMessage> customerService(MessageDao<CustomerMessage> messageDao,
-                                                           EventService<CustomerMessage> eventService,
-                                                           WebhookMessageBuilder webhookMessageBuilder,
-                                                           WebhookKafkaProducerService webhookKafkaProducerService) {
-        return new MessageService<>(messageDao, eventService, webhookMessageBuilder, webhookKafkaProducerService);
-    }
-
 }

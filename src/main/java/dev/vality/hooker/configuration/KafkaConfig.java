@@ -35,8 +35,6 @@ public class KafkaConfig {
 
     @Value("${kafka.topics.invoice.concurrency}")
     private int invoicingConcurrency;
-    @Value("${kafka.topics.customer.concurrency}")
-    private int customerConcurrency;
 
     private final KafkaProperties kafkaProperties;
 
@@ -65,21 +63,6 @@ public class KafkaConfig {
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         factory.setCommonErrorHandler(ExponentialBackOffDefaultErrorHandlerFactory.create());
         factory.setConcurrency(invoicingConcurrency);
-        return factory;
-    }
-
-    @Bean
-    @SuppressWarnings("LineLength")
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, MachineEvent>> customerListenerContainerFactory(
-            ConsumerFactory<String, MachineEvent> consumerFactory
-    ) {
-        ConcurrentKafkaListenerContainerFactory<String, MachineEvent> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory);
-        factory.setBatchListener(false);
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
-        factory.setCommonErrorHandler(ExponentialBackOffDefaultErrorHandlerFactory.create());
-        factory.setConcurrency(customerConcurrency);
         return factory;
     }
 

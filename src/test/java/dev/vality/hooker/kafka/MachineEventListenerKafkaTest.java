@@ -32,9 +32,6 @@ class MachineEventListenerKafkaTest {
     @Value("${kafka.topics.invoice.id}")
     private String invoiceTopic;
 
-    @Value("${kafka.topics.customer.id}")
-    private String customerTopic;
-
     @MockitoBean
     private MachineEventParser<EventPayload> eventParser;
 
@@ -49,18 +46,6 @@ class MachineEventListenerKafkaTest {
         sinkEvent.setEvent(createMessage());
 
         testThriftKafkaProducer.send(invoiceTopic, sinkEvent);
-
-        Mockito.verify(eventParser, Mockito.timeout(10000L).times(1)).parse(any());
-    }
-
-    @Test
-    void listenCustomerEmptyChanges() {
-        Mockito.when(eventParser.parse(any())).thenReturn(EventPayload.customer_changes(emptyList()));
-
-        SinkEvent sinkEvent = new SinkEvent();
-        sinkEvent.setEvent(createMessage());
-
-        testThriftKafkaProducer.send(customerTopic, sinkEvent);
 
         Mockito.verify(eventParser, Mockito.timeout(10000L).times(1)).parse(any());
     }

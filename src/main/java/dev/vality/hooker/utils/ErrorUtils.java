@@ -3,7 +3,6 @@ package dev.vality.hooker.utils;
 import dev.vality.damsel.domain.Failure;
 import dev.vality.damsel.domain.OperationFailure;
 import dev.vality.damsel.domain.SubFailure;
-import dev.vality.swag_webhook_events.model.CustomerBindingError;
 import dev.vality.swag_webhook_events.model.PaymentError;
 import dev.vality.swag_webhook_events.model.RefundError;
 import dev.vality.swag_webhook_events.model.SubError;
@@ -48,20 +47,6 @@ public class ErrorUtils {
             return refundError;
         }
         return null;
-    }
-
-    public static CustomerBindingError getCustomerBindingError(OperationFailure failure) {
-        String errCode = null;
-        String errMess = null;
-        if (failure.isSetFailure()) {
-            Failure external = failure.getFailure();
-            errCode = external.getCode();
-            errMess = external.getReason();
-        } else if (failure.isSetOperationTimeout()) {
-            errCode = "408";
-            errMess = "Operation timeout";
-        }
-        return new CustomerBindingError().code(errCode).message(errMess);
     }
 
     private static SubError getSubError(SubFailure sub) {

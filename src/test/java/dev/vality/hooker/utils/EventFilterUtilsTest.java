@@ -18,7 +18,6 @@ class EventFilterUtilsTest {
     @Test
     void getEventFilterByCode() {
         assertEquals(8, getEventFilter().getInvoice().getTypes().size());
-        assertEquals(6, getCustomerEventFilter().getCustomer().getTypes().size());
     }
 
     private EventFilter getEventFilter() {
@@ -45,22 +44,9 @@ class EventFilterUtilsTest {
         return EventFilterUtils.getEventFilter(eventTypeCodeSet);
     }
 
-    private EventFilter getCustomerEventFilter() {
-        Collection<WebhookAdditionalFilter> eventTypeCodeSet = new HashSet<>();
-        eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_CREATED).build());
-        eventTypeCodeSet
-                .add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_DELETED).shopId("77").build());
-        eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_READY).build());
-        eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_BINDING_STARTED).build());
-        eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_BINDING_SUCCEEDED).build());
-        eventTypeCodeSet.add(WebhookAdditionalFilter.builder().eventType(EventType.CUSTOMER_BINDING_FAILED).build());
-        return EventFilterUtils.getEventFilter(eventTypeCodeSet);
-    }
-
     @Test
     void getWebhookAdditionalFilter() {
         assertEquals(8, EventFilterUtils.getWebhookAdditionalFilter(getEventFilter()).size());
-        assertEquals(6, EventFilterUtils.getWebhookAdditionalFilter(getCustomerEventFilter()).size());
     }
 
 }
