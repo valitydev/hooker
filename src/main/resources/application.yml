@@ -47,7 +47,6 @@ kafka:
         enabled: true
 info:
   version: ${version}
-  responsible: Inal Arsanukaev
   stage: dev
   damsel.version: ${damsel.version}
 
