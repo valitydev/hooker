@@ -1,5 +1,7 @@
 package dev.vality.hooker.service;
 
+import dev.vality.damsel.domain.PartyConfigRef;
+import dev.vality.damsel.domain.ShopConfigRef;
 import dev.vality.damsel.webhooker.*;
 import dev.vality.hooker.config.PostgresqlSpringBootITest;
 import dev.vality.hooker.dao.HookDao;
@@ -60,7 +62,7 @@ class HooksLimitServiceTest {
     @Test
     void isPartyLimitExceededTrueTest() {
         WebhookParams webhookParams = buildWebhookParams();
-        webhookParams.getEventFilter().getInvoice().setShopId(null);
+        webhookParams.getEventFilter().getInvoice().setShopRef(new ShopConfigRef());
 
         IntStream.range(1, 6).forEach(x -> hookDao.create(HookConverter.convert(webhookParams)));
         assertTrue(hooksLimitService.isLimitExceeded(webhookParams));
@@ -75,11 +77,11 @@ class HooksLimitServiceTest {
 
     private WebhookParams buildWebhookParams() {
         return new WebhookParams()
-                .setPartyId("party_id")
+                .setPartyRef(new PartyConfigRef("party_id"))
                 .setUrl("http://2ch.hk")
                 .setEventFilter(EventFilter.invoice(
                         new InvoiceEventFilter()
-                                .setShopId("shop_id")
+                                .setShopRef(new ShopConfigRef("shop_id"))
                                 .setTypes(Set.of(InvoiceEventType.created(new InvoiceCreated())))));
     }
 

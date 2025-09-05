@@ -1,5 +1,6 @@
 package dev.vality.hooker.utils;
 
+import dev.vality.damsel.domain.ShopConfigRef;
 import dev.vality.damsel.webhooker.*;
 import dev.vality.hooker.dao.WebhookAdditionalFilter;
 import dev.vality.hooker.model.EventType;
@@ -29,7 +30,7 @@ public class EventFilterUtils {
             for (WebhookAdditionalFilter webhookAdditionalFilter : webhookAdditionalFilters) {
                 String shopId = webhookAdditionalFilter.getShopId();
                 if (shopId != null) {
-                    eventFilter.getInvoice().setShopId(shopId);
+                    eventFilter.getInvoice().setShopRef(new ShopConfigRef(shopId));
                 }
                 EventType eventTypeCode = webhookAdditionalFilter.getEventType();
                 switch (eventTypeCode) {
@@ -142,8 +143,8 @@ public class EventFilterUtils {
             for (InvoiceEventType invoiceEventType : invoiceEventTypes) {
                 WebhookAdditionalFilter webhookAdditionalFilter = new WebhookAdditionalFilter();
                 eventTypeCodeSet.add(webhookAdditionalFilter);
-                if (eventFilter.getInvoice().isSetShopId()) {
-                    webhookAdditionalFilter.setShopId(eventFilter.getInvoice().getShopId());
+                if (eventFilter.getInvoice().isSetShopRef()) {
+                    webhookAdditionalFilter.setShopId(eventFilter.getInvoice().getShopRef().getId());
                 }
                 if (invoiceEventType.isSetCreated()) {
                     webhookAdditionalFilter.setEventType(EventType.INVOICE_CREATED);

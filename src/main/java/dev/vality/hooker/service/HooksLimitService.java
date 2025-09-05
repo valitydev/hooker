@@ -24,9 +24,9 @@ public class HooksLimitService {
         if (!eventFilter.isSetInvoice()) {
             return false;
         }
-        String partyId = webhookParams.getPartyId();
+        String partyId = webhookParams.getPartyRef().getId();
         PartyMetadata partyMetadata = hookDao.getPartyMetadata(partyId);
-        String shopId = eventFilter.getInvoice().getShopId();
+        String shopId = eventFilter.getInvoice().getShopRef().getId();
         if (shopId != null) {
             return isShopLimitExceeded(partyId, shopId, partyMetadata);
         } else {

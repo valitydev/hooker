@@ -81,7 +81,7 @@ public class BuildUtils {
                         new TBaseHandler<>(Invoice.class)
                 )
                 .setId(invoiceId)
-                .setOwnerId(partyId)
+                .setPartyRef(new PartyConfigRef(partyId))
                 .setCreatedAt("2016-03-22T06:12:27Z")
                 .setContext(new Content("lel", ByteBuffer.wrap("{\"payment_id\": 271771960}".getBytes())))
                 .setDue("2016-03-22T06:12:27Z")
@@ -111,7 +111,7 @@ public class BuildUtils {
                 )
                 .setCreatedAt("2016-03-22T06:12:27Z")
                 .setId(paymentId)
-                .setOwnerId(partyId)
+                .setPartyRef(new PartyConfigRef(partyId))
                 .setStatus(paymentStatus)
                 .setExternalId("payment-external-id");
     }

@@ -29,10 +29,10 @@ public class InvoiceCreatedMapper implements Mapper<InvoiceChange, InvoicingMess
         message.setSequenceId(eventInfo.getSequenceId());
         message.setChangeId(eventInfo.getChangeId());
         message.setType(InvoicingMessageEnum.INVOICE);
-        message.setPartyId(invoiceOrigin.getOwnerId());
+        message.setPartyId(invoiceOrigin.getPartyRef().getId());
         message.setEventType(eventType);
         message.setSourceId(invoiceOrigin.getId());
-        message.setShopId(invoiceOrigin.getShopId());
+        message.setShopId(invoiceOrigin.getShopRef().getId());
         message.setInvoiceStatus(InvoiceStatusEnum.lookup(invoiceOrigin.getStatus().getSetField().getFieldName()));
         return message;
     }

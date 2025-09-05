@@ -1,5 +1,7 @@
 package dev.vality.hooker.dao;
 
+import dev.vality.damsel.domain.PartyConfigRef;
+import dev.vality.damsel.domain.ShopConfigRef;
 import dev.vality.damsel.webhooker.EventFilter;
 import dev.vality.damsel.webhooker.WebhookParams;
 import dev.vality.hooker.config.PostgresqlSpringBootITest;
@@ -62,8 +64,8 @@ public class HookDaoImplTest {
                         null));
         webhookAdditionalFilters.add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_CREATED).build());
         EventFilter eventFilterByCode = EventFilterUtils.getEventFilter(webhookAdditionalFilters);
-        eventFilterByCode.getInvoice().setShopId("1");
-        WebhookParams webhookParams = new WebhookParams("123", eventFilterByCode, "https://google.com");
+        eventFilterByCode.getInvoice().setShopRef(new ShopConfigRef("1"));
+        var webhookParams = new WebhookParams(new PartyConfigRef("123"), eventFilterByCode, "https://test.com");
         Hook hook = hookDao.create(HookConverter.convert(webhookParams));
         ids.add(hook.getId());
         webhookAdditionalFilters.clear();
@@ -72,15 +74,16 @@ public class HookDaoImplTest {
         webhookAdditionalFilters
                 .add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_PAYMENT_STARTED).shopId("78")
                         .build());
-        webhookParams = new WebhookParams("999", EventFilterUtils.getEventFilter(webhookAdditionalFilters),
-                "https://yandex.ru");
+        webhookParams = new WebhookParams(new PartyConfigRef("999"),
+                EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://test.com");
         hook = hookDao.create(HookConverter.convert(webhookParams));
         ids.add(hook.getId());
         webhookAdditionalFilters.clear();
         webhookAdditionalFilters
                 .add(WebhookAdditionalFilter.builder().eventType(EventType.INVOICE_STATUS_CHANGED).build());
         webhookParams =
-                new WebhookParams("123", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://2ch.hk/b");
+                new WebhookParams(new PartyConfigRef("123"),
+                        EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://test.com");
         hook = hookDao.create(HookConverter.convert(webhookParams));
         ids.add(hook.getId());
         String pubKey1 = hook.getPubKey();
@@ -110,7 +113,8 @@ public class HookDaoImplTest {
                 .add(new WebhookAdditionalFilter(EventType.INVOICE_PAYMENT_STATUS_CHANGED, "34", null, "pending",
                         null));
         WebhookParams webhookParams =
-                new WebhookParams("123", EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://2ch.hk/b");
+                new WebhookParams(new PartyConfigRef("123"),
+                        EventFilterUtils.getEventFilter(webhookAdditionalFilters), "https://test.com");
         Hook hook = hookDao.create(HookConverter.convert(webhookParams));
         ids.add(hook.getId());
     }
