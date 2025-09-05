@@ -22,7 +22,7 @@ public class InvoiceConverter implements Converter<dev.vality.damsel.domain.Invo
     public Invoice convert(dev.vality.damsel.domain.Invoice source) {
         return new Invoice()
                 .id(source.getId())
-                .shopID(source.getShopId())
+                .shopID(source.getShopRef().getId())
                 .createdAt(TimeUtils.toOffsetDateTime(source.getCreatedAt()))
                 .status(Invoice.StatusEnum.fromValue(source.getStatus().getSetField().getFieldName()))
                 .dueDate(TimeUtils.toOffsetDateTime(source.getDue()))

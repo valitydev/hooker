@@ -1,5 +1,6 @@
 package dev.vality.hooker.service;
 
+import dev.vality.damsel.domain.PartyConfigRef;
 import dev.vality.damsel.webhooker.*;
 import dev.vality.hooker.dao.HookDao;
 import dev.vality.hooker.model.Hook;
@@ -23,8 +24,8 @@ public class WebhookManager implements WebhookManagerSrv.Iface {
     private final HooksLimitService hooksLimitService;
 
     @Override
-    public List<Webhook> getList(String s) throws TException {
-        return HookConverter.convert(hookDao.getPartyHooks(s));
+    public List<Webhook> getList(PartyConfigRef partyConfigRef) throws TException {
+        return HookConverter.convert(hookDao.getPartyHooks(partyConfigRef.getId()));
     }
 
     @Override

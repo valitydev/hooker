@@ -1,5 +1,6 @@
 package dev.vality.hooker.utils;
 
+import dev.vality.damsel.domain.PartyConfigRef;
 import dev.vality.damsel.webhooker.Webhook;
 import dev.vality.damsel.webhooker.WebhookParams;
 import dev.vality.hooker.model.Hook;
@@ -14,7 +15,7 @@ public class HookConverter {
     public static Webhook convert(Hook hook) {
         return new Webhook(
                 hook.getId(),
-                hook.getPartyId(),
+                new PartyConfigRef(hook.getPartyId()),
                 EventFilterUtils.getEventFilter(hook.getFilters()),
                 hook.getUrl(),
                 buildFormattedPubKey(hook.getPubKey()),
@@ -23,7 +24,7 @@ public class HookConverter {
 
     public static Hook convert(WebhookParams webhookParams) {
         Hook hook = new Hook();
-        hook.setPartyId(webhookParams.getPartyId());
+        hook.setPartyId(webhookParams.getPartyRef().getId());
         hook.setTopic(EventFilterUtils.getTopic(webhookParams.getEventFilter()));
         hook.setUrl(webhookParams.getUrl());
         hook.setFilters(EventFilterUtils.getWebhookAdditionalFilter(webhookParams.getEventFilter()));

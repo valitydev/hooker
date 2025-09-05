@@ -26,7 +26,7 @@ class InvoiceConverterTest {
         source.setDue("2016-03-22T06:12:27Z");
         dev.vality.swag_webhook_events.model.Invoice target = converter.convert(source);
         assertEquals(source.getId(), target.getId());
-        assertEquals(source.getShopId(), target.getShopID());
+        assertEquals(source.getShopRef().getId(), target.getShopID());
         assertEquals(source.getCost().getAmount(), target.getAmount().longValue());
         assertEquals(source.getStatus().getSetField().getFieldName(), target.getStatus().getValue());
         if (source.getDetails().isSetCart()) {
