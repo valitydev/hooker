@@ -1,0 +1,17 @@
+testcontainers:
+  kafka:
+    apache:
+      tag: '3.8.0'
+
+kafka:
+  topics:
+    invoice:
+      id: mg-invoice-100-2
+      enabled: true
+      concurrency: 8
+  topic:
+    webhook-dispatcher:
+      name: webhook-dispatcher-topic
+      produce:
+        enabled: true
+
