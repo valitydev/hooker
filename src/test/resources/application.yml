@@ -3,6 +3,16 @@ testcontainers:
     apache:
       tag: '3.8.0'
 
+spring:
+  kafka:
+    bootstrap-servers: ${spring.kafka.bootstrap-servers}
+    client-id: hooker
+    consumer:
+      group-id: "HookerListener"
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      max-poll-records: 20
+
 kafka:
   topics:
     invoice:
@@ -14,4 +24,13 @@ kafka:
       name: webhook-dispatcher-topic
       produce:
         enabled: true
+
+service:
+  invoicing:
+    url: http://localhost:8022/v1/processing/invoicing
+    networkTimeout: 5000
+
+limit:
+  perShop: 10
+  perParty: 5
 
