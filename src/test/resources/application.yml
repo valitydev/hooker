@@ -5,19 +5,26 @@ testcontainers:
 
 spring:
   kafka:
-    bootstrap-servers: ${spring.kafka.bootstrap-servers}
+    bootstrap-servers: PLAINTEXT:9092
     client-id: hooker
     consumer:
       group-id: "HookerListener"
       enable-auto-commit: false
       auto-offset-reset: earliest
       max-poll-records: 20
+  datasource:
+    hikari:
+      data-source-properties:
+        search_path: hook,public
+  flyway:
+    schemas: hook
+    table: schema_version
 
 kafka:
   topics:
     invoice:
       id: mg-invoice-100-2
-      enabled: true
+      enabled: false
       concurrency: 8
   topic:
     webhook-dispatcher:
