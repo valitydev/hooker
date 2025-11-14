@@ -1,8 +1,7 @@
 testcontainers:
   kafka:
-    apache:
-      tag: '3.8.0'
-
+    confluent:
+      tag: '7.8.0'
 spring:
   kafka:
     bootstrap-servers: PLAINTEXT:9092

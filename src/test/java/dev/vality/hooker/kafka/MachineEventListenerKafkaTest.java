@@ -13,7 +13,13 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,10 +30,24 @@ import static org.mockito.ArgumentMatchers.any;
 @KafkaTest
 @PostgresqlSpringBootITest
 @SpringBootTest
+@Testcontainers
 class MachineEventListenerKafkaTest {
 
     public static final String SOURCE_ID = "source_id";
     public static final String SOURCE_NS = "source_ns";
+
+    @Container
+    private static final KafkaContainer kafkaContainer = new KafkaContainer(
+            DockerImageName.parse("confluentinc/cp-kafka:7.8.0"))
+            .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true");
+
+    @DynamicPropertySource
+    static void kafkaProperties(DynamicPropertyRegistry registry) {
+        registry.add("kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
+        registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
+        registry.add("kafka.ssl.enabled", () -> "false");
+        registry.add("kafka.topics.invoice.enabled", () -> "true");
+    }
 
     @Value("${kafka.topics.invoice.id}")
     private String invoiceTopic;
