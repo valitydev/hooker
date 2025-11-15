@@ -13,11 +13,10 @@
     <parent>
         <groupId>dev.vality</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>3.1.7</version>
+        <version>3.1.9</version>
     </parent>
 
     <properties>
-        <project.maintainer>Inal Arsanukaev &lt;i.arsanukaev@rbkmoney.com&gt;</project.maintainer>
         <server.port>8022</server.port>
         <management.port>8023</management.port>
         <exposed.ports>${server.port} ${management.port}</exposed.ports>
@@ -63,11 +62,15 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>damsel</artifactId>
+            <version>1.674-368f05b</version>
         </dependency>
         <dependency>
             <groupId>dev.vality.geck</groupId>
             <artifactId>serializer</artifactId>
-            <version>1.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.vality.geck</groupId>
+            <artifactId>filter</artifactId>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -86,12 +89,6 @@
         <dependency>
             <groupId>dev.vality.geck</groupId>
             <artifactId>common</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>dev.vality.geck</groupId>
-            <artifactId>filter</artifactId>
-            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>dev.vality</groupId>
@@ -167,7 +164,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>testcontainers-annotations</artifactId>
-            <version>3.0.2</version>
+            <version>3.3.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -236,29 +233,6 @@
                         <goals>
                             <goal>process</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>3.21.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.cyclonedx</groupId>
-                <artifactId>cyclonedx-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>makeAggregateBom</goal>
-                        </goals>
-                        <configuration>
-                            <projectType>application</projectType>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
-                            <outputFormat>json</outputFormat>
-                            <outputName>bom</outputName>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

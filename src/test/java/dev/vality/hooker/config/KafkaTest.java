@@ -1,7 +1,6 @@
 package dev.vality.hooker.config;
 
-
-import dev.vality.testcontainers.annotations.KafkaConfig;
+import dev.vality.testcontainers.annotations.KafkaTestConfig;
 import dev.vality.testcontainers.annotations.kafka.KafkaTestcontainerSingleton;
 
 import java.lang.annotation.ElementType;
@@ -14,6 +13,6 @@ import java.lang.annotation.Target;
 @KafkaTestcontainerSingleton(
         properties = {"kafka.topics.invoice.enabled=true"},
         topicsKeys = {"kafka.topics.invoice.id"})
-@KafkaConfig
+@KafkaTestConfig
 public @interface KafkaTest {
 }
