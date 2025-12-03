@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hooker</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>hooker</name>
@@ -62,7 +62,7 @@
         <dependency>
             <groupId>dev.vality</groupId>
             <artifactId>damsel</artifactId>
-            <version>1.674-368f05b</version>
+            <version>1.677-0ac1d9c</version>
         </dependency>
         <dependency>
             <groupId>dev.vality.geck</groupId>
