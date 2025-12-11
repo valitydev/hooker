@@ -129,6 +129,7 @@ class InvoicingEventServiceTest {
         message.setEventTime("2016-03-22T06:12:27Z");
         message.setEventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
         message.setPaymentStatus(PaymentStatusEnum.CAPTURED);
+        message.setSequenceId(1L);
         return message;
     }
 
