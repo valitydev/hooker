@@ -71,6 +71,7 @@ public class BuildUtils {
             payer.getPaymentResource().getResource()
                     .setPaymentTool(paymentTool);
         }
+        invoice.setLatestEventId(1);
         return invoice;
     }
 
