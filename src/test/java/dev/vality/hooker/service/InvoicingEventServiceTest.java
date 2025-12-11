@@ -233,6 +233,7 @@ class InvoicingEventServiceTest {
         message.setSequenceId(123L);
         message.setType(InvoicingMessageEnum.PAYMENT);
         message.setEventTime("2016-03-22T06:12:27Z");
+        message.setSequenceId(1L);
         return message;
     }
 }
