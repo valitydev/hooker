@@ -16,9 +16,11 @@ import dev.vality.hooker.model.InvoicingMessage;
 import dev.vality.hooker.utils.TimeUtils;
 import dev.vality.swag_webhook_events.model.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.thrift.TException;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InvoicingEventService
@@ -51,7 +53,14 @@ public class InvoicingEventService
     @Override
     public dev.vality.damsel.payment_processing.Invoice getInvoiceByMessage(InvoicingMessage message) {
         try {
-            return invoicingClient.get(message.getSourceId(), getEventRange(message));
+            dev.vality.damsel.payment_processing.Invoice invoice =
+                    invoicingClient.get(message.getSourceId(), getEventRange(message));
+            if (invoice.getLatestEventId() != message.getSequenceId().intValue()) {
+                log.warn("Event not need version: {} but come: {}", message.getSequenceId(),
+                        invoice.getLatestEventId());
+                throw new RemoteHostException("Event not need version!");
+            }
+            return invoice;
         } catch (InvoiceNotFound e) {
             throw new NotFoundException("Invoice not found, invoiceId=" + message.getSourceId());
         } catch (TException e) {
@@ -157,7 +166,7 @@ public class InvoicingEventService
         }
         return invoicePayment.getAdjustments().stream()
                 .filter(invoicePaymentAdjustment -> invoicePaymentAdjustment.isSetId()
-                        && invoicePaymentAdjustment.getId().equals(adjustmentId))
+                                                    && invoicePaymentAdjustment.getId().equals(adjustmentId))
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException(
                         String.format("Adjustment not found, invoiceId=%s, paymentId=%s, adjustmentId=%s",
