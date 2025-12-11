@@ -56,6 +56,7 @@ class InvoicingEventServiceTest {
     void testRefundSucceeded() {
         InvoicingMessage message = random(InvoicingMessage.class, "userInteraction");
         message.setPaymentId("1");
+        message.setSequenceId(1L);
         message.setRefundId("1");
         message.setType(InvoicingMessageEnum.REFUND);
         message.setEventTime("2016-03-22T06:12:27Z");
@@ -75,6 +76,7 @@ class InvoicingEventServiceTest {
     void testJson() throws JsonProcessingException {
         InvoicingMessage message = random(InvoicingMessage.class, "userInteraction");
         message.setPaymentId("1");
+        message.setSequenceId(1L);
         message.setType(InvoicingMessageEnum.PAYMENT);
         message.setEventTime("2016-03-22T06:12:27Z");
         message.setEventType(EventType.INVOICE_PAYMENT_STATUS_CHANGED);
